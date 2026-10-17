@@ -2,13 +2,13 @@
 set -e
 
 echo "======================================================================"
-echo "🌀 VORTEX OS v158.2 — Integrale Bugfix & Deployment Script"
+echo "🌀 VORTEX OS v158.3 — Definitief Herstel Asset- & Routestructuur"
 echo "======================================================================"
 
 TARGET_DIR="/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main"
 cd "$TARGET_DIR"
 
-# 1. Schoningsregel voor .gitignore
+# 1. Schoon .gitignore op
 if [ -f .gitignore ]; then
   sed -i '/\.pdf/d' .gitignore
   sed -i '/\.html/d' .gitignore
@@ -16,34 +16,40 @@ if [ -f .gitignore ]; then
   sed -i '/\.json/d' .gitignore
   sed -i '/\.geojson/d' .gitignore
   sed -i '/\.dxf/d' .gitignore
+  sed -i '/\.png/d' .gitignore
 fi
 
-# 2. Maak alle vereiste submappen aan
+# 2. Maak alle vereiste fysieke submappen aan
 mkdir -p cockpittools systeemdiagnose/update pdf assets
 
-# 3. Kopieer PDF-dossier vanuit Downloads indien aanwezig
+# 3. Synchroniseer het PDF-dossier vanuit Downloads
 if [ -f "/home/ontwerp/Downloads/0e8f0f2d-4786-4c53-a949-eb1ba9839998_Naamloos.pdf" ]; then
   cp -f "/home/ontwerp/Downloads/0e8f0f2d-4786-4c53-a949-eb1ba9839998_Naamloos.pdf" ./naamloos_dossier.pdf
   cp -f "/home/ontwerp/Downloads/0e8f0f2d-4786-4c53-a949-eb1ba9839998_Naamloos.pdf" ./pdf/naamloos_dossier.pdf
 fi
 
-# 4. Synchroniseer bestanden naar root en submappen
-[ -f vortex_bipolar_precision_dashboard.html ] && cp -f vortex_bipolar_precision_dashboard.html cockpittools/
-[ -f mapglobe.html ] && cp -f mapglobe.html cockpittools/
-[ -f modular_flower_layer.html ] && cp -f modular_flower_layer.html cockpittools/
-[ -f nebra_mapanalyst_vortex155.html ] && cp -f nebra_mapanalyst_vortex155.html cockpittools/
-[ -f update.html ] && cp -f update.html systeemdiagnose/update/
+# 4. KOPIEER ALLE HTML, JS EN ASSETS NAAR ZOWEL DE ROOT ALS DE SUBMAPPEN
+echo "📦 Kopiëren van dashboards en scripts naar root en submappen..."
 
-[ -f cockpittools/vortex_bipolar_precision_dashboard.html ] && cp -f cockpittools/vortex_bipolar_precision_dashboard.html ./
-[ -f cockpittools/mapglobe.html ] && cp -f cockpittools/mapglobe.html ./
-[ -f cockpittools/modular_flower_layer.html ] && cp -f cockpittools/modular_flower_layer.html ./
-[ -f cockpittools/nebra_mapanalyst_vortex155.html ] && cp -f cockpittools/nebra_mapanalyst_vortex155.html ./
+for file in vortex_bipolar_precision_dashboard.html mapglobe.html modular_flower_layer.html nebra_mapanalyst_vortex155.html; do
+  [ -f "$file" ] && cp -f "$file" cockpittools/
+  [ -f "cockpittools/$file" ] && cp -f "cockpittools/$file" ./
+done
+
+[ -f update.html ] && cp -f update.html systeemdiagnose/update/
 [ -f systeemdiagnose/update/update.html ] && cp -f systeemdiagnose/update/update.html ./
 
-[ -f vortex_geodetic_refraction_report-v2.pdf ] && cp -f vortex_geodetic_refraction_report-v2.pdf pdf/
-[ -f pdf/vortex_geodetic_refraction_report-v2.pdf ] && cp -f pdf/vortex_geodetic_refraction_report-v2.pdf ./
+# Kopieer ondersteunende JS-, PNG-, DXF- en GeoJSON-bestanden naar cockpittools/ en root
+cp -f *.js cockpittools/ 2>/dev/null || true
+cp -f *.geojson cockpittools/ 2>/dev/null || true
+cp -f *.png cockpittools/ 2>/dev/null || true
+cp -f *.dxf cockpittools/ 2>/dev/null || true
 
-# 5. Genereer schone vercel.json
+cp -f *.pdf pdf/ 2>/dev/null || true
+cp -f pdf/*.pdf ./ 2>/dev/null || true
+cp -f assets_manifest.js assets/ 2>/dev/null || true
+
+# 5. Genereer vercel.json
 cat << 'JSON_EOF' > vercel.json
 {
   "version": 2,
@@ -62,25 +68,26 @@ cat << 'JSON_EOF' > vercel.json
   "rewrites": [
     { "source": "/", "destination": "/vortex_omni_master_v158.html" },
     { "source": "/clean", "destination": "/vortex_clean_viewports_v158.html" },
-    { "source": "/bipolar", "destination": "/cockpittools/vortex_bipolar_precision_dashboard.html" },
-    { "source": "/globe", "destination": "/cockpittools/mapglobe.html" },
-    { "source": "/flower", "destination": "/cockpittools/modular_flower_layer.html" },
-    { "source": "/update", "destination": "/systeemdiagnose/update/update.html" },
-    { "source": "/nebra", "destination": "/cockpittools/nebra_mapanalyst_vortex155.html" },
-    { "source": "/naamloos_dossier.pdf", "destination": "/pdf/naamloos_dossier.pdf" },
-    { "source": "/vortex_geodetic_refraction_report-v2.pdf", "destination": "/pdf/vortex_geodetic_refraction_report-v2.pdf" }
+    { "source": "/bipolar", "destination": "/vortex_bipolar_precision_dashboard.html" },
+    { "source": "/globe", "destination": "/mapglobe.html" },
+    { "source": "/flower", "destination": "/modular_flower_layer.html" },
+    { "source": "/update", "destination": "/update.html" },
+    { "source": "/nebra", "destination": "/nebra_mapanalyst_vortex155.html" },
+    { "source": "/naamloos_dossier.pdf", "destination": "/naamloos_dossier.pdf" },
+    { "source": "/vortex_geodetic_refraction_report-v2.pdf", "destination": "/vortex_geodetic_refraction_report-v2.pdf" }
   ]
 }
 JSON_EOF
 
-# 6. Bouw de Omni Master Interface
+# 6. Herbouw de Omni Master Interface
 cat << 'HTML_EOF' > vortex_omni_master_v158.html
 <!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VORTEX OS v158.2 — Omni Master Interface</title>
+  <title>VORTEX OS v158.3 — Omni Master Interface</title>
+  <script src="./assets_manifest.js"></script>
   <script src="./assets/assets_manifest.js"></script>
   <style>
     :root { 
@@ -160,32 +167,32 @@ cat << 'HTML_EOF' > vortex_omni_master_v158.html
 </head>
 <body>
 <header>
-  <h1>🌀 VORTEX OS v158.2 OMNI MASTER</h1>
+  <h1>🌀 VORTEX OS v158.3 OMNI MASTER</h1>
   <div style="font-size: 0.72rem; color: #64748b; display:flex; gap:12px; align-items:center;">
-    <span style="color:var(--green);">● DEPLOY: LIVE</span>
+    <span style="color:var(--green);">● DEPLOY: LIVE (OK)</span>
     <span>Gekoppeld aan Vercel Node Mathgeo-Seven</span>
   </div>
 </header>
 <main>
   <section class="sidebar">
     <h3 style="color:var(--gold); margin-bottom:0.2rem;">🧭 NAVIGATION HUB</h3>
-    <a class="nav-item" href="/bipolar" target="viewport">🎯 Precision Cockpit (/bipolar)</a>
-    <a class="nav-item" href="/globe" target="viewport">🌍 MapLibre 3D Globe (/globe)</a>
-    <a class="nav-item" href="/flower" target="viewport">🌸 k=7 Caustic Layer (/flower)</a>
-    <a class="nav-item" href="/clean" target="viewport">🖥️ Clean Quad Grid (/clean)</a>
-    <a class="nav-item" href="/update" target="viewport" style="color:var(--green); border-color:var(--green);">📡 OSINT Telemetrie (/update)</a>
-    <a class="nav-item" href="/nebra" target="viewport" style="color:var(--magenta); border-color:var(--magenta);">🌌 Nebra Pleiaden (/nebra)</a>
-    <a class="nav-item" href="/vortex_geodetic_refraction_report-v2.pdf" target="viewport" style="color:var(--gold); border-color:var(--gold);">📄 PDF Audit Rapport v2</a>
-    <a class="nav-item" href="/naamloos_dossier.pdf" target="viewport" style="color:var(--cyan); border-color:var(--cyan);">📄 Nieuw Dossier PDF</a>
+    <a class="nav-item" href="./vortex_bipolar_precision_dashboard.html" target="viewport">🎯 Precision Cockpit (/bipolar)</a>
+    <a class="nav-item" href="./mapglobe.html" target="viewport">🌍 MapLibre 3D Globe (/globe)</a>
+    <a class="nav-item" href="./modular_flower_layer.html" target="viewport">🌸 k=7 Caustic Layer (/flower)</a>
+    <a class="nav-item" href="./vortex_clean_viewports_v158.html" target="viewport">🖥️ Clean Quad Grid (/clean)</a>
+    <a class="nav-item" href="./update.html" target="viewport" style="color:var(--green); border-color:var(--green);">📡 OSINT Telemetrie (/update)</a>
+    <a class="nav-item" href="./nebra_mapanalyst_vortex155.html" target="viewport" style="color:var(--magenta); border-color:var(--magenta);">🌌 Nebra Pleiaden (/nebra)</a>
+    <a class="nav-item" href="./vortex_geodetic_refraction_report-v2.pdf" target="viewport" style="color:var(--gold); border-color:var(--gold);">📄 PDF Audit Rapport v2</a>
+    <a class="nav-item" href="./naamloos_dossier.pdf" target="viewport" style="color:var(--cyan); border-color:var(--cyan);">📄 Nieuw Dossier PDF</a>
   </section>
 
   <section class="frame-container">
-    <iframe name="viewport" src="/bipolar"></iframe>
+    <iframe name="viewport" src="./vortex_bipolar_precision_dashboard.html"></iframe>
   </section>
 
   <section class="sidebar right">
     <h3 style="color:var(--gold); margin-bottom:0.5rem;">📊 SYSTEM STATUS</h3>
-    <p><strong>Manifest Versie:</strong> 158.2.0</p>
+    <p><strong>Manifest Versie:</strong> 158.3.0</p>
     <p><strong>Attractor N²:</strong> 010101 (Hex #21)</p>
     <p><strong>Snellius Δθ:</strong> -3,80° (Biskaje)</p>
     <p><strong>Laserlijn:</strong> 589,0 nm (D-line)</p>
@@ -198,12 +205,12 @@ HTML_EOF
 
 cp -f vortex_omni_master_v158.html index.html
 
-# 7. Dwing Git staging van alle extensies
-git add -f *.html *.pdf *.js *.json *.geojson *.dxf 2>/dev/null || true
+# 7. Dwing Git staging van ALLE bestanden
+git add -f *.html *.pdf *.js *.json *.geojson *.dxf *.png 2>/dev/null || true
 git add -f cockpittools/ systeemdiagnose/ pdf/ assets/ 2>/dev/null || true
 
 # 8. Commit en voer deploy uit
-git commit -m "Fix 404 & EOF bugs: Integrale Vercel routing en PDF sync" || true
+git commit -m "Fix all routes: Dual path sync HTML/JS/CSS/PDF to eliminate 404s" || true
 
 if [ -f "./vortex_master_deploy.sh" ]; then
   ./vortex_master_deploy.sh
@@ -214,5 +221,5 @@ else
 fi
 
 echo "======================================================================"
-echo "✅ Integrale bugfix voltooid en gepusht naar Vercel!"
+echo "✅ Definitieve route- & asset-fix voltooid en live gepusht naar Vercel!"
 echo "======================================================================"

@@ -15,12 +15,12 @@
   "rewrites": [
     { "source": "/", "destination": "/vortex_omni_master_v158.html" },
     { "source": "/clean", "destination": "/vortex_clean_viewports_v158.html" },
-    { "source": "/bipolar", "destination": "/cockpittools/vortex_bipolar_precision_dashboard.html" },
-    { "source": "/globe", "destination": "/cockpittools/mapglobe.html" },
-    { "source": "/flower", "destination": "/cockpittools/modular_flower_layer.html" },
-    { "source": "/update", "destination": "/systeemdiagnose/update/update.html" },
-    { "source": "/nebra", "destination": "/cockpittools/nebra_mapanalyst_vortex155.html" },
-    { "source": "/naamloos_dossier.pdf", "destination": "/pdf/naamloos_dossier.pdf" },
-    { "source": "/vortex_geodetic_refraction_report-v2.pdf", "destination": "/pdf/vortex_geodetic_refraction_report-v2.pdf" }
+    { "source": "/bipolar", "destination": "/vortex_bipolar_precision_dashboard.html" },
+    { "source": "/globe", "destination": "/mapglobe.html" },
+    { "source": "/flower", "destination": "/modular_flower_layer.html" },
+    { "source": "/update", "destination": "/update.html" },
+    { "source": "/nebra", "destination": "/nebra_mapanalyst_vortex155.html" },
+    { "source": "/naamloos_dossier.pdf", "destination": "/naamloos_dossier.pdf" },
+    { "source": "/vortex_geodetic_refraction_report-v2.pdf", "destination": "/vortex_geodetic_refraction_report-v2.pdf" }
   ]
 }
