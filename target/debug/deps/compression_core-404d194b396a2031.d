@@ -1,0 +1,10 @@
+/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/target/debug/deps/compression_core-404d194b396a2031.d: /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/lib.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/level.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/unshared.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/util.rs
+
+/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/target/debug/deps/libcompression_core-404d194b396a2031.rlib: /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/lib.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/level.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/unshared.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/util.rs
+
+/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/target/debug/deps/libcompression_core-404d194b396a2031.rmeta: /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/lib.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/level.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/unshared.rs /home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/util.rs
+
+/home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/lib.rs:
+/home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/level.rs:
+/home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/unshared.rs:
+/home/ontwerp/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/compression-core-0.4.34/src/util.rs:

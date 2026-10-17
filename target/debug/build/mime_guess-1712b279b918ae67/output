@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/target/debug/build/mime_guess-1712b279b918ae67/out/mime_types_generated.rs

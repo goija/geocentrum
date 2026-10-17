@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 pub struct GeodeticVectorResult {
     pub angle_deg: f64,
     pub wavelength_nm: f64,
-    pub Snellius_refraction_deg: f64,
+    pub snellius_refraction_deg: f64,
     pub opl_cm: f64,
     pub status: String,
 }
@@ -20,7 +20,7 @@ pub fn calculate_vortex_vector(azimuth: f64, refractive_index_air: f64, refracti
     let result = GeodeticVectorResult {
         angle_deg: azimuth,
         wavelength_nm: 589.0,
-        Snellius_refraction_deg: -refraction_delta,
+        snellius_refraction_deg: -refraction_delta,
         opl_cm: (opl * 1000.0).round() / 1000.0,
         status: "WASM_GEODETIC_LOCK_OK".to_string(),
     };
