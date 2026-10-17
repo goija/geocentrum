@@ -1,0 +1,1 @@
+/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/target/debug/vortex-geocentrum: /home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/src/iching_matrix.rs /home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/src/main.rs /home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/src/planimeter.rs

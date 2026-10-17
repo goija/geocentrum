@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX // INTEGRATED COCKPIT v154.4 — Onafhankelijke Wielen, Oorsprong-Inversie & Magnesium Overtrek</title>
+    <style>
+        :root {
+            --bg: #050608;
+            --panel: #0a0d11;
+            --border: #1a2228;
+            --main: #00ffcc;
+            --mg-glow: #50ffb0;      /* Fraunhofer Mg-b Triplet (517.3 nm) */
+            --mg-white: #e6fff7;     /* Magnesium Actinic Wit */
+            --neg-glow: #ff3385;     /* Antipodale Negatieve Pariteit */
+            --ai-glow: #00a2ff;
+            --accent: #ff9900;
+            --gold: #ffcc33;
+            --purple: #a855f7;
+            --brass: #d4af37;
+            --danger: #ef4444;
+            --laser-col: #50ffb0;
+            --text: #cbd5e1;
+            --grid-fine: rgba(0, 210, 255, 0.12);
+            --grid-major: rgba(0, 210, 255, 0.28);
+            --font-mono: 'Fira Code', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--ai-glow); border-radius: 10px; }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            background: var(--bg); color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow: hidden; user-select: none;
+        }
+
+        header {
+            height: 44px; border-bottom: 1px solid var(--border); background: var(--panel);
+            display: flex; align-items: center; padding: 0 18px; justify-content: space-between;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.5); z-index: 30; position: relative;
+        }
+
+        main {
+            display: grid; height: calc(100vh - 44px); gap: 1px; background: var(--border);
+            grid-template-columns: 24vw 22vw 54vw;
+        }
+
+        @media (max-width: 1180px) {
+            main { grid-template-columns: 36vw 64vw; }
+            .column:nth-child(2) { display: none; }
+        }
+
+        .column { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+        .col-header {
+            padding: 8px 12px; font-size: 0.63rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.55); letter-spacing: 1.4px;
+            color: var(--ai-glow); display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Column 1: Controls & Independent Wheel Axes */
+        .left-scroll { flex: 1; overflow-y: auto; padding: 7px; display: flex; flex-direction: column; gap: 6px; }
+
+        .hud-box {
+            background: rgba(10, 16, 28, 0.9); border: 1px solid var(--border);
+            border-radius: 4px; padding: 7px 9px; font-family: var(--font-mono); font-size: 0.62rem;
+        }
+        .hud-title {
+            color: var(--gold); font-size: 0.61rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 204, 51, 0.25); padding-bottom: 3px; margin-bottom: 5px;
+            letter-spacing: 0.7px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .kv { display: flex; justify-content: space-between; margin: 2px 0; }
+        .kv span:first-child { color: #94a3b8; }
+        .kv span:last-child { color: var(--main); font-weight: bold; }
+
+        .wheel-ctrl-row {
+            background: rgba(4, 9, 18, 0.7); border: 1px solid #1e293b; border-radius: 3px;
+            padding: 5px 6px; margin-bottom: 4px;
+        }
+        .wheel-ctrl-head {
+            display: flex; justify-content: space-between; font-size: 0.59rem; font-weight: bold; margin-bottom: 3px;
+        }
+        .dual-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; align-items: center; }
+        .mini-lbl { font-size: 0.54rem; color: #94a3b8; display: flex; justify-content: space-between; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn {
+            background: #101c30; color: var(--text); border: 1px solid #233b63;
+            border-radius: 3px; padding: 4.5px 5px; font-size: 0.58rem; font-family: var(--font-mono);
+            cursor: pointer; transition: 0.14s; text-align: center; font-weight: bold;
+        }
+        .btn:hover { border-color: var(--main); color: #fff; background: #162a4a; }
+        .btn-home { background: rgba(255, 204, 51, 0.18); border-color: var(--gold); color: var(--gold); }
+        .btn-stop { background: rgba(239, 68, 68, 0.22); border-color: #ef4444; color: #fca5a5; }
+        .btn-start { background: rgba(16, 185, 129, 0.22); border-color: #10b981; color: #6ee7b7; }
+        .btn-neg { background: rgba(255, 51, 133, 0.22); border-color: var(--neg-glow); color: #ff99c2; }
+        .btn-mg {
+            background: rgba(80, 255, 176, 0.16); border-color: var(--mg-glow); color: var(--mg-white);
+            box-shadow: inset 0 0 8px rgba(80, 255, 176, 0.25);
+        }
+
+        .chk-row { display: flex; align-items: center; gap: 6px; margin: 2.5px 0; cursor: pointer; font-size: 0.6rem; }
+        .chk-row input { accent-color: var(--main); cursor: pointer; margin: 0; }
+
+        .hex-box {
+            display: flex; justify-content: space-around; text-align: center;
+            margin-top: 5px; padding-top: 4px; border-top: 1px dashed var(--border);
+        }
+        .bit-bar { width: 23px; height: 3.5px; margin: 2px auto; background: var(--gold); }
+        .bit-0 {
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold) 40%, transparent 40%, transparent 60%, var(--gold) 60%, var(--gold) 100%);
+        }
+
+        /* Column 2: AI Synth */
+        .ai-engine { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .ai-terminal { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.71rem; line-height: 1.48; font-family: var(--font-mono); }
+        .ai-response {
+            margin-bottom: 9px; padding: 8px 9px; border: 1px solid rgba(0, 162, 255, 0.18);
+            background: rgba(0, 162, 255, 0.03); border-radius: 4px;
+        }
+        .input-bar { padding: 9px 10px; background: #000; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+        .v-input { flex: 1; background: transparent; border: none; color: var(--main); font-family: var(--font-mono); outline: none; font-size: 0.74rem; }
+
+        /* Column 3: Omni-Bridge Viewport + Magnesium Overtrek Layer + Resultaten Venster */
+        .viewport-frame { flex: 1; background: #04070d; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        #svg-stage {
+            flex: 1; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; position: relative; perspective: 1200px;
+            background: radial-gradient(circle at center, #101a2e 0%, #050811 100%);
+        }
+        #geo-svg {
+            width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+            cursor: crosshair; transition: transform 0.06s ease-out;
+        }
+
+        .viewport-hud-overlay {
+            position: absolute; top: 10px; left: 12px; pointer-events: none;
+            font-family: var(--font-mono); font-size: 0.63rem; color: var(--main);
+            background: rgba(5, 8, 15, 0.86); border: 1px solid var(--border);
+            padding: 7px 10px; border-radius: 4px; line-height: 1.42; z-index: 5;
+        }
+
+        .viewport-QuickActions {
+            position: absolute; top: 10px; right: 12px; display: flex; gap: 4px; z-index: 6; flex-wrap: wrap;
+        }
+
+        /* ZWEVEND VENSTER MET RESULTATEN UIT DE PLANIMETER-ARM, COÖRDINATEN, I CHING & BINNENWIELEN */
+        #plano-results-window {
+            position: absolute;
+            top: 44px;
+            right: 12px;
+            width: 375px;
+            background: rgba(5, 11, 20, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--mg-glow);
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.88), 0 0 16px rgba(80, 255, 176, 0.16);
+            font-family: var(--font-mono);
+            font-size: 0.61rem;
+            color: var(--text);
+            z-index: 15;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: height 0.2s ease;
+        }
+        #plano-results-window.minimized {
+            height: 29px !important;
+        }
+        .win-header {
+            background: linear-gradient(90deg, rgba(80, 255, 176, 0.2), rgba(0, 162, 255, 0.15));
+            border-bottom: 1px solid rgba(80, 255, 176, 0.45);
+            padding: 6px 10px;
+            font-weight: bold;
+            color: var(--mg-white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+            letter-spacing: 0.6px;
+        }
+        .win-body {
+            padding: 7px 9px;
+            overflow-y: auto;
+            max-height: 62vh;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .win-section {
+            background: rgba(11, 19, 33, 0.88);
+            border: 1px solid #1e3a5f;
+            border-radius: 4px;
+            padding: 5px 7px;
+        }
+        .win-sec-title {
+            color: var(--mg-glow);
+            font-size: 0.59rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+            border-bottom: 1px solid rgba(80, 255, 176, 0.2);
+            padding-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .parity-bar-bg {
+            width: 100%; height: 6px; background: #0f172a; border-radius: 3px;
+            overflow: hidden; margin-top: 3px; border: 1px solid #334155; position: relative;
+        }
+        .parity-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--neg-glow), var(--mg-glow));
+            width: 100%; transition: width 0.08s;
+        }
+
+        /* Tabel met Geregistreerde Arm-Punten */
+        .trace-table-wrap {
+            max-height: 95px;
+            overflow-y: auto;
+            border: 1px solid #1e293b;
+            border-radius: 3px;
+            background: #040810;
+        }
+        table.trace-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.56rem;
+            text-align: right;
+        }
+        table.trace-table th {
+            position: sticky; top: 0;
+            background: #0f1d33; color: var(--gold);
+            padding: 2.5px 4px; border-bottom: 1px solid #2b4c7e;
+            text-align: right;
+        }
+        table.trace-table th:first-child, table.trace-table td:first-child { text-align: left; }
+        table.trace-table td {
+            padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #e2e8f0;
+        }
+        table.trace-table tr:hover { background: rgba(80, 255, 176, 0.12); cursor: pointer; }
+
+        /* Live Toetsenbord HUD onderin de Viewport */
+        .key-bar {
+            position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 4px; align-items: center; z-index: 10;
+            background: rgba(5, 8, 15, 0.93); border: 1px solid var(--border);
+            padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.57rem;
+            white-space: nowrap;
+        }
+        .kbd-key {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 21px; height: 20px; padding: 0 5px;
+            background: #0f172a; border: 1px solid #334155; border-bottom: 2px solid #475569;
+            border-radius: 4px; color: #e2e8f0; font-weight: bold; font-size: 0.56rem;
+            cursor: pointer; transition: 0.08s;
+        }
+        .kbd-key:hover { border-color: var(--main); color: var(--main); }
+        .kbd-key.pressed {
+            background: var(--main); color: #000; border-color: #fff;
+            transform: translateY(1px); box-shadow: 0 0 10px var(--main);
+        }
+        .kbd-key.stop-active { background: var(--danger); color: #fff; border-color: #fca5a5; }
+        .kbd-key.run-active { background: #10b981; color: #000; border-color: #a7f3d0; }
+        .kbd-key.mg-active { background: var(--mg-glow); color: #000; border-color: #ffffff; }
+        .kbd-key.neg-active { background: var(--neg-glow); color: #fff; border-color: #ffc2dd; box-shadow: 0 0 10px var(--neg-glow); }
+
+        /* Cockpit Sliders onderin het viewport paneel (4 kolommen) */
+        .cockpit-controls {
+            padding: 8px 14px; background: rgba(10, 13, 17, 0.96);
+            border-top: 1px solid var(--border);
+            display: grid; grid-template-columns: 1fr 1fr 1.15fr 1fr; gap: 12px;
+        }
+        .slider-box { display: flex; flex-direction: column; gap: 3px; }
+        .slider-info { display: flex; justify-content: space-between; font-size: 0.56rem; color: var(--main); font-family: var(--font-mono); }
+        input[type="range"] { width: 100%; accent-color: var(--main); height: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-weight: bold; letter-spacing: 1px;">
+        VORTEX <span style="color:var(--main)">COCKPIT_INTEGRATION</span>
+        <span style="color:var(--mg-glow); font-size: 0.64rem;">v154.4 // MULTI-AS WIELEN, OORSPRONG-INVERSIE & MAGNESIUM OVERTREK</span>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <span id="origin-badge" style="font-family:var(--font-mono); font-size:0.62rem; padding:2px 7px; border:1px solid var(--mg-glow); color:var(--mg-glow); border-radius:3px;">AS-PROJECTIE: +1.00 (POSITIEF)</span>
+        <span id="arm-badge" style="font-family:var(--font-mono); font-size:0.62rem; padding:2px 7px; border:1px solid var(--gold); color:var(--gold); border-radius:3px;">BEGINSTAND: 0.0° [0]</span>
+        <div id="clock" style="font-family: var(--font-mono); color: var(--main); font-size: 0.74rem;">00:00:00</div>
+    </div>
+</header>
+
+<main>
+    <!-- KOLOM 1: BEGINSTAND, OORSPRONG-INVERSIE & ONAFHANKELIJKE WIEL-ASSEN -->
+    <section class="column">
+        <div class="col-header">
+            <span>Arm, Oorsprong-Inversie & Wielen</span>
+            <span style="color:var(--gold)">Ott Nr. 573</span>
+        </div>
+        <div class="left-scroll">
+
+            <!-- 1. BEGINSTAND OP DE CIRKELS & PLAT NAAR NEGATIEF DOOR DE OORSPRONG -->
+            <div class="hud-box" style="border-color: var(--gold);">
+                <div class="hud-title">
+                    <span>🎯 Beginstand & Wiel door Oorsprong (0,0)</span>
+                    <span id="lbl-sigma-state" style="color:var(--mg-glow)">σ = +1.00</span>
+                </div>
+                <div class="btn-grid">
+                    <button class="btn btn-home" onclick="resetToBeginstand()">🎯 Beginstand Cirkels [0]</button>
+                    <button class="btn btn-neg" id="btn-fold-anim" onclick="toggleOriginFoldAnimation()">🌀 Vouw door (0,0) [X]</button>
+                </div>
+                <div class="btn-grid-3">
+                    <button class="btn btn-start" onclick="setGlobalAxisFlatten(1.0)">➕ Positief [7]</button>
+                    <button class="btn btn-home" onclick="setGlobalAxisFlatten(0.0)">➖ Plat (0,0) [8]</button>
+                    <button class="btn btn-neg" onclick="setGlobalAxisFlatten(-1.0)">🔄 Negatief [9]</button>
+                </div>
+                <div style="margin-top:5px;">
+                    <div class="mini-lbl">
+                        <span>Globale Wiel-As Kanteling Door Oorsprong (σ_Y: [-] / [+])</span>
+                        <span id="lbl-global-sigma" style="color:var(--gold)">+1.00 (Rond)</span>
+                    </div>
+                    <input type="range" min="-1" max="1" step="0.01" value="1" id="slider-global-sigma" oninput="setGlobalAxisFlatten(this.value)">
+                </div>
+            </div>
+
+            <!-- 2. ONAFHANKELIJK DRAAIENDE WIELEN IN VERSCHILLENDE ASSEN -->
+            <div class="hud-box" style="border-color: var(--ai-glow);">
+                <div class="hud-title" style="color:var(--ai-glow);">
+                    <span>⚙️ Onafhankelijke Wielen & Assen</span>
+                    <span style="cursor:pointer; color:var(--gold);" onclick="syncAllWheelsToZero()" title="Lijn alle wielen uit op 0°">[Sync 0°]</span>
+                </div>
+
+                <!-- Wiel 1: Buitenwiel I Ching (64 Shao Yong) -->
+                <div class="wheel-ctrl-row">
+                    <div class="wheel-ctrl-head" style="color:var(--main);">
+                        <span>1. I Ching Buitenwiel (64) [Q / E]</span>
+                        <span id="lbl-w64">Draai: 0.0° | As: +1.00</span>
+                    </div>
+                    <div class="dual-sliders">
+                        <div>
+                            <div class="mini-lbl"><span>Rotatie φ_64</span><span>0..360°</span></div>
+                            <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-64" oninput="setWheelParam(64, 'rot', this.value)">
+                        </div>
+                        <div>
+                            <div class="mini-lbl"><span>As-Kanteling σ_64</span><span>-1..+1</span></div>
+                            <input type="range" min="-1" max="1" step="0.02" value="1" id="sl-tilt-64" oninput="setWheelParam(64, 'tilt', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wiel 2: Middenwiel Jiazi (60) -->
+                <div class="wheel-ctrl-row">
+                    <div class="wheel-ctrl-head" style="color:var(--purple);">
+                        <span>2. Jiazi Middenwiel (60) [Z / C]</span>
+                        <span id="lbl-w60">Draai: 0.0° | As: +1.00</span>
+                    </div>
+                    <div class="dual-sliders">
+                        <div>
+                            <div class="mini-lbl"><span>Rotatie φ_60</span><span>0..360°</span></div>
+                            <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-60" oninput="setWheelParam(60, 'rot', this.value)">
+                        </div>
+                        <div>
+                            <div class="mini-lbl"><span>As-Kanteling σ_60</span><span>-1..+1</span></div>
+                            <input type="range" min="-1" max="1" step="0.02" value="1" id="sl-tilt-60" oninput="setWheelParam(60, 'tilt', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wiel 3: Binnenwiel 16-Kompasster & N² Kern (4) -->
+                <div class="wheel-ctrl-row" style="margin-bottom:0;">
+                    <div class="wheel-ctrl-head" style="color:var(--gold);">
+                        <span>3. Binnenwiel 16 & N² Kern [U / I]</span>
+                        <span id="lbl-w16">Draai: 0.0° | As: +1.00</span>
+                    </div>
+                    <div class="dual-sliders">
+                        <div>
+                            <div class="mini-lbl"><span>Rotatie φ_16</span><span>0..360°</span></div>
+                            <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-16" oninput="setWheelParam(16, 'rot', this.value)">
+                        </div>
+                        <div>
+                            <div class="mini-lbl"><span>As-Kanteling σ_16</span><span>-1..+1</span></div>
+                            <input type="range" min="-1" max="1" step="0.02" value="1" id="sl-tilt-16" oninput="setWheelParam(16, 'tilt', this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. MAGNESIUM OVERTREK LAYER CONTROLE -->
+            <div class="hud-box" style="border-color: var(--mg-glow);">
+                <div class="hud-title" style="color:var(--mg-glow);">
+                    <span>✨ Magnesium Overtrek Layer</span>
+                    <span id="lbl-mg-status">ACTIEF [K]</span>
+                </div>
+                <div class="kv"><span>Calqueer-Vellum Dekking:</span><span id="lbl-mg-opacity">45%</span></div>
+                <input type="range" min="0" max="90" value="45" id="mg-opacity-slider" oninput="setMagnesiumOpacity(this.value)" style="margin:3px 0;">
+
+                <div class="btn-grid">
+                    <button class="btn btn-mg" id="btn-rec" onclick="toggleOmtrekRecording()">✏️ START OVERTREK [O]</button>
+                    <button class="btn btn-mg" onclick="stampMagnesiumPoint()">📌 STEMPEL PUNT [T]</button>
+                    <button class="btn" onclick="toggleResultsWindow()">📊 ARM-VENSTER [V]</button>
+                    <button class="btn" onclick="clearOmtrek()">🗑️ WIS OVERTREK [C]</button>
+                </div>
+                <div style="margin-top:4px; padding-top:4px; border-top:1px dashed var(--border);">
+                    <label class="chk-row"><input type="checkbox" id="chk-adapt-trace" checked onchange="renderMagnesiumOvertrek()"> Pas Overtrek-laag aan op Wiel-As Inversie (σ)</label>
+                    <label class="chk-row"><input type="checkbox" id="chk-hinge-locus" checked onchange="renderMagnesiumOvertrek()"> Toon Scharnier-Involute Baan (G-Spoor)</label>
+                    <label class="chk-row"><input type="checkbox" id="chk-laser" checked onchange="toggleLaserPower(this.checked)"> Toon Optische Laser & Prisma op Arm [L / P]</label>
+                </div>
+            </div>
+
+            <!-- 4. Cirkel-Ankers & Start/Stop -->
+            <div class="hud-box">
+                <div class="hud-title"><span>⌨️ Planimeter Arm & Cirkel-Ankers</span></div>
+                <div class="btn-grid">
+                    <button class="btn btn-stop" onclick="stopPlanimeterArm()">🛑 ZET STIL [S / Spatie]</button>
+                    <button class="btn btn-start" onclick="startPlanimeterArm()">▶️ START VRIJ [G]</button>
+                    <button class="btn" onclick="snapToCircleAnchor(0, 10.749, 'BEGINSTAND NOORD 0°')">0° Beginstand [0]</button>
+                    <button class="btn" onclick="snapToCircleAnchor(29, 10.749, 'NYC 29° VECTOR')">29° NYC [1]</button>
+                    <button class="btn" onclick="snapToCircleAnchor(82.5, 10.749, 'THOLEN 82.5°')">82.5° Tholen [2]</button>
+                    <button class="btn" onclick="snapToCircleAnchor(108, 10.749, 'SIRIUS 108°')">108° Sirius [3]</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KOLOM 2: AI SYNTHESIS TERMINAL -->
+    <section class="column" style="border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+        <div class="col-header">
+            <span>AI Synthesis Terminal</span>
+            <span id="ai-status" style="color:var(--mg-glow)">ORIGIN_INVERSION // READY</span>
+        </div>
+        <div class="ai-engine">
+            <div class="ai-terminal" id="ai-terminal">
+                <div class="ai-response">
+                    <b>SYSTEM_READY [v154.4]:</b> De <b>A. Ott Nr. 573 Planimeter-arm</b> staat gekalibreerd in de <b>Beginstand op de Cirkels (0.0° Noord, r = +10.75 cm)</b>.<br><br>
+                    • <b>[0] Beginstand op Cirkels:</b> Zet arm en alle wielen direct op 0°.<br>
+                    • <b>[8] Plat door Oorsprong ($\sigma = 0$):</b> Drukt het wiel helemaal plat op de snijlijn door $(0,0)$.<br>
+                    • <b>[9] Naar Negatief ($\sigma = -1$):</b> Klapt het wiel door de oorsprong naar negatief; de planimeter-arm past zijn scharnier-chiraliteit aan en telt negatieve nonius ($-3630$).<br>
+                    • <b>[Q/E], [Z/C], [U/I]:</b> Draai het I Ching-wiel (64), Jiazi-wiel (60) en Binnenwiel (16/$N^2$) onafhankelijk van elkaar.
+                </div>
+            </div>
+            <div class="input-bar">
+                <span style="color:var(--mg-glow); font-family:var(--font-mono);">></span>
+                <input type="text" class="v-input" id="ai-query" placeholder="Typ 'begin', 'plat', 'negatief', of hoek (bijv. -10.75cm)..." onkeypress="handleQuery(event)">
+            </div>
+        </div>
+    </section>
+
+    <!-- KOLOM 3: OMNI-BRIDGE VIEWPORT [MULTI-AS WIELEN + MAGNESIUM OVERTREK + ARM RESULTATEN VENSTER] -->
+    <section class="column">
+        <div class="col-header">
+            <span>Omni-Bridge Viewport [OTT NR. 573 & MULTI-AS OORSPRONG PROJECTIE]</span>
+            <span id="hud-coord-mini" style="color:var(--mg-glow); font-family:var(--font-mono);">[T: 0.00, +10.75 cm | ρ: +10.75 cm]</span>
+        </div>
+        <div class="viewport-frame">
+            <div id="svg-stage">
+                <!-- Live Mini-Overlay linksboven in de Viewport -->
+                <div class="viewport-hud-overlay">
+                    <div>OTT NR. 573 NONIUS: <b id="vp-nonius" style="color:var(--gold)">+3630</b> (Getekend: <b id="vp-area">+363.0 cm²</b>)</div>
+                    <div>VOLGSTIFT T(θ, ρ): <b id="vp-az">0.00°</b> | ρ = <b id="vp-rho">+10.75 cm</b></div>
+                    <div>WIEL-FASE (φ64 / φ60 / φ16): <b id="vp-wheels" style="color:var(--ai-glow)">0° / 0° / 0°</b></div>
+                    <div>OORSPRONG-PARITEIT (det J): <b id="vp-parity" style="color:var(--mg-glow)">+1.00 (POSITIEF VLAK)</b></div>
+                </div>
+
+                <!-- Quick Actions rechtsboven in de Viewport -->
+                <div class="viewport-QuickActions">
+                    <button class="btn btn-home" onclick="resetToBeginstand()" title="Zet Arm & Wielen in Beginstand op de Cirkels (0)">🎯 Beginstand [0]</button>
+                    <button class="btn" onclick="setGlobalAxisFlatten(0.0)" title="Druk Wiel Helemaal Plat op Oorsprong-as (8)">➖ Plat [8]</button>
+                    <button class="btn btn-neg" onclick="setGlobalAxisFlatten(-1.0)" title="Klap Wiel door Oorsprong naar Negatief (9)">🔄 Negatief [9]</button>
+                    <button class="btn btn-mg" onclick="stampMagnesiumPoint()" title="Stempel Punt op Magnesium Overtrek (T)">📌 Stempel [T]</button>
+                    <button class="btn btn-mg" onclick="toggleResultsWindow()" title="Toon/Verberg Resultaten Venster (V)">📊 Venster [V]</button>
+                </div>
+
+                <!-- ====================================================================================== -->
+                <!-- ZWEVEND & SLEEPBAAR VENSTER MET RESULTATEN UIT DE PLANIMETER-ARM, I CHING & BINNENWIEL -->
+                <!-- ====================================================================================== -->
+                <div id="plano-results-window">
+                    <div class="win-header" id="win-drag-handle">
+                        <span>📐 MAGNESIUM OVERTREK & PLANO-ARM RESULTATEN</span>
+                        <div style="display:flex; gap:6px;">
+                            <span style="cursor:pointer; color:var(--gold);" onclick="minimizeResultsWindow()" title="Minimaliseer">[_]</span>
+                            <span style="cursor:pointer; color:#fca5a5;" onclick="toggleResultsWindow()" title="Sluit [V]">[X]</span>
+                        </div>
+                    </div>
+                    <div class="win-body">
+                        <!-- Sectie 1: Arm Draai, Coördinaten & Oorsprong-Inversie -->
+                        <div class="win-section">
+                            <div class="win-sec-title">
+                                <span>1. Planimeter-Arm Draai & Coördinaten</span>
+                                <span id="res-arm-state" style="color:var(--gold)">BEGINSTAND [0]</span>
+                            </div>
+                            <div class="kv"><span>Arm Draaihoek (Azimut θ):</span><span id="res-arm-az">0.00° (Noord-Cirkel)</span></div>
+                            <div class="kv"><span>Geprojecteerde Straal (ρ_eff):</span><span id="res-arm-rho">+10.75 cm (+21.5 vakjes)</span></div>
+                            <div class="kv"><span>Volgstift Coördinaten T(x, y):</span><span id="res-tx-ty">[0.00, +10.75] cm</span></div>
+                            <div class="kv"><span>Scharnier Coördinaten G(x, y):</span><span id="res-gx-gy">[-3.48, +6.65] cm</span></div>
+                            <div class="kv"><span>Poolarm (α) / Rijarm (β) / ∠γ:</span><span id="res-angles">α=195° | β=72° | γ=117.4°</span></div>
+                            <div class="kv"><span>Oorsprong-Projectie (σ_Y / det J):</span><span id="res-jacobian" style="color:var(--mg-glow)">+1.00 (Normaal)</span></div>
+                            <div class="parity-bar-bg" title="Balk van -1.00 (Negatief door Oorsprong) via 0.00 (Plat) naar +1.00 (Positief)">
+                                <div class="parity-bar-fill" id="res-parity-bar" style="width:100%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Sectie 2: Onafhankelijke I Ching (64) & Binnenwielen (60 / 16 / N²) Resultaten -->
+                        <div class="win-section">
+                            <div class="win-sec-title">
+                                <span>2. I Ching (64) & Onafhankelijke Binnenwielen</span>
+                                <span id="res-chirality-badge" style="color:var(--main)">CHIRALITEIT: +</span>
+                            </div>
+                            <div class="kv"><span>I Ching Buitenwiel (64) [φ64]:</span><span id="res-iching-wheel">#0 (111111) @ Δθ=0.0°</span></div>
+                            <div class="kv"><span>Oorsprong-Inversie Hexagram (H̄):</span><span id="res-iching-inv" style="color:var(--neg-glow)">#32 (000000) [Antipode]</span></div>
+                            <div class="kv"><span>Jiazi Middenwiel (60) [φ60]:</span><span id="res-jiazi-wheel">Jia-Zi (#1/60) @ φ=0.0°</span></div>
+                            <div class="kv"><span>Binnenwiel (16) & N² Kern [φ16]:</span><span id="res-inner-wheel">Noord-Ster #0 | Kern 11→N²=111111</span></div>
+
+                            <div class="hex-box">
+                                <div>
+                                    <div style="color:#94a3b8;font-size:0.54rem;">H (Actief Wiel)</div>
+                                    <div id="vis-H"></div>
+                                    <div id="lbl-H" style="margin-top:2px;color:var(--main);">111111</div>
+                                </div>
+                                <div>
+                                    <div style="color:#94a3b8;font-size:0.54rem;">N (Hu Gua)</div>
+                                    <div id="vis-N"></div>
+                                    <div id="lbl-N" style="margin-top:2px;color:var(--gold);">111111</div>
+                                </div>
+                                <div>
+                                    <div style="color:#94a3b8;font-size:0.54rem;">N² / Inversie</div>
+                                    <div id="vis-N2"></div>
+                                    <div id="lbl-N2" style="margin-top:2px;color:var(--neg-glow);">111111</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sectie 3: Magnesium Overtrek Integratie & Meetpunten Logboek -->
+                        <div class="win-section">
+                            <div class="win-sec-title">
+                                <span>3. Magnesium Overtrek & Nonius Resultaat</span>
+                                <span id="res-nonius-badge" style="color:var(--gold)">+3630 nonius</span>
+                            </div>
+                            <div class="kv"><span>Getekende Cirkel-Nonius (σ·A):</span><span id="res-sector-area">+363.00 cm² (+1452 vakjes)</span></div>
+                            <div class="kv"><span>Overtrokken Pad & Vlak:</span><span id="res-poly-area" style="color:var(--mg-glow)">0.00 cm | 0.00 cm² (0 vakjes)</span></div>
+
+                            <div class="trace-table-wrap" style="margin-top:4px;">
+                                <table class="trace-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>T(x,y) cm</th>
+                                            <th>Draai θ</th>
+                                            <th>As σ</th>
+                                            <th>Nonius</th>
+                                            <th>I Ching</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="res-trace-tbody">
+                                        <tr><td colspan="6" style="text-align:center; color:#64748b; padding:6px;">Druk op [T] (Stempel) of [O] (Overtrek) om arm-resultaten te loggen.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="btn-grid" style="margin-top:4px;">
+                                <button class="btn btn-mg" onclick="stampMagnesiumPoint()">📌 Stempel Punt [T]</button>
+                                <button class="btn" onclick="exportCADReport()">📥 Export Rapport (TXT)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactieve Toetsenbord-Balk onderin de Viewport -->
+                <div class="key-bar">
+                    <span class="kbd-key" id="key-0" onclick="resetToBeginstand()" title="Zet Arm & Wielen in Beginstand op de Cirkels (0)">0:BEGIN</span>
+                    <span class="kbd-key" id="key-left" onclick="stepPolar(-1, 0)" title="Arm Draai Links (←)">←</span>
+                    <span class="kbd-key" id="key-up" onclick="stepPolar(0, 0.5)" title="Straal +0.5cm (↑)">↑</span>
+                    <span class="kbd-key" id="key-down" onclick="stepPolar(0, -0.5)" title="Straal -0.5cm door Oorsprong naar Negatief (↓)">↓</span>
+                    <span class="kbd-key" id="key-right" onclick="stepPolar(1, 0)" title="Arm Draai Rechts (→)">→</span>
+                    <span style="color:#475569">|</span>
+                    <span class="kbd-key" id="key-8" onclick="setGlobalAxisFlatten(0.0)" title="Druk Wiel Helemaal Plat op Oorsprong (8)">8:PLAT(0)</span>
+                    <span class="kbd-key" id="key-9" onclick="setGlobalAxisFlatten(-1.0)" title="Klap Wiel door Oorsprong naar Negatief (9)">9:NEG(-1)</span>
+                    <span class="kbd-key" id="key-7" onclick="setGlobalAxisFlatten(1.0)" title="Herstel Wiel naar Positief Rond (7)">7:POS(+1)</span>
+                    <span class="kbd-key" id="key-x" onclick="toggleOriginFoldAnimation()" title="Animeer Vouw door Oorsprong (X)">X:VOUW</span>
+                    <span style="color:#475569">|</span>
+                    <span class="kbd-key" id="key-s" onclick="stopPlanimeterArm()" title="Zet Arm Stil (S of Spatie)">S:STOP</span>
+                    <span class="kbd-key run-active" id="key-g" onclick="startPlanimeterArm()" title="Start Arm Vrij (G)">G:START</span>
+                    <span class="kbd-key mg-active" id="key-t" onclick="stampMagnesiumPoint()" title="Stempel Magnesium Punt (T)">T:STEMPEL</span>
+                </div>
+
+                <!-- DE GEÏNTEGREERDE MULTI-AS GEO-TEKENING, MAGNESIUM OVERTREK LAYER & OTT NR. 573 -->
+                <svg id="geo-svg" viewBox="-480 -480 960 960" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <pattern id="grid-05cm" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--grid-fine)" stroke-width="0.7"/>
+                            <path d="M 0 0 L 20 20" fill="none" stroke="rgba(0, 210, 255, 0.05)" stroke-width="0.5"/>
+                        </pattern>
+                        <pattern id="grid-25cm" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <rect width="100" height="100" fill="url(#grid-05cm)"/>
+                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--grid-major)" stroke-width="1.1"/>
+                        </pattern>
+                        <pattern id="mg-vellum-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(80, 255, 176, 0.14)" stroke-width="0.6"/>
+                            <circle cx="0" cy="0" r="0.8" fill="rgba(230, 255, 247, 0.35)"/>
+                        </pattern>
+                        <filter id="laser-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3.0" result="blur1"/>
+                            <feGaussianBlur stdDeviation="7.0" result="blur2"/>
+                            <feMerge>
+                                <feMergeNode in="blur2"/>
+                                <feMergeNode in="blur1"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <filter id="mg-flare" x="-30%" y="-30%" width="160%" height="160%">
+                            <feGaussianBlur stdDeviation="2.0" result="mgBlur"/>
+                            <feMerge>
+                                <feMergeNode in="mgBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#ffcc33"/>
+                        </marker>
+                        <marker id="arrow-magenta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3385"/>
+                        </marker>
+                    </defs>
+
+                    <!-- 1. VASTE RASTER LAAG (0.5 cm eenheden) & OORSPRONG (0,0) SINGULARITEITS-ASSEN -->
+                    <rect x="-480" y="-480" width="960" height="960" fill="url(#grid-25cm)"/>
+                    <g id="axes" stroke="#2dd4bf" stroke-width="0.9" opacity="0.8">
+                        <!-- Horizontale & Verticale Oorsprong-Snijlijnen -->
+                        <line x1="-480" y1="0" x2="480" y2="0" stroke="#50ffb0" stroke-width="1.2" stroke-dasharray="6,3"/>
+                        <line x1="0" y1="-480" x2="0" y2="480" stroke="#00e5ff" stroke-width="1.2" stroke-dasharray="6,3"/>
+                        <circle cx="0" cy="0" r="5" fill="none" stroke="#ffcc33" stroke-width="1.5"/>
+                        <text x="10" y="-8" fill="#ffcc33" font-size="9" font-family="Courier New" font-weight="bold">OORSPRONG (0,0)</text>
+                    </g>
+
+                    <!-- ========================================================================= -->
+                    <!-- 2. ONAFHANKELIJK DRAAIENDE & PLAT-KANTELBARE WIELEN IN VERSCHILLENDE ASSEN -->
+                    <!-- ========================================================================= -->
+                    <g id="multi-axis-wheels-root">
+                        <!-- Wiel 1: Buitenwiel 64 Shao Yong (I Ching) -->
+                        <g id="wheel-iching-64"></g>
+
+                        <!-- Wiel 2: Middenwiel 60 Jiazi Ring -->
+                        <g id="wheel-jiazi-60"></g>
+
+                        <!-- Wiel 3: Binnenwiel 16-Kompasster, Möbius Spinor & 4 N² Kern-Attractoren -->
+                        <g id="wheel-inner-16"></g>
+                    </g>
+
+                    <!-- 3. MAGNESIUM OVERTREK LAYER (CALQUEER-VEL & ARM-SPOREN) -->
+                    <g id="magnesium-overtrek-layer">
+                        <rect id="mg-vellum-sheet" x="-480" y="-480" width="960" height="960" fill="rgba(4, 14, 24, 0.45)" pointer-events="none"/>
+                        <rect id="mg-vellum-dots" x="-480" y="-480" width="960" height="960" fill="url(#mg-vellum-grid)" opacity="0.8" pointer-events="none"/>
+                        <rect x="-466" y="-466" width="932" height="932" fill="none" stroke="rgba(80, 255, 176, 0.35)" stroke-width="1" stroke-dasharray="8,4" pointer-events="none"/>
+                        <text x="-455" y="-448" fill="#50ffb0" font-size="9.5" font-family="Courier New" font-weight="bold" opacity="0.88">MAGNESIUM OVERTREK LAYER // MULTI-AS & OORSPRONG-INVERSIE (0,5 CM VAKJES)</text>
+                        <g id="mg-traces-group" filter="url(#mg-flare)"></g>
+                    </g>
+
+                    <!-- 4. A. OTT NR. 573 PLANIMETER KINEMATICA LAAG (ADAPTIEF OP OORSPRONG-INVERSIE) -->
+                    <g id="planimeter-layer"></g>
+
+                    <!-- 5. OPTISCHE LASER & LICHTSPECTRALE LAAG OP DE PLANO-ARM -->
+                    <g id="laser-layer"></g>
+                </svg>
+            </div>
+
+            <!-- COCKPIT CONTROLS ONDERIN DE VIEWPORT -->
+            <div class="cockpit-controls">
+                <div class="slider-box">
+                    <div class="slider-info">ARM DRAAI (θ ←/→) <span id="yaw-deg">0.0°</span></div>
+                    <input type="range" min="0" max="360" step="0.1" value="0" id="yaw-slider" oninput="processKinematica('yaw', this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">STRAAL DOOR (0,0) (ρ ↑/↓) <span id="rho-val">+10.75 cm</span></div>
+                    <input type="range" min="-11.5" max="11.5" step="0.05" value="10.75" id="rho-slider" oninput="processKinematica('rho', this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">WIEL PLAT → NEGATIEF (σ [-/+]) <span id="sigma-val" style="color:var(--mg-glow)">+1.00</span></div>
+                    <input type="range" min="-1" max="1" step="0.01" value="1.0" id="sigma-slider" oninput="setGlobalAxisFlatten(this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">3D PITCH / GOLFLENGTE <span id="pitch-deg">0° | 517.3nm</span></div>
+                    <input type="range" min="0" max="60" step="1" value="0" id="pitch-slider" oninput="processKinematica('pitch', this.value)">
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    // --- CONSTANTES & SCHAAL ---
+    // 1 cm = 40 px | 1 vakje (0.5 cm) = 20 px
+    const PX_PER_CM = 40;
+    const R_KOMPAS_CM = Math.sqrt(363.0 / Math.PI); // 10.74905 cm (21.5 vakjes)
+    const R_KOMPAS_PX = R_KOMPAS_CM * PX_PER_CM;    // 429.96 px
+    const R_JIAZI_PX  = 355;                        // Middenwiel 60 Jiazi
+    const R_NUC_PX    = (R_KOMPAS_CM / 4) * PX_PER_CM; // 2.687 cm = 107.5 px (4/64 kern)
+
+    const STEMS = ["Jia","Yi","Bing","Ding","Wu","Ji","Geng","Xin","Ren","Gui"];
+    const BRANCHES = ["Zi","Chou","Yin","Mao","Chen","Si","Wu","Wei","Shen","You","Xu","Hai"];
+    const COMPASS_16 = ["N","NNO","NO","ONO","O","OZO","ZO","ZZO","Z","ZZW","ZW","WZW","W","WNW","NW","NNW"];
+    const CORE_COLORS = {
+        "00": "#3b82f6", // Noord / Winter / Kun
+        "10": "#eab308", // Oost / Lente / JiJi
+        "01": "#ec4899", // West / Herfst / WeiJi
+        "11": "#ef4444"  // Zuid / Zomer / Qian
+    };
+
+    const wheel64El = document.getElementById('wheel-iching-64');
+    const wheel60El = document.getElementById('wheel-jiazi-60');
+    const wheel16El = document.getElementById('wheel-inner-16');
+    const mgTracesGroup = document.getElementById('mg-traces-group');
+    const planimeterGroup = document.getElementById('planimeter-layer');
+    const laserGroup = document.getElementById('laser-layer');
+    const terminal = document.getElementById('ai-terminal');
+    const aiStatus = document.getElementById('ai-status');
+    const svgEl = document.getElementById('geo-svg');
+
+    // --- STATE: ARM IN BEGINSTAND OP DE CIRKELS (0.0° NOORD, r = +10.749 cm) ---
+    const state = {
+        azDeg: 0.0,               // Beginstand op 0.0° (Bovenaan op de Cirkel)
+        rhoCm: R_KOMPAS_CM,       // Kan van +11.5 cm door (0,0) naar -11.5 cm lopen!
+        globalSigmaY: 1.0,        // +1.0 = Rond, 0.0 = Helemaal Plat op X-as, -1.0 = Negatief door oorsprong
+        globalSigmaX: 1.0,
+        // Onafhankelijke parameters voor de 3 wielen in verschillende assen:
+        w64: { rot: 0.0, tilt: 1.0, axisAngle: 0 },    // Buitenwiel I Ching (kantelt over 0° X-as)
+        w60: { rot: 0.0, tilt: 1.0, axisAngle: 45 },   // Middenwiel Jiazi (kantelt over 45° diagonale as)
+        w16: { rot: 0.0, tilt: 1.0, axisAngle: 90 },   // Binnenwiel 16 & N² (kantelt over 90° Y-as)
+        // Berekende Planimeter Coördinaten
+        txPx: 0,
+        tyPx: -R_KOMPAS_PX,
+        gxPx: 0,
+        gyPx: 0,
+        alphaDeg: 0,
+        betaDeg: 0,
+        gammaDeg: 90,
+        pitchDeg: 0,
+        armStopped: false,
+        mouseFollow: false,       // Start stabiel in de gekalibreerde Beginstand op de cirkel!
+        recordingOmtrek: false,
+        omtrekPoints: [],
+        stampedNodes: [],
+        mgVellumActive: true,
+        mgOpacity: 0.45,
+        foldAnimTimer: null,
+        foldDirection: -1,
+        // Laser & Spectrum
+        laserEnabled: true,
+        laserMode: 'collimator',
+        wavelengthNm: 517.3,
+        wavelengthLabel: 'Magnesium Mg-b Triplet'
+    };
+
+    function getShaoYongBits(idx) {
+        const cleanIdx = ((idx % 64) + 64) % 64;
+        const val = cleanIdx < 32 ? (63 - cleanIdx) : (cleanIdx - 32);
+        return val.toString(2).padStart(6, '0');
+    }
+
+    function invertBits(bits) {
+        return bits.split('').map(b => b === '1' ? '0' : '1').join('');
+    }
+
+    function computeNuclear(bits) {
+        const b2 = bits[1], b3 = bits[2], b4 = bits[3], b5 = bits[4];
+        const N = `${b2}${b3}${b4}${b3}${b4}${b5}`;
+        const N2 = `${b3}${b4}${b3}${b4}${b3}${b4}`;
+        const core = `${b3}${b4}`;
+        return { N, N2, core };
+    }
+
+    // --- 1. BOUW DE 3 ONAFHANKELIJKE WIELEN (I CHING 64, JIAZI 60, BINNENWIEL 16 & N²) ---
+    function buildIndependentWheels() {
+        // WIEL 1: 64 SHAO YONG (I CHING BUITENWIEL)
+        let h64 = '';
+        h64 += `<circle cx="0" cy="0" r="${R_KOMPAS_PX}" fill="rgba(0, 180, 216, 0.05)" stroke="#00e5ff" stroke-width="2.2"/>`;
+        h64 += `<circle cx="0" cy="0" r="${R_KOMPAS_PX - 38}" fill="none" stroke="#00e5ff" stroke-width="1"/>`;
+
+        // Beginstand & Vector Markers op de Cirkelrand
+        [
+            { ang: 0, lbl: "0° BEGINSTAND [0]", col: "#50ffb0" },
+            { ang: 29, lbl: "29° NYC [1]", col: "#00ffcc" },
+            { ang: 82.5, lbl: "82.5° THOLEN [2]", col: "#ffcc33" },
+            { ang: 108, lbl: "108° SIRIUS [3]", col: "#ff3385" },
+            { ang: 180, lbl: "180° ANTIPODE", col: "#a855f7" }
+        ].forEach(v => {
+            const rad = (v.ang - 90) * Math.PI / 180;
+            const x2 = Math.cos(rad) * (R_KOMPAS_PX + 15);
+            const y2 = Math.sin(rad) * (R_KOMPAS_PX + 15);
+            h64 += `<line x1="0" y1="0" x2="${x2}" y2="${y2}" stroke="${v.col}" stroke-width="1" stroke-dasharray="3,4" opacity="0.65"/>`;
+            h64 += `<text x="${x2 * 1.05}" y="${y2 * 1.05}" fill="${v.col}" font-size="8.5" font-weight="bold" text-anchor="middle">${v.lbl}</text>`;
+        });
+
+        for (let i = 0; i < 64; i++) {
+            const a1 = (i * 5.625 - 90) * Math.PI / 180;
+            const am = ((i + 0.5) * 5.625 - 90) * Math.PI / 180;
+            const bits = getShaoYongBits(i);
+            const { core } = computeNuclear(bits);
+            const col = CORE_COLORS[core];
+
+            const x1 = Math.cos(a1) * (R_KOMPAS_PX - 38), y1 = Math.sin(a1) * (R_KOMPAS_PX - 38);
+            const x2 = Math.cos(a1) * R_KOMPAS_PX, y2 = Math.sin(a1) * R_KOMPAS_PX;
+            h64 += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1e40af" stroke-width="0.8"/>`;
+
+            const bx = Math.cos(am) * (R_KOMPAS_PX - 12), by = Math.sin(am) * (R_KOMPAS_PX - 12);
+            h64 += `<circle cx="${bx}" cy="${by}" r="3.5" fill="${col}" opacity="0.9"/>`;
+
+            for (let b = 0; b < 6; b++) {
+                const rBit = (R_KOMPAS_PX - 35) + b * 3.5;
+                const dAngle = 0.032;
+                const lx1 = Math.cos(am - dAngle) * rBit, ly1 = Math.sin(am - dAngle) * rBit;
+                const lx2 = Math.cos(am + dAngle) * rBit, ly2 = Math.sin(am + dAngle) * rBit;
+                if (bits[b] === '1') {
+                    h64 += `<line x1="${lx1}" y1="${ly1}" x2="${lx2}" y2="${ly2}" stroke="#ffcc33" stroke-width="1.5"/>`;
+                } else {
+                    const lxm1 = Math.cos(am - dAngle * 0.25) * rBit, lym1 = Math.sin(am - dAngle * 0.25) * rBit;
+                    const lxm2 = Math.cos(am + dAngle * 0.25) * rBit, lym2 = Math.sin(am + dAngle * 0.25) * rBit;
+                    h64 += `<line x1="${lx1}" y1="${ly1}" x2="${lxm1}" y2="${lym1}" stroke="#38bdf8" stroke-width="1.5"/>`;
+                    h64 += `<line x1="${lxm2}" y1="${lym2}" x2="${lx2}" y2="${ly2}" stroke="#38bdf8" stroke-width="1.5"/>`;
+                }
+            }
+        }
+        wheel64El.innerHTML = h64;
+
+        // WIEL 2: 60 JIAZI MIDDENWIEL
+        let h60 = '';
+        h60 += `<circle cx="0" cy="0" r="${R_JIAZI_PX}" fill="none" stroke="#a855f7" stroke-width="1.5"/>`;
+        h60 += `<circle cx="0" cy="0" r="${R_JIAZI_PX - 28}" fill="none" stroke="#a855f7" stroke-width="1"/>`;
+        for (let j = 0; j < 60; j++) {
+            const a1 = (j * 6 - 90) * Math.PI / 180;
+            const am = ((j + 0.5) * 6 - 90) * Math.PI / 180;
+            const x1 = Math.cos(a1) * (R_JIAZI_PX - 28), y1 = Math.sin(a1) * (R_JIAZI_PX - 28);
+            const x2 = Math.cos(a1) * R_JIAZI_PX, y2 = Math.sin(a1) * R_JIAZI_PX;
+            h60 += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#7e22ce" stroke-width="0.7"/>`;
+
+            const tx = Math.cos(am) * (R_JIAZI_PX - 14), ty = Math.sin(am) * (R_JIAZI_PX - 14);
+            const rot = (j + 0.5) * 6;
+            const label = `${STEMS[j % 10][0]}${BRANCHES[j % 12][0]}${j+1}`;
+            h60 += `<text x="${tx}" y="${ty}" fill="#e9d5ff" font-size="7.5" text-anchor="middle" dominant-baseline="central" transform="rotate(${rot}, ${tx}, ${ty})">${label}</text>`;
+        }
+        wheel60El.innerHTML = h60;
+
+        // WIEL 3: BINNENWIEL (16-PUNTIGE KOMPASSTER, MÖBIUS SPINOR & 4 N² KERN-CIRKELS)
+        let h16 = '';
+        for (let s = 0; s < 16; s++) {
+            const ang = (s * 22.5 - 90) * Math.PI / 180;
+            const angL = ((s * 22.5 - 6) - 90) * Math.PI / 180;
+            const angR = ((s * 22.5 + 6) - 90) * Math.PI / 180;
+            const rTip = (s % 4 === 0) ? (R_JIAZI_PX - 30) : (s % 2 === 0 ? 275 : 215);
+            const rBase = R_NUC_PX;
+
+            const px = Math.cos(ang) * rTip, py = Math.sin(ang) * rTip;
+            const lx = Math.cos(angL) * rBase, ly = Math.sin(angL) * rBase;
+            const rx = Math.cos(angR) * rBase, ry = Math.sin(angR) * rBase;
+            const fillCol = (s % 2 === 0) ? "rgba(0, 229, 255, 0.26)" : "rgba(168, 85, 247, 0.22)";
+            const strCol  = (s % 4 === 0) ? "#ffcc33" : "#00e5ff";
+
+            h16 += `<polygon points="0,0 ${lx},${ly} ${px},${py}" fill="${fillCol}" stroke="${strCol}" stroke-width="0.9"/>`;
+            h16 += `<polygon points="0,0 ${px},${py} ${rx},${ry}" fill="rgba(15, 23, 42, 0.65)" stroke="${strCol}" stroke-width="0.9"/>`;
+        }
+
+        // Möbius Spinor Qi-Flow door de Oorsprong (0,0)
+        h16 += `<path d="M 0 ${-R_KOMPAS_PX} A ${R_KOMPAS_PX/2} ${R_KOMPAS_PX/2} 0 0 1 0 0 A ${R_KOMPAS_PX/2} ${R_KOMPAS_PX/2} 0 0 0 0 ${R_KOMPAS_PX}" fill="none" stroke="#ff3385" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#arrow-magenta)"/>`;
+        h16 += `<path d="M ${-R_KOMPAS_PX} 0 C ${-R_KOMPAS_PX*0.4} ${-R_KOMPAS_PX*0.55}, ${R_KOMPAS_PX*0.4} ${R_KOMPAS_PX*0.55}, ${R_KOMPAS_PX} 0" fill="none" stroke="#ffcc33" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#arrow-gold)"/>`;
+
+        // 4 Nucleaire N² Kern-Cirkel
+        h16 += `<circle cx="0" cy="0" r="${R_NUC_PX}" fill="rgba(15, 23, 42, 0.88)" stroke="#ff9900" stroke-width="2"/>`;
+        [
+            { code: "11", ang: -45, col: CORE_COLORS["11"] },
+            { code: "01", ang: 45, col: CORE_COLORS["01"] },
+            { code: "00", ang: 135, col: CORE_COLORS["00"] },
+            { code: "10", ang: -135, col: CORE_COLORS["10"] }
+        ].forEach(c => {
+            const rad = c.ang * Math.PI / 180;
+            const cx = Math.cos(rad) * (R_NUC_PX * 0.58);
+            const cy = Math.sin(rad) * (R_NUC_PX * 0.58);
+            h16 += `<circle cx="${cx}" cy="${cy}" r="22" fill="rgba(0,0,0,0.65)" stroke="${c.col}" stroke-width="1.8"/>`;
+            h16 += `<text x="${cx}" y="${cy - 3}" fill="${c.col}" font-size="11" font-weight="bold" text-anchor="middle">${c.code}</text>`;
+            h16 += `<text x="${cx}" y="${cy + 9}" fill="#cbd5e1" font-size="7.5" text-anchor="middle">90,75cm²</text>`;
+        });
+        wheel16El.innerHTML = h16;
+    }
+
+    // Pas de onafhankelijke SVG-transformaties toe op elk van de 3 wielen in hun eigen kantel-as!
+    function applyWheelTransforms() {
+        // Elk wiel heeft: Globale Y-afplatting (globalSigmaY) * zijn eigen as-kanteling (tilt) langs zijn eigen as (axisAngle) + eigen rotatie (rot)
+        const sY64 = state.globalSigmaY * state.w64.tilt;
+        const sY60 = state.globalSigmaY * state.w60.tilt;
+        const sY16 = state.globalSigmaY * state.w16.tilt;
+
+        // Wiel 64 kantelt over de 0° (Horizontale X-as) en draait met w64.rot
+        wheel64El.setAttribute('transform', `scale(${state.globalSigmaX}, ${sY64}) rotate(${state.w64.rot})`);
+
+        // Wiel 60 kantelt over zijn eigen 45° diagonale as en draait onafhankelijk met w60.rot
+        wheel60El.setAttribute('transform', `rotate(45) scale(${state.globalSigmaX}, ${sY60}) rotate(-45) rotate(${state.w60.rot})`);
+
+        // Binnenwiel 16 & N² Kern kantelt over de loodrechte as en draait onafhankelijk met w16.rot
+        wheel16El.setAttribute('transform', `scale(${state.globalSigmaX}, ${sY16}) rotate(${state.w16.rot})`);
+
+        document.getElementById('lbl-w64').textContent = `Draai: ${state.w64.rot.toFixed(1)}° | As: ${sY64 >= 0 ? '+' : ''}${sY64.toFixed(2)}`;
+        document.getElementById('lbl-w60').textContent = `Draai: ${state.w60.rot.toFixed(1)}° | As: ${sY60 >= 0 ? '+' : ''}${sY60.toFixed(2)}`;
+        document.getElementById('lbl-w16').textContent = `Draai: ${state.w16.rot.toFixed(1)}° | As: ${sY16 >= 0 ? '+' : ''}${sY16.toFixed(2)}`;
+        document.getElementById('vp-wheels').textContent = `${state.w64.rot.toFixed(0)}° / ${state.w60.rot.toFixed(0)}° / ${state.w16.rot.toFixed(0)}°`;
+    }
+
+    // Bereken het geprojecteerde punt (x, y) op het afgeplatte / door-oorsprong-geïnverteerde wiel
+    function computeTransformedWheelPoint(azDeg, rhoCm) {
+        const rad = (azDeg - 90) * Math.PI / 180;
+        const rawX = Math.cos(rad) * (rhoCm * PX_PER_CM);
+        const rawY = Math.sin(rad) * (rhoCm * PX_PER_CM);
+        // Pas de globale wiel-afplatting & oorsprong-inversie toe zodat de planimeter-arm exact meeloopt!
+        const effSigmaY = state.globalSigmaY * state.w64.tilt;
+        return {
+            x: rawX * state.globalSigmaX,
+            y: rawY * effSigmaY,
+            effSigmaY: effSigmaY
+        };
+    }
+
+    // --- 2. UPDATE DE ADAPTIEVE OTT NR. 573 PLANIMETER-ARM OP HET WIEL ---
+    function updatePlanimeterFromPolar(syncSliders = true) {
+        applyWheelTransforms();
+
+        const pt = computeTransformedWheelPoint(state.azDeg, state.rhoCm);
+        const tx = pt.x;
+        const ty = pt.y;
+        const effSigmaY = pt.effSigmaY;
+
+        // Bepaal de totale Pariteit / Chiraliteit (positief vlak vs. plat in oorsprong vs. negatief door oorsprong)
+        const jacobian = state.globalSigmaX * effSigmaY * (state.rhoCm >= 0 ? 1 : -1);
+        const isNegativeSpace = jacobian < -0.001;
+        const isFlatOrigin = Math.abs(effSigmaY) <= 0.02 || Math.abs(state.rhoCm) <= 0.08;
+
+        // ADAPTIEVE POOL- & SCHARNIER-KINEMATICA VAN DE OTT NR. 573:
+        // In de normale beginstand staat het Poolanker P op (0, -300 px = +7.5 cm Noord).
+        // Wanneer het wiel plat door de oorsprong naar negatief klapt, past de knik-arm zijn chiraliteit (chiralitySign)
+        // en pool-ophanging vloeiend aan zodat de volgstift T zonder blokkeren door (0,0) naar negatief beweegt!
+        const px = 0;
+        const py = -300;
+        const R = 300;   // Poolarm (7.5 cm projectie = 15 vakjes)
+        const L = 435;   // Rijarm (10.875 cm = 21.75 vakjes, reikt overal van +10.75 tot -10.75 cm)
+
+        const dx = tx - px, dy = ty - py;
+        let d = Math.hypot(dx, dy);
+        if (d < 1) d = 1;
+        const maxReach = R + L - 1;
+        const minReach = Math.abs(R - L) + 1;
+
+        // Als de volgstift ver in het negatieve zuidelijke kwadrant komt (d > R + L),
+        // schuift het compensatie-poolanker P automatisch langs de Noord-Zuid geleiderail mee naar het centrum!
+        let effPy = py;
+        if (d > maxReach) {
+            effPy = ty - (maxReach * (dy / d));
+        }
+        const edx = tx - px, edy = ty - effPy;
+        let ed = Math.hypot(edx, edy);
+        ed = Math.max(minReach, Math.min(maxReach, ed));
+
+        const a = (R * R - L * L + ed * ed) / (2 * ed);
+        const h = Math.sqrt(Math.max(0, R * R - a * a));
+        const mx = px + a * (edx / ed);
+        const my = effPy + a * (edy / ed);
+
+        // Spiegel de knik-zijde van het scharnier G zodra het wiel door de oorsprong naar negatief klapt!
+        const chiralitySign = isNegativeSpace ? -1 : 1;
+        const gx = mx - chiralitySign * h * (edy / ed);
+        const gy = my + chiralitySign * h * (edx / ed);
+
+        // Verlengde rijarm voor de meetrol en nonius-trommel W
+        const armLen = Math.hypot(tx - gx, ty - gy) || 1;
+        const ux = (tx - gx) / armLen, uy = (ty - gy) / armLen;
+        const wx = gx + ux * (L + 70);
+        const wy = gy + uy * (L + 70);
+
+        state.txPx = tx;
+        state.tyPx = ty;
+        state.gxPx = gx;
+        state.gyPx = gy;
+
+        // Mechanische arm-hoeken
+        const alphaDeg = (Math.atan2(gy - effPy, gx - px) * 180 / Math.PI + 90 + 360) % 360;
+        const betaDeg  = (Math.atan2(ty - gy, tx - gx) * 180 / Math.PI + 90 + 360) % 360;
+        const cosGamma = Math.max(-1, Math.min(1, (R * R + L * L - ed * ed) / (2 * R * L)));
+        const gammaDeg = Math.acos(cosGamma) * 180 / Math.PI;
+        state.alphaDeg = alphaDeg;
+        state.betaDeg = betaDeg;
+        state.gammaDeg = gammaDeg;
+
+        // GETEKENDE NONIUS INTEGRATIE (Groen's Stelling met Jacobiaan σ_X * σ_Y en getekende straal ρ):
+        // Wanneer Azimut = 0° (Beginstand op de cirkel), is de volledige cirkel-integratie ±3630 nonius (±363.0 cm²).
+        const normAz = ((state.azDeg % 360) + 360) % 360;
+        const sweepFraction = normAz === 0 ? 1.0 : (normAz / 360.0);
+        const rhoRatioSq = Math.pow(state.rhoCm / R_KOMPAS_CM, 2) * (state.rhoCm >= 0 ? 1 : -1);
+        const signedNonius = Math.round(3630 * sweepFraction * rhoRatioSq * state.globalSigmaX * effSigmaY);
+        const signedAreaCm2 = signedNonius * 0.1;
+
+        // Kleurcodering van de Planimeter-Arm (Goud/Groen bij Positief, Wit bij Plat in Oorsprong, Magenta bij Negatief)
+        const armColor = state.armStopped ? "#ef4444" : (isFlatOrigin ? "#ffffff" : (isNegativeSpace ? "#ff3385" : "#eab308"));
+        const tracerStroke = isFlatOrigin ? "#ffffff" : (isNegativeSpace ? "#ff3385" : "#50ffb0");
+
+        let pHtml = '';
+
+        // Teken de geprojecteerde baan-ellips / platte oorsprong-lijn waarop de volgstift nu loopt
+        const rxOrbit = Math.abs(state.rhoCm * PX_PER_CM * state.globalSigmaX);
+        const ryOrbit = Math.abs(state.rhoCm * PX_PER_CM * effSigmaY);
+        if (ryOrbit < 1.5) {
+            // Wiel is HELEMAAL PLAT: teken de singuliere lijn recht door de oorsprong (0,0)
+            pHtml += `<line x1="${-rxOrbit}" y1="0" x2="${rxOrbit}" y2="0" stroke="#ffffff" stroke-width="3" stroke-dasharray="6,3"/>`;
+        } else {
+            pHtml += `<ellipse cx="0" cy="0" rx="${rxOrbit}" ry="${ryOrbit}" fill="${isNegativeSpace ? 'rgba(255,51,133,0.06)' : 'rgba(80,255,176,0.05)'}" stroke="${tracerStroke}" stroke-width="1.4" stroke-dasharray="5,3"/>`;
+        }
+
+        // Vector-lijn vanuit de Oorsprong (0,0) naar Volgstift T + Antipodale Spiegel-pijl door de Oorsprong
+        pHtml += `<line x1="${-tx}" y1="${-ty}" x2="${tx}" y2="${ty}" stroke="${tracerStroke}" stroke-width="1.3" stroke-dasharray="3,3" opacity="0.8"/>`;
+        pHtml += `<circle cx="${-tx}" cy="${-ty}" r="5" fill="none" stroke="#ff3385" stroke-width="1.5"/>`;
+
+        // Compensatie-geleiderail indien het poolanker meeschuift
+        if (Math.abs(effPy - py) > 1) {
+            pHtml += `<line x1="0" y1="${py}" x2="0" y2="${effPy}" stroke="#d4af37" stroke-width="3" stroke-dasharray="4,2"/>`;
+        }
+
+        // Poolarm P -> G
+        pHtml += `<line x1="${px}" y1="${effPy}" x2="${gx}" y2="${gy}" stroke="#d4af37" stroke-width="15" stroke-linecap="round" opacity="0.88"/>`;
+        pHtml += `<line x1="${px}" y1="${effPy}" x2="${gx}" y2="${gy}" stroke="#785c12" stroke-width="1.2" stroke-dasharray="2,8"/>`;
+        pHtml += `<circle cx="${px}" cy="${effPy}" r="8" fill="#92400e" stroke="#fde047" stroke-width="2"/>`;
+        pHtml += `<text x="${px + 14}" y="${effPy + 4}" fill="#fde047" font-size="9.5" font-weight="bold">Poolanker P (Ott Nr. 573)</text>`;
+
+        // Rijarm G -> T -> Meetrol W
+        pHtml += `<line x1="${gx}" y1="${gy}" x2="${wx}" y2="${wy}" stroke="${armColor}" stroke-width="10" stroke-linecap="round" opacity="0.93"/>`;
+        pHtml += `<circle cx="${gx}" cy="${gy}" r="10" fill="#451a03" stroke="${tracerStroke}" stroke-width="2.5"/>`;
+        pHtml += `<text x="${gx - 30}" y="${gy - 14}" fill="${tracerStroke}" font-size="9" font-family="Courier New" font-weight="bold">G (${isNegativeSpace ? 'NEG-CHIRAAL' : 'POS'} γ=${gammaDeg.toFixed(1)}°)</text>`;
+
+        // Volgstift T (op de cirkel / door de oorsprong)
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="11" fill="rgba(0,0,0,0.7)" stroke="${tracerStroke}" stroke-width="2.8"/>`;
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="3.5" fill="#ffffff"/>`;
+        pHtml += `<text x="${tx + 14}" y="${ty - 10}" fill="#ffffff" font-size="9.5" font-family="Courier New" font-weight="bold">T (${state.azDeg.toFixed(1)}° | ρ=${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)}cm)</text>`;
+
+        // Meetrol & Nonius-telwerk W (toont positieve óf negatieve nonius!)
+        pHtml += `<circle cx="${wx}" cy="${wy}" r="20" fill="${isNegativeSpace ? '#ffe4f0' : '#fef3c7'}" stroke="${isNegativeSpace ? '#ff3385' : '#92400e'}" stroke-width="2.5"/>`;
+        pHtml += `<text x="${wx}" y="${wy + 3}" fill="#000" font-size="8.2" font-weight="bold" text-anchor="middle">${signedNonius >= 0 ? '+' : ''}${signedNonius}</text>`;
+
+        planimeterGroup.innerHTML = pHtml;
+
+        // Render Optische Laser op de arm
+        renderLaserOptics(gx, gy, tx, ty, tracerStroke);
+
+        // Als Magnesium Overtrek opname actief is: leg het punt vast!
+        if (state.recordingOmtrek) {
+            state.omtrekPoints.push({
+                x_px: tx, y_px: ty,
+                gx_px: gx, gy_px: gy,
+                x_cm: tx / PX_PER_CM, y_cm: -ty / PX_PER_CM,
+                rawX_px: Math.cos((state.azDeg - 90) * Math.PI / 180) * (state.rhoCm * PX_PER_CM),
+                rawY_px: Math.sin((state.azDeg - 90) * Math.PI / 180) * (state.rhoCm * PX_PER_CM)
+            });
+            renderMagnesiumOvertrek();
+        } else if (document.getElementById('chk-adapt-trace').checked) {
+            renderMagnesiumOvertrek();
+        }
+
+        // --- BEREKEN DE RESULTATEN VAN DE ONAFHANKELIJKE WIELEN ONDER DE VOLGSTIFT ---
+        // Wanneer straal ρ < 0 of σ_Y < 0 (door de oorsprong naar negatief), springt de effectieve fase 180° naar de antipode!
+        const originPhaseFlip = isNegativeSpace ? 180.0 : 0.0;
+
+        // 1. I Ching Buitenwiel (64 Shao Yong) relatief t.o.v. zijn eigen draaihoek w64.rot
+        const relAz64 = ((state.azDeg - state.w64.rot + originPhaseFlip) % 360 + 360) % 360;
+        const syIdx = Math.floor(relAz64 / 5.625) % 64;
+        const bits = getShaoYongBits(syIdx);
+        const invBits = invertBits(bits);
+        const invIdx = (syIdx + 32) % 64;
+        const { N, N2, core } = computeNuclear(bits);
+
+        // 2. Jiazi Middenwiel (60) relatief t.o.v. zijn eigen draaihoek w60.rot
+        const relAz60 = ((state.azDeg - state.w60.rot + originPhaseFlip) % 360 + 360) % 360;
+        const jiaziIdx = Math.floor(relAz60 / 6.0) % 60;
+        const jiaziName = `${STEMS[jiaziIdx % 10]}-${BRANCHES[jiaziIdx % 12]}`;
+
+        // 3. Binnenwiel 16-Kompasster & N² Kern relatief t.o.v. zijn eigen draaihoek w16.rot
+        const relAz16 = ((state.azDeg - state.w16.rot + originPhaseFlip) % 360 + 360) % 360;
+        const comp16Idx = Math.floor(((relAz16 + 11.25) % 360) / 22.5) % 16;
+
+        // Update Top Badges & Viewport HUD
+        const txCm = tx / PX_PER_CM, tyCm = -ty / PX_PER_CM;
+        const gxCm = gx / PX_PER_CM, gyCm = -gy / PX_PER_CM;
+
+        document.getElementById('vp-nonius').textContent = `${signedNonius >= 0 ? '+' : ''}${signedNonius}`;
+        document.getElementById('vp-nonius').style.color = isNegativeSpace ? "var(--neg-glow)" : "var(--gold)";
+        document.getElementById('vp-area').textContent = `${signedAreaCm2 >= 0 ? '+' : ''}${signedAreaCm2.toFixed(1)} cm²`;
+        document.getElementById('vp-az').textContent = `${state.azDeg.toFixed(2)}°`;
+        document.getElementById('vp-rho').textContent = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm`;
+        document.getElementById('hud-coord-mini').textContent = `[T: ${txCm >= 0 ? '+' : ''}${txCm.toFixed(2)}, ${tyCm >= 0 ? '+' : ''}${tyCm.toFixed(2)} cm | σ=${effSigmaY.toFixed(2)}]`;
+
+        const parityText = isFlatOrigin
+            ? "0.00 (PLAT IN OORSPRONG 0,0)"
+            : (isNegativeSpace ? `${jacobian.toFixed(2)} (NEGATIEF DOOR OORSPRONG)` : `+${jacobian.toFixed(2)} (POSITIEF ROND)`);
+        const parityCol = isFlatOrigin ? "#ffffff" : (isNegativeSpace ? "var(--neg-glow)" : "var(--mg-glow)");
+
+        document.getElementById('vp-parity').textContent = parityText;
+        document.getElementById('vp-parity').style.color = parityCol;
+        document.getElementById('origin-badge').textContent = `AS-PROJECTIE: ${effSigmaY >= 0 ? '+' : ''}${effSigmaY.toFixed(2)} (${isFlatOrigin ? 'PLAT' : (isNegativeSpace ? 'NEGATIEF' : 'POSITIEF')})`;
+        document.getElementById('origin-badge').style.borderColor = parityCol;
+        document.getElementById('origin-badge').style.color = parityCol;
+
+        // --- UPDATE HET ZWEVENDE RESULTATEN-VENSTER (#plano-results-window) ---
+        document.getElementById('res-arm-az').textContent = `${state.azDeg.toFixed(2)}° (${COMPASS_16[comp16Idx]})`;
+        document.getElementById('res-arm-rho').textContent = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm (${(state.rhoCm * 2).toFixed(1)} vakjes)`;
+        document.getElementById('res-tx-ty').textContent = `[${txCm >= 0 ? '+' : ''}${txCm.toFixed(2)}, ${tyCm >= 0 ? '+' : ''}${tyCm.toFixed(2)}] cm`;
+        document.getElementById('res-gx-gy').textContent = `[${gxCm >= 0 ? '+' : ''}${gxCm.toFixed(2)}, ${gyCm >= 0 ? '+' : ''}${gyCm.toFixed(2)}] cm`;
+        document.getElementById('res-angles').textContent = `α=${alphaDeg.toFixed(1)}° | β=${betaDeg.toFixed(1)}° | γ=${gammaDeg.toFixed(1)}°`;
+        document.getElementById('res-jacobian').textContent = parityText;
+        document.getElementById('res-jacobian').style.color = parityCol;
+        document.getElementById('res-parity-bar').style.width = `${((effSigmaY + 1) / 2) * 100}%`;
+
+        document.getElementById('res-chirality-badge').textContent = isFlatOrigin ? "SINGULARITEIT (0,0)" : (isNegativeSpace ? "CHIRALITEIT: − (NEGATIEF)" : "CHIRALITEIT: + (POSITIEF)");
+        document.getElementById('res-chirality-badge').style.color = parityCol;
+
+        document.getElementById('res-iching-wheel').textContent = `#${syIdx} (${bits}) @ Δθ=${relAz64.toFixed(1)}°`;
+        document.getElementById('res-iching-inv').textContent = `#${invIdx} (${invBits}) [Spiegel door 0,0]`;
+        document.getElementById('res-jiazi-wheel').textContent = `${jiaziName} (#${jiaziIdx + 1}/60) @ Δθ=${relAz60.toFixed(1)}°`;
+        document.getElementById('res-inner-wheel').textContent = `Ster: ${COMPASS_16[comp16Idx]} (#${comp16Idx}) | Kern ${core}→N²=${N2}`;
+
+        const signedVakjes = signedAreaCm2 / 0.25;
+        document.getElementById('res-nonius-badge').textContent = `${signedNonius >= 0 ? '+' : ''}${signedNonius} nonius`;
+        document.getElementById('res-nonius-badge').style.color = isNegativeSpace ? "var(--neg-glow)" : "var(--gold)";
+        document.getElementById('res-sector-area').textContent = `${signedAreaCm2 >= 0 ? '+' : ''}${signedAreaCm2.toFixed(2)} cm² (${signedVakjes >= 0 ? '+' : ''}${signedVakjes.toFixed(1)} vakjes)`;
+
+        renderHexBars('vis-H', bits);
+        renderHexBars('vis-N', N);
+        renderHexBars('vis-N2', isNegativeSpace ? invBits : N2);
+        document.getElementById('lbl-H').textContent = bits;
+        document.getElementById('lbl-N').textContent = N;
+        document.getElementById('lbl-N2').textContent = isNegativeSpace ? `${invBits} (H̄)` : N2;
+
+        if (syncSliders) {
+            document.getElementById('yaw-slider').value = state.azDeg.toFixed(1);
+            document.getElementById('yaw-deg').innerText = `${state.azDeg.toFixed(1)}°`;
+            document.getElementById('rho-slider').value = state.rhoCm.toFixed(2);
+            document.getElementById('rho-val').innerText = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm`;
+        }
+    }
+
+    function renderHexBars(elId, bits) {
+        let h = '';
+        for (let i = 0; i < 6; i++) {
+            h += `<div class="bit-bar ${bits[i] === '0' ? 'bit-0' : ''}"></div>`;
+        }
+        document.getElementById(elId).innerHTML = h;
+    }
+
+    // --- 3. BEGINSTAND OP DE CIRKELS & PLAT NAAR NEGATIEF DOOR OORSPRONG FUNCTIES ---
+
+    // Zet de Planimeter-arm én alle wielen in de gekalibreerde Beginstand op de Cirkels [Toets 0]
+    function resetToBeginstand() {
+        if (state.foldAnimTimer) toggleOriginFoldAnimation();
+        state.azDeg = 0.0;
+        state.rhoCm = R_KOMPAS_CM;
+        state.globalSigmaY = 1.0;
+        state.globalSigmaX = 1.0;
+        state.w64.rot = 0.0; state.w64.tilt = 1.0;
+        state.w60.rot = 0.0; state.w60.tilt = 1.0;
+        state.w16.rot = 0.0; state.w16.tilt = 1.0;
+        state.armStopped = false;
+        state.mouseFollow = false;
+
+        // Sync alle sliders
+        document.getElementById('slider-global-sigma').value = 1.0;
+        document.getElementById('sigma-slider').value = 1.0;
+        document.getElementById('lbl-sigma-state').textContent = "σ = +1.00";
+        document.getElementById('lbl-global-sigma').textContent = "+1.00 (Rond)";
+        document.getElementById('sigma-val').textContent = "+1.00";
+        ['64', '60', '16'].forEach(w => {
+            document.getElementById(`sl-rot-${w}`).value = 0;
+            document.getElementById(`sl-tilt-${w}`).value = 1;
+        });
+
+        document.getElementById('arm-badge').textContent = "BEGINSTAND: 0.0° [0]";
+        document.getElementById('res-arm-state').textContent = "BEGINSTAND OP CIRKEL [0]";
+        updatePlanimeterFromPolar(true);
+        injectAI(`<b>🎯 BEGINSTAND OP DE CIRKELS GEKALIBREERD [0]:</b><br>Volgstift $T$ op $\\theta = 0{,}00^\\circ$ Noord, $r = +10{,}75\\text{ cm}$ ($+3630\\text{ nonius}$). Alle drie de wielen (I Ching 64, Jiazi 60, Binnenwiel 16) staan synchroon op $0^\\circ$ en $\\sigma = +1{,}00$.`);
+    }
+
+    // Stel Globale Wiel-Afplatting & Inversie door de Oorsprong in (+1.0 -> 0.0 Plat -> -1.0 Negatief)
+    function setGlobalAxisFlatten(val) {
+        const sigma = Math.max(-1.0, Math.min(1.0, parseFloat(val)));
+        state.globalSigmaY = sigma;
+
+        document.getElementById('slider-global-sigma').value = sigma;
+        document.getElementById('sigma-slider').value = sigma;
+
+        const desc = Math.abs(sigma) <= 0.02
+            ? "0.00 (PLAT DOOR OORSPRONG)"
+            : (sigma < 0 ? `${sigma.toFixed(2)} (NEGATIEF)` : `+${sigma.toFixed(2)} (POSITIEF)`);
+
+        document.getElementById('lbl-sigma-state').textContent = `σ = ${sigma >= 0 ? '+' : ''}${sigma.toFixed(2)}`;
+        document.getElementById('lbl-global-sigma').textContent = desc;
+        document.getElementById('sigma-val').textContent = `${sigma >= 0 ? '+' : ''}${sigma.toFixed(2)}`;
+
+        // Highlight de knoppen 7, 8, 9 onderin
+        document.getElementById('key-8').classList.toggle('mg-active', Math.abs(sigma) <= 0.02);
+        document.getElementById('key-9').classList.toggle('neg-active', sigma <= -0.95);
+        document.getElementById('key-7').classList.toggle('run-active', sigma >= 0.95);
+
+        updatePlanimeterFromPolar(true);
+    }
+
+    // Animeer het platdrukken door de oorsprong naar negatief en terug (+1 -> 0 -> -1 -> 0 -> +1) [Toets X]
+    function toggleOriginFoldAnimation() {
+        const btn = document.getElementById('btn-fold-anim');
+        const keyX = document.getElementById('key-x');
+        if (state.foldAnimTimer) {
+            clearInterval(state.foldAnimTimer);
+            state.foldAnimTimer = null;
+            btn.textContent = "🌀 Vouw door (0,0) [X]";
+            keyX.classList.remove('neg-active');
+        } else {
+            btn.textContent = "⏹️ Stop Vouw [X]";
+            keyX.classList.add('neg-active');
+            state.foldAnimTimer = setInterval(() => {
+                let nextSigma = state.globalSigmaY + state.foldDirection * 0.025;
+                if (nextSigma <= -1.0) {
+                    nextSigma = -1.0;
+                    state.foldDirection = 1;
+                } else if (nextSigma >= 1.0) {
+                    nextSigma = 1.0;
+                    state.foldDirection = -1;
+                }
+                setGlobalAxisFlatten(nextSigma);
+            }, 30);
+            injectAI("<b>🌀 OORSPRONG-INVERSIE ANIMATIE GESTART [X]:</b> Het wiel vouwt nu continu van $+1{,}00$ naar **Helemaal Plat ($0{,}00$)** door de oorsprong $(0,0)$ naar **Negatief ($-1{,}00$)**, terwijl de Ott Nr. 573 planimeter-arm zich dynamisch aanpast.");
+        }
+    }
+
+    // Stel individuele wiel-rotatie of wiel-as kanteling in (64, 60 of 16)
+    function setWheelParam(wheelId, param, val) {
+        const num = parseFloat(val);
+        const wObj = wheelId === 64 ? state.w64 : (wheelId === 60 ? state.w60 : state.w16);
+        if (param === 'rot') {
+            wObj.rot = ((num % 360) + 360) % 360;
+            document.getElementById(`sl-rot-${wheelId}`).value = wObj.rot;
+        } else if (param === 'tilt') {
+            wObj.tilt = Math.max(-1.0, Math.min(1.0, num));
+            document.getElementById(`sl-tilt-${wheelId}`).value = wObj.tilt;
+        }
+        updatePlanimeterFromPolar(false);
+    }
+
+    function syncAllWheelsToZero() {
+        ['64', '60', '16'].forEach(w => {
+            setWheelParam(parseInt(w), 'rot', 0);
+            setWheelParam(parseInt(w), 'tilt', 1.0);
+        });
+        injectAI("<b>🔄 WIELEN GESYNCHRONISEERD:</b> I Ching (64), Jiazi (60) en Binnenwiel (16) staan weer op $0{,}0^\\circ$ en $\\sigma = +1{,}00$.");
+    }
+
+    // --- 4. MAGNESIUM OVERTREK LAYER & STEMPEL-FUNCTIE ---
+    function renderMagnesiumOvertrek() {
+        const showHingeLocus = document.getElementById('chk-hinge-locus').checked;
+        const adaptToSigma = document.getElementById('chk-adapt-trace').checked;
+        const effSigmaY = state.globalSigmaY * state.w64.tilt;
+        let mHtml = '';
+
+        // A. Continue Magnesium Overtrek-lijn
+        if (state.omtrekPoints.length > 1) {
+            const pts = state.omtrekPoints.map(pt => ({
+                x: adaptToSigma ? pt.rawX_px * state.globalSigmaX : pt.x_px,
+                y: adaptToSigma ? pt.rawY_px * effSigmaY : pt.y_px,
+                gx: pt.gx_px,
+                gy: pt.gy_px
+            }));
+            const dTracer = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+            const strokeCol = effSigmaY < 0 ? "#ff3385" : "#50ffb0";
+            mHtml += `<path d="${dTracer} Z" fill="rgba(80, 255, 176, 0.14)" stroke="${strokeCol}" stroke-width="2.5"/>`;
+            mHtml += `<path d="${dTracer} Z" fill="none" stroke="#e6fff7" stroke-width="1.0" stroke-dasharray="6,3"/>`;
+
+            if (showHingeLocus) {
+                const dHinge = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.gx.toFixed(1)} ${p.gy.toFixed(1)}`).join(' ');
+                mHtml += `<path d="${dHinge}" fill="none" stroke="#ffcc33" stroke-width="1.5" stroke-dasharray="3,4" opacity="0.85"/>`;
+            }
+        }
+
+        // B. Gestempelde Magnesium Meetpunten (met [T] vastgelegd)
+        if (state.stampedNodes.length > 0) {
+            const nodes = state.stampedNodes.map(n => ({
+                ...n,
+                drawX: adaptToSigma ? n.rawX_px * state.globalSigmaX : n.x_px,
+                drawY: adaptToSigma ? n.rawY_px * effSigmaY : n.y_px
+            }));
+
+            if (nodes.length > 1) {
+                const dPoly = nodes.map((n, i) => `${i === 0 ? 'M' : 'L'} ${n.drawX.toFixed(1)} ${n.drawY.toFixed(1)}`).join(' ');
+                mHtml += `<path d="${dPoly} Z" fill="rgba(230, 255, 247, 0.08)" stroke="#50ffb0" stroke-width="1.8" stroke-dasharray="5,3"/>`;
+            }
+
+            nodes.forEach((n, idx) => {
+                // Verbindingslijn door de Oorsprong (0,0)
+                mHtml += `<line x1="0" y1="0" x2="${n.drawX}" y2="${n.drawY}" stroke="rgba(80, 255, 176, 0.3)" stroke-width="0.9" stroke-dasharray="2,3"/>`;
+                if (showHingeLocus) {
+                    mHtml += `<circle cx="${n.gx_px}" cy="${n.gy_px}" r="3.5" fill="none" stroke="#ffcc33" stroke-width="1.2"/>`;
+                }
+                mHtml += `<circle cx="${n.drawX}" cy="${n.drawY}" r="7" fill="rgba(80,255,176,0.25)" stroke="#e6fff7" stroke-width="1.8"/>`;
+                mHtml += `<line x1="${n.drawX - 10}" y1="${n.drawY}" x2="${n.drawX + 10}" y2="${n.drawY}" stroke="#50ffb0" stroke-width="1.2"/>`;
+                mHtml += `<line x1="${n.drawX}" y1="${n.drawY - 10}" x2="${n.drawX}" y2="${n.drawY + 10}" stroke="#50ffb0" stroke-width="1.2"/>`;
+                mHtml += `<text x="${n.drawX + 10}" y="${n.drawY - 8}" fill="#e6fff7" font-size="8.5" font-family="Courier New" font-weight="bold">M${idx+1} [${n.nonius}]</text>`;
+            });
+        }
+
+        mgTracesGroup.innerHTML = mHtml;
+        updateOvertrekMetrics();
+    }
+
+    function updateOvertrekMetrics() {
+        const pts = state.omtrekPoints.length >= 2 ? state.omtrekPoints : state.stampedNodes;
+        let perimCm = 0, areaCm2 = 0;
+
+        if (pts.length >= 2) {
+            for (let i = 0; i < pts.length - 1; i++) {
+                perimCm += Math.hypot(pts[i+1].x_cm - pts[i].x_cm, pts[i+1].y_cm - pts[i].y_cm);
+            }
+            if (pts.length >= 3) {
+                perimCm += Math.hypot(pts[0].x_cm - pts[pts.length-1].x_cm, pts[0].y_cm - pts[pts.length-1].y_cm);
+                let sum = 0;
+                for (let i = 0; i < pts.length; i++) {
+                    const j = (i + 1) % pts.length;
+                    sum += pts[i].x_cm * pts[j].y_cm - pts[j].x_cm * pts[i].y_cm;
+                }
+                areaCm2 = ( Math.abs(sum) / 2.0 ) * state.globalSigmaY;
+            }
+        }
+        const areaVakjes = Math.round(areaCm2 / 0.25);
+        document.getElementById('res-poly-area').textContent = `${perimCm.toFixed(2)} cm | ${areaCm2 >= 0 ? '+' : ''}${areaCm2.toFixed(2)} cm² (${areaVakjes} vakjes)`;
+    }
+
+    function stampMagnesiumPoint() {
+        const txCm = state.txPx / PX_PER_CM;
+        const tyCm = -state.tyPx / PX_PER_CM;
+        const effSigmaY = state.globalSigmaY * state.w64.tilt;
+        const isNeg = (state.globalSigmaX * effSigmaY * (state.rhoCm >= 0 ? 1 : -1)) < 0;
+        const relAz64 = ((state.azDeg - state.w64.rot + (isNeg ? 180 : 0)) % 360 + 360) % 360;
+        const syIdx = Math.floor(relAz64 / 5.625) % 64;
+        const bits = getShaoYongBits(syIdx);
+        const nonius = document.getElementById('vp-nonius').textContent;
+
+        const rad = (state.azDeg - 90) * Math.PI / 180;
+        const node = {
+            idx: state.stampedNodes.length + 1,
+            x_px: state.txPx,
+            y_px: state.tyPx,
+            rawX_px: Math.cos(rad) * (state.rhoCm * PX_PER_CM),
+            rawY_px: Math.sin(rad) * (state.rhoCm * PX_PER_CM),
+            gx_px: state.gxPx,
+            gy_px: state.gyPx,
+            x_cm: txCm,
+            y_cm: tyCm,
+            azDeg: state.azDeg,
+            sigma: effSigmaY,
+            nonius: nonius,
+            syIdx: syIdx,
+            bits: bits
+        };
+
+        state.stampedNodes.push(node);
+        renderMagnesiumOvertrek();
+        renderStampedTable();
+        injectAI(`<b>📌 MAGNESIUM PUNT M${node.idx} GESTEMPELD:</b> T(${txCm.toFixed(2)}, ${tyCm.toFixed(2)}) cm | Draai $\\theta=${node.azDeg.toFixed(1)}^\\circ$ | As $\\sigma=${node.sigma.toFixed(2)}$ | Nonius=${node.nonius} | I Ching #${node.syIdx} (${node.bits}).`);
+    }
+
+    function renderStampedTable() {
+        const tbody = document.getElementById('res-trace-tbody');
+        if (state.stampedNodes.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:6px;">Druk op [T] (Stempel) of [O] (Overtrek) om arm-resultaten te loggen.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = state.stampedNodes.map(n => `
+            <tr onclick="restoreStampedNode(${n.idx - 1})" title="Klik om arm & wiel-as naar M${n.idx} te zetten">
+                <td style="color:var(--mg-glow); font-weight:bold;">M${n.idx}</td>
+                <td>${n.x_cm.toFixed(1)}, ${n.y_cm.toFixed(1)}</td>
+                <td>${n.azDeg.toFixed(1)}°</td>
+                <td style="color:${n.sigma < 0 ? 'var(--neg-glow)' : 'var(--main)'}">${n.sigma >= 0 ? '+' : ''}${n.sigma.toFixed(2)}</td>
+                <td style="color:var(--gold); font-weight:bold;">${n.nonius}</td>
+                <td>#${n.syIdx} (${n.bits})</td>
+            </tr>
+        `).join('');
+    }
+
+    function restoreStampedNode(idx) {
+        const n = state.stampedNodes[idx];
+        if (!n) return;
+        state.azDeg = n.azDeg;
+        setGlobalAxisFlatten(n.sigma);
+    }
+
+    // --- 5. OPTISCHE LASER OP DE PLANIMETER-ARM ---
+    function renderLaserOptics(gx, gy, tx, ty, col) {
+        if (!state.laserEnabled) {
+            laserGroup.innerHTML = '';
+            return;
+        }
+        const armLen = Math.hypot(tx - gx, ty - gy) || 1;
+        const ux = (tx - gx) / armLen, uy = (ty - gy) / armLen;
+        const hitX = tx + ux * 260, hitY = ty + uy * 260;
+        const nx = -uy, ny = ux;
+
+        let lHtml = `<g filter="url(#laser-glow)">`;
+        lHtml += `<line x1="${gx}" y1="${gy}" x2="${hitX}" y2="${hitY}" stroke="${col}" stroke-width="2.4" opacity="0.9"/>`;
+        lHtml += `<line x1="${tx - nx * 70}" y1="${ty - ny * 70}" x2="${tx + nx * 70}" y2="${ty + ny * 70}" stroke="${col}" stroke-width="1.1" stroke-dasharray="2,4" opacity="0.75"/>`;
+        lHtml += `<circle cx="${tx}" cy="${ty}" r="14" fill="none" stroke="${col}" stroke-width="1.5" stroke-dasharray="4,2"/>`;
+        lHtml += `</g>`;
+        laserGroup.innerHTML = lHtml;
+    }
+
+    function toggleLaserPower(val) {
+        state.laserEnabled = typeof val === 'boolean' ? val : !state.laserEnabled;
+        updatePlanimeterFromPolar(false);
+    }
+
+    // --- 6. TOETSENBORD & PIJLTJES BESTURING (INCLUSIEF PLAT & NEGATIEF DOOR OORSPRONG) ---
+    function stepPolar(dAzDeg, dRhoCm) {
+        state.armStopped = false;
+        state.mouseFollow = false;
+        state.azDeg = (state.azDeg + dAzDeg + 360) % 360;
+        // Straal ρ mag van +11.5 cm recht door 0.00 (Oorsprong) naar -11.5 cm lopen!
+        state.rhoCm = Math.max(-11.5, Math.min(11.5, state.rhoCm + dRhoCm));
+        updatePlanimeterFromPolar(true);
+    }
+
+    function snapToCircleAnchor(deg, rhoCm, label) {
+        state.armStopped = false;
+        state.mouseFollow = false;
+        state.azDeg = deg;
+        state.rhoCm = rhoCm;
+        document.getElementById('arm-badge').textContent = `ANKER: ${deg}°`;
+        updatePlanimeterFromPolar(true);
+        injectAI(`<b>🎯 CIRKEL-ANKER GEKOZEN [${label}]:</b> Arm op $\\theta = ${deg.toFixed(1)}^\\circ$, $\\rho = ${rhoCm >= 0 ? '+' : ''}${rhoCm.toFixed(2)}\\text{ cm}$.`);
+    }
+
+    function stopPlanimeterArm() {
+        state.armStopped = true;
+        state.mouseFollow = false;
+        if (state.foldAnimTimer) toggleOriginFoldAnimation();
+        document.getElementById('arm-badge').textContent = "ARM: STILGEZET [S]";
+        document.getElementById('arm-badge').style.color = "#fca5a5";
+        document.getElementById('res-arm-state').textContent = "STILGEZET [S]";
+        document.getElementById('key-s').classList.add('stop-active');
+        document.getElementById('key-g').classList.remove('run-active');
+        updatePlanimeterFromPolar(false);
+    }
+
+    function startPlanimeterArm() {
+        state.armStopped = false;
+        state.mouseFollow = true;
+        document.getElementById('arm-badge').textContent = "ARM: VRIJ ACTIEF [G]";
+        document.getElementById('arm-badge').style.color = "var(--main)";
+        document.getElementById('res-arm-state').textContent = "ACTIEF (MUIS+TOETS)";
+        document.getElementById('key-s').classList.remove('stop-active');
+        document.getElementById('key-g').classList.add('run-active');
+        updatePlanimeterFromPolar(false);
+    }
+
+    function flashKey(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('pressed');
+        setTimeout(() => el.classList.remove('pressed'), 140);
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (document.activeElement && document.activeElement.id === 'ai-query') {
+            if (e.key === 'Escape') document.activeElement.blur();
+            return;
+        }
+
+        const azStep = e.altKey ? 5.625 : (e.shiftKey ? 0.1 : 1.0);
+        const rhoStep = e.shiftKey ? 0.1 : 0.5;
+
+        switch (e.key) {
+            case '0':
+            case 'Home':
+                e.preventDefault(); flashKey('key-0'); resetToBeginstand(); break;
+            case 'ArrowLeft':
+                e.preventDefault(); flashKey('key-left'); stepPolar(-azStep, 0); break;
+            case 'ArrowRight':
+                e.preventDefault(); flashKey('key-right'); stepPolar(azStep, 0); break;
+            case 'ArrowUp':
+                e.preventDefault(); flashKey('key-up'); stepPolar(0, rhoStep); break;
+            case 'ArrowDown':
+                e.preventDefault(); flashKey('key-down'); stepPolar(0, -rhoStep); break;
+            case '8':
+                e.preventDefault(); flashKey('key-8'); setGlobalAxisFlatten(0.0);
+                injectAI("<b>➖ WIEL HELEMAAL PLAT IN DE OORSPRONG [8]:</b> Projectie-as $\\sigma_Y = 0{,}00$. De gehele cirkel en de baan van de planimeter-arm vallen nu samen met de rechte lijn door $(0,0)$ (Nonius = $0$).");
+                break;
+            case '9':
+                e.preventDefault(); flashKey('key-9'); setGlobalAxisFlatten(-1.0);
+                injectAI("<b>🔄 WIEL DOOR OORSPRONG NAAR NEGATIEF [9]:</b> Projectie-as $\\sigma_Y = -1{,}00$. Het wiel is door $(0,0)$ geïnverteerd; de Ott Nr. 573 telt nu negatieve nonius ($-3630$) en antipodale I Ching-hexagrammen.");
+                break;
+            case '7':
+                e.preventDefault(); flashKey('key-7'); setGlobalAxisFlatten(1.0);
+                injectAI("<b>➕ WIEL HERSTELD NAAR POSITIEF ROND [7]:</b> Projectie-as $\\sigma_Y = +1{,}00$ ($+3630$ nonius).");
+                break;
+            case '-':
+            case '_':
+                e.preventDefault(); setGlobalAxisFlatten(state.globalSigmaY - 0.05); break;
+            case '=':
+            case '+':
+                e.preventDefault(); setGlobalAxisFlatten(state.globalSigmaY + 0.05); break;
+            case 'x':
+            case 'X':
+                e.preventDefault(); flashKey('key-x'); toggleOriginFoldAnimation(); break;
+            // Onafhankelijke wielen draaien: Q/E (I Ching 64), Z/C (Jiazi 60), U/I (Binnenwiel 16)
+            case 'q': case 'Q':
+                e.preventDefault(); setWheelParam(64, 'rot', state.w64.rot - 5.625); break;
+            case 'e': case 'E':
+                e.preventDefault(); setWheelParam(64, 'rot', state.w64.rot + 5.625); break;
+            case 'z': case 'Z':
+                e.preventDefault(); setWheelParam(60, 'rot', state.w60.rot - 6.0); break;
+            case 'c': case 'C':
+                e.preventDefault(); setWheelParam(60, 'rot', state.w60.rot + 6.0); break;
+            case 'u': case 'U':
+                e.preventDefault(); setWheelParam(16, 'rot', state.w16.rot - 5.625); break;
+            case 'i': case 'I':
+                e.preventDefault(); setWheelParam(16, 'rot', state.w16.rot + 5.625); break;
+            // Stop / Start / Stempel / Overtrek / Venster
+            case ' ':
+            case 's': case 'S':
+                e.preventDefault(); flashKey('key-s'); stopPlanimeterArm(); break;
+            case 'g': case 'G':
+                e.preventDefault(); flashKey('key-g'); startPlanimeterArm(); break;
+            case 't': case 'T': case 'Enter':
+                e.preventDefault(); flashKey('key-t'); stampMagnesiumPoint(); break;
+            case 'o': case 'O':
+                e.preventDefault(); toggleOmtrekRecording(); break;
+            case 'v': case 'V':
+                e.preventDefault(); toggleResultsWindow(); break;
+            case 'k': case 'K':
+                e.preventDefault(); toggleMagnesiumVellum(); break;
+            case '1':
+                e.preventDefault(); snapToCircleAnchor(29, R_KOMPAS_CM, 'NYC 29°'); break;
+            case '2':
+                e.preventDefault(); snapToCircleAnchor(82.5, R_KOMPAS_CM, 'THOLEN 82.5°'); break;
+            case '3':
+                e.preventDefault(); snapToCircleAnchor(108, R_KOMPAS_CM, 'SIRIUS 108°'); break;
+        }
+    });
+
+    // --- 7. SLIDERS, VENSTER & EXPORT FUNCTIES ---
+    function processKinematica(axis, val) {
+        const num = parseFloat(val);
+        if (axis === 'yaw') {
+            state.azDeg = num;
+            document.getElementById('yaw-deg').innerText = `${num.toFixed(1)}°`;
+        } else if (axis === 'rho') {
+            state.rhoCm = num;
+            document.getElementById('rho-val').innerText = `${num >= 0 ? '+' : ''}${num.toFixed(2)} cm`;
+        } else if (axis === 'pitch') {
+            state.pitchDeg = num;
+            document.getElementById('pitch-deg').innerText = `${num}° | 517.3nm`;
+            svgEl.style.transform = `rotateX(${num}deg)`;
+            return;
+        }
+        updatePlanimeterFromPolar(false);
+    }
+
+    function setMagnesiumOpacity(val) {
+        const op = parseFloat(val) / 100;
+        state.mgOpacity = op;
+        document.getElementById('lbl-mg-opacity').textContent = `${val}%`;
+        document.getElementById('mg-vellum-sheet').setAttribute('fill', `rgba(4, 14, 24, ${op})`);
+    }
+
+    function toggleMagnesiumVellum() {
+        state.mgVellumActive = !state.mgVellumActive;
+        document.getElementById('magnesium-overtrek-layer').style.display = state.mgVellumActive ? 'block' : 'none';
+        document.getElementById('lbl-mg-status').textContent = state.mgVellumActive ? "ACTIEF [K]" : "UIT [K]";
+    }
+
+    function toggleOmtrekRecording() {
+        state.recordingOmtrek = !state.recordingOmtrek;
+        const btn = document.getElementById('btn-rec');
+        if (state.recordingOmtrek) {
+            state.omtrekPoints = [];
+            btn.textContent = "⏺️ OVERTREK ACTIEF [O]";
+            btn.classList.add('btn-stop');
+            updatePlanimeterFromPolar(false);
+        } else {
+            btn.textContent = "✏️ START OVERTREK [O]";
+            btn.classList.remove('btn-stop');
+            renderMagnesiumOvertrek();
+        }
+    }
+
+    function clearOmtrek() {
+        state.recordingOmtrek = false;
+        state.omtrekPoints = [];
+        state.stampedNodes = [];
+        document.getElementById('btn-rec').textContent = "✏️ START OVERTREK [O]";
+        document.getElementById('btn-rec').classList.remove('btn-stop');
+        renderMagnesiumOvertrek();
+        renderStampedTable();
+    }
+
+    function toggleResultsWindow() {
+        const win = document.getElementById('plano-results-window');
+        win.style.display = win.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function minimizeResultsWindow() {
+        document.getElementById('plano-results-window').classList.toggle('minimized');
+    }
+
+    // Maak het Resultaten-Venster versleepbaar
+    (function initDraggableWindow() {
+        const win = document.getElementById('plano-results-window');
+        const handle = document.getElementById('win-drag-handle');
+        let isDragging = false, startX = 0, startY = 0, initLeft = 0, initTop = 0;
+        handle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const rect = win.getBoundingClientRect();
+            const parentRect = win.parentElement.getBoundingClientRect();
+            initLeft = rect.left - parentRect.left;
+            initTop = rect.top - parentRect.top;
+            win.style.right = 'auto';
+            win.style.left = `${initLeft}px`;
+            win.style.top = `${initTop}px`;
+            startX = e.clientX; startY = e.clientY;
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            win.style.left = `${initLeft + (e.clientX - startX)}px`;
+            win.style.top = `${Math.max(0, initTop + (e.clientY - startY))}px`;
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+    })();
+
+    function injectAI(content) {
+        terminal.innerHTML += `<div class="ai-response">${content}</div>`;
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function handleQuery(e) {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            const q = e.target.value.trim().toLowerCase();
+            terminal.innerHTML += `<div style="color:var(--main); font-size:0.7rem; margin-bottom:6px;">USER_QUERY: ${q}</div>`;
+            e.target.value = '';
+            e.target.blur();
+
+            if (q.includes('begin')) resetToBeginstand();
+            else if (q.includes('plat')) setGlobalAxisFlatten(0.0);
+            else if (q.includes('neg')) setGlobalAxisFlatten(-1.0);
+            else if (q.includes('pos')) setGlobalAxisFlatten(1.0);
+            else {
+                const num = parseFloat(q.replace(',', '.'));
+                if (!isNaN(num)) {
+                    if (q.includes('cm')) { state.rhoCm = num; updatePlanimeterFromPolar(true); }
+                    else { state.azDeg = num; updatePlanimeterFromPolar(true); }
+                }
+            }
+        }
+    }
+
+    function exportCADReport() {
+        const rows = state.stampedNodes.map(n =>
+            `M${n.idx}\tT(${n.x_cm.toFixed(2)}, ${n.y_cm.toFixed(2)}) cm\tDraai=${n.azDeg.toFixed(2)}°\tAs_Sigma=${n.sigma.toFixed(2)}\tNonius=${n.nonius}\tIChing=#${n.syIdx}(${n.bits})`
+        ).join('\n');
+
+        const txt = [
+            "=== VORTEX COCKPIT v154.4 // MULTI-AS WIELEN, OORSPRONG-INVERSIE & OTT NR. 573 ===",
+            `Tijdstip: ${new Date().toISOString()}`,
+            `Arm Draaihoek (Azimut): ${document.getElementById('res-arm-az').textContent}`,
+            `Geprojecteerde Straal (Rho): ${document.getElementById('res-arm-rho').textContent}`,
+            `Volgstift Coördinaten T(x,y): ${document.getElementById('res-tx-ty').textContent}`,
+            `Scharnier Coördinaten G(x,y): ${document.getElementById('res-gx-gy').textContent}`,
+            `Arm-Hoeken: ${document.getElementById('res-angles').textContent}`,
+            `Oorsprong-Projectie (Sigma / det J): ${document.getElementById('res-jacobian').textContent}`,
+            `I Ching Buitenwiel (64): ${document.getElementById('res-iching-wheel').textContent}`,
+            `Oorsprong-Inversie Hexagram: ${document.getElementById('res-iching-inv').textContent}`,
+            `Jiazi Middenwiel (60): ${document.getElementById('res-jiazi-wheel').textContent}`,
+            `Binnenwiel (16) & N² Kern: ${document.getElementById('res-inner-wheel').textContent}`,
+            `Getekende Nonius & Oppervlakte: ${document.getElementById('res-sector-area').textContent}`,
+            "--- GEREGISTREERDE MAGNESIUM MEETPUNTEN ---",
+            rows || "Geen stempelpunten geregistreerd."
+        ].join('\n');
+
+        const blob = new Blob([txt], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `vortex_ott573_multi_as_oorsprong.txt`;
+        a.click();
+    }
+
+    // Muis-interactie op het SVG-canvas (indien muis-volgen met [G] geactiveerd is)
+    svgEl.addEventListener('mousemove', (e) => {
+        if (state.armStopped || !state.mouseFollow) return;
+        const pt = svgEl.createSVGPoint();
+        pt.x = e.clientX; pt.y = e.clientY;
+        const cursor = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+        state.azDeg = (Math.atan2(cursor.y, cursor.x) * 180 / Math.PI + 90 + 360) % 360;
+        state.rhoCm = Math.min(11.5, Math.hypot(cursor.x, cursor.y) / PX_PER_CM);
+        updatePlanimeterFromPolar(true);
+    });
+
+    svgEl.addEventListener('dblclick', () => stampMagnesiumPoint());
+
+    // Klok & Initialisatie in gekalibreerde Beginstand op de Cirkels (0.0° Noord, r = +10.75 cm)
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('nl-NL');
+    }, 1000);
+
+    buildIndependentWheels();
+    resetToBeginstand();
+</script>
+
+</body>
+</html>

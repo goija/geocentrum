@@ -1,0 +1,229 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "Schermafdr",
+        "azDeg": 62.68,
+        "nonius": 1985,
+        "bits": "110100"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.299000000000001,
+          48.919200000000004
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "nebra-plei",
+        "azDeg": 45,
+        "nonius": 26214,
+        "bits": "110111"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.7780000000000005,
+          49.8188
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "5549764981",
+        "azDeg": 45,
+        "nonius": 26214,
+        "bits": "110111"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.7780000000000005,
+          49.8188
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "5549764561",
+        "azDeg": 53.13,
+        "nonius": 19661,
+        "bits": "110110"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.558,
+          49.4288
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "5559359841",
+        "azDeg": 66.1,
+        "nonius": 2906,
+        "bits": "110100"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.1836,
+          48.4668
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "nebra-plei",
+        "azDeg": 82.5,
+        "nonius": 26214,
+        "bits": "110001"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1648,
+          47.7232
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "GEOCENTRUM",
+        "azDeg": 245.91,
+        "nonius": 2476,
+        "bits": "001011"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -5.8018,
+          45.768
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "cellarius-",
+        "azDeg": 60,
+        "nonius": 26214,
+        "bits": "110101"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.1118,
+          49.0648
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "Familie Mo",
+        "azDeg": 82.5,
+        "nonius": 13708,
+        "bits": "110001"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.5798,
+          47.692
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "Verdronken",
+        "azDeg": 226.4,
+        "nonius": 14062,
+        "bits": "001000"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -3.5164000000000004,
+          45.0348
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "Omgevingsw",
+        "azDeg": 29,
+        "nonius": 12960,
+        "bits": "111010"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.7265999999999995,
+          50.2816
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "DSO / Bal ",
+        "azDeg": 108,
+        "nonius": 12960,
+        "bits": "101100"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          9.6422,
+          46.1528
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "MapAnalyst",
+        "azDeg": 198.79,
+        "nonius": 15299,
+        "bits": "000011"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.8254000000000001,
+          43.844
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "label": "Annerose D",
+        "azDeg": 62.1,
+        "nonius": 1489,
+        "bits": "110100"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.965199999999999,
+          48.654
+        ]
+      }
+    }
+  ]
+}

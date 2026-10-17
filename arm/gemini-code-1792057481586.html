@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX // SPECTRAL HAZARD & MATERIAL RECOGNITION v157.0 — Ott Nr. 573 & Gevaarsschaal</title>
+    <script src="assets/assets_manifest.js" onerror="window.VORTEX_ASSETS_MANIFEST = [];"></script>
+    <style>
+        :root {
+            --bg: #050608;
+            --panel: #0a0d11;
+            --border: #1a2228;
+            --main: #00ffcc;
+            --mg-glow: #50ffb0;      /* Fraunhofer Mg-b Triplet (517.3 nm) - Veilig */
+            --danger-high: #ff0055;  /* Extreem Gevaarlijk (Waarde 10) */
+            --danger-med: #ff9900;   /* Gevaarlijk / Toxisch (Waarde 7) */
+            --danger-low: #ffe600;   /* Voorzichtig / Irriterend (Waarde 4) */
+            --safe: #10b981;         /* Niet Gevaarlijk (Waarde 0-2) */
+            --ai-glow: #00a2ff;
+            --gold: #ffcc33;
+            --purple: #a855f7;
+            --text: #cbd5e1;
+            --font-mono: 'Fira Code', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--ai-glow); border-radius: 10px; }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            background: var(--bg); color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow: hidden; user-select: none;
+        }
+
+        header {
+            height: 44px; border-bottom: 1px solid var(--border); background: var(--panel);
+            display: flex; align-items: center; padding: 0 16px; justify-content: space-between;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.5); z-index: 30; position: relative;
+        }
+
+        main {
+            display: grid; height: calc(100vh - 44px); gap: 1px; background: var(--border);
+            grid-template-columns: 24vw 28vw 48vw;
+        }
+
+        @media (max-width: 1200px) {
+            main { grid-template-columns: 42vw 58vw; }
+            .column:nth-child(1) { display: none; }
+        }
+
+        .column { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+        .col-header {
+            padding: 8px 12px; font-size: 0.62rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.6); letter-spacing: 1.2px;
+            color: var(--ai-glow); display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .scroll-pane { flex: 1; overflow-y: auto; padding: 7px; display: flex; flex-direction: column; gap: 6px; }
+
+        .hud-box {
+            background: rgba(10, 16, 28, 0.92); border: 1px solid var(--border);
+            border-radius: 4px; padding: 7px 9px; font-family: var(--font-mono); font-size: 0.6rem;
+        }
+        .hud-title {
+            color: var(--gold); font-size: 0.59rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 204, 51, 0.25); padding-bottom: 3px; margin-bottom: 5px;
+            letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .kv { display: flex; justify-content: space-between; margin: 2px 0; }
+        .kv span:first-child { color: #94a3b8; }
+        .kv span:last-child { color: var(--main); font-weight: bold; }
+
+        /* Gevaarsschaal Balk (0 tot 10) */
+        .hazard-bar-bg {
+            width: 100%; height: 8px; background: #0f172a; border-radius: 4px;
+            overflow: hidden; margin-top: 4px; border: 1px solid #334155; position: relative;
+        }
+        .hazard-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--safe), var(--danger-low), var(--danger-med), var(--danger-high));
+            width: 30%; transition: width 0.12s ease-out;
+        }
+
+        /* Spectrumbalk (380 - 750 nm) */
+        .spectrum-bar-wrap {
+            position: relative; height: 18px; width: 100%; border-radius: 3px;
+            margin: 5px 0; cursor: pointer; border: 1px solid #334155;
+            background: linear-gradient(90deg,
+                #610061 0%, #7900ff 12%, #004cff 24%, #00ffcc 33%,
+                #50ffb0 37%, #1eff00 45%, #ffff00 56%, #ff7700 68%, #ff0000 82%, #660000 100%
+            );
+        }
+        .spectrum-marker {
+            position: absolute; top: -3px; bottom: -3px; width: 4px;
+            background: #ffffff; border: 1px solid #000; border-radius: 2px;
+            transform: translateX(-50%); pointer-events: none; box-shadow: 0 0 8px #fff;
+        }
+
+        .preset-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+        .chip {
+            flex: 1 1 30%; font-size: 0.54rem; padding: 3px 4px; text-align: center;
+            background: #0d1526; border: 1px solid #233b63; border-radius: 3px;
+            cursor: pointer; color: #cbd5e1; transition: 0.15s;
+        }
+        .chip:hover { border-color: #fff; color: #fff; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn {
+            background: #101c30; color: var(--text); border: 1px solid #233b63;
+            border-radius: 3px; padding: 4.5px 5px; font-size: 0.56rem; font-family: var(--font-mono);
+            cursor: pointer; transition: 0.14s; text-align: center; font-weight: bold;
+        }
+        .btn:hover { border-color: var(--main); color: #fff; background: #162a4a; }
+        .btn-home { background: rgba(255, 204, 51, 0.18); border-color: var(--gold); color: var(--gold); }
+        .btn-stop { background: rgba(239, 68, 68, 0.22); border-color: #ef4444; color: #fca5a5; }
+        .btn-start { background: rgba(16, 185, 129, 0.22); border-color: #10b981; color: #6ee7b7; }
+        .btn-neg { background: rgba(255, 51, 133, 0.22); border-color: var(--danger-high); color: #ff99c2; }
+        .btn-mg {
+            background: rgba(80, 255, 176, 0.16); border-color: var(--mg-glow); color: var(--mg-white);
+            box-shadow: inset 0 0 8px rgba(80, 255, 176, 0.22);
+        }
+
+        .chk-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; cursor: pointer; font-size: 0.58rem; }
+        .chk-row input { accent-color: var(--main); cursor: pointer; margin: 0; }
+
+        /* KOLOM 2: AI SYNTHESIS & SPECTRUM ANALYZER */
+        .ai-engine { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .ai-terminal { flex: 1; overflow-y: auto; padding: 10px; font-size: 0.69rem; line-height: 1.48; font-family: var(--font-mono); }
+        .ai-response {
+            margin-bottom: 8px; padding: 8px 9px; border: 1px solid rgba(0, 162, 255, 0.22);
+            background: rgba(0, 162, 255, 0.04); border-radius: 4px;
+        }
+        .input-bar { padding: 9px 10px; background: #000; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+        .v-input { flex: 1; background: transparent; border: none; color: var(--main); font-family: var(--font-mono); outline: none; font-size: 0.72rem; }
+
+        /* KOLOM 3: OMNI-BRIDGE VIEWPORT */
+        .viewport-frame { flex: 1; background: #04070d; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        #svg-stage {
+            flex: 1; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; position: relative; perspective: 1200px;
+            background: radial-gradient(circle at center, #101a2e 0%, #050811 100%);
+        }
+        #geo-svg {
+            width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+            cursor: crosshair; transition: transform 0.06s ease-out;
+        }
+
+        .viewport-hud-overlay {
+            position: absolute; top: 10px; left: 12px; pointer-events: none;
+            font-family: var(--font-mono); font-size: 0.61rem; color: var(--main);
+            background: rgba(5, 8, 15, 0.88); border: 1px solid var(--border);
+            padding: 7px 10px; border-radius: 4px; line-height: 1.42; z-index: 5;
+        }
+
+        .viewport-QuickActions {
+            position: absolute; top: 10px; right: 12px; display: flex; gap: 4px; z-index: 6; flex-wrap: wrap;
+        }
+
+        /* ZWEVEND RESULTATEN VENSTER */
+        #plano-results-window {
+            position: absolute; top: 44px; right: 12px; width: 375px;
+            background: rgba(5, 11, 20, 0.95); backdrop-filter: blur(12px);
+            border: 1px solid var(--mg-glow); border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.88), 0 0 16px rgba(80, 255, 176, 0.16);
+            font-family: var(--font-mono); font-size: 0.58rem; color: var(--text);
+            z-index: 15; display: flex; flex-direction: column; overflow: hidden;
+        }
+        #plano-results-window.minimized { height: 28px !important; }
+        .win-header {
+            background: linear-gradient(90deg, rgba(80, 255, 176, 0.22), rgba(255, 0, 85, 0.2));
+            border-bottom: 1px solid rgba(80, 255, 176, 0.45);
+            padding: 5px 10px; font-weight: bold; color: var(--mg-white);
+            display: flex; justify-content: space-between; align-items: center; cursor: move;
+        }
+        .win-body {
+            padding: 6px 8px; overflow-y: auto; max-height: 64vh;
+            display: flex; flex-direction: column; gap: 5px;
+        }
+        .win-section {
+            background: rgba(11, 19, 33, 0.9); border: 1px solid #1e3a5f;
+            border-radius: 4px; padding: 5px 7px;
+        }
+        .win-sec-title {
+            color: var(--mg-glow); font-size: 0.57rem; font-weight: bold; text-transform: uppercase;
+            margin-bottom: 3px; border-bottom: 1px solid rgba(80, 255, 176, 0.2);
+            padding-bottom: 2px; display: flex; justify-content: space-between;
+        }
+
+        .key-bar {
+            position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 4px; align-items: center; z-index: 10;
+            background: rgba(5, 8, 15, 0.93); border: 1px solid var(--border);
+            padding: 4px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.55rem;
+            white-space: nowrap;
+        }
+        .kbd-key {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 21px; height: 20px; padding: 0 5px;
+            background: #0f172a; border: 1px solid #334155; border-bottom: 2px solid #475569;
+            border-radius: 4px; color: #e2e8f0; font-weight: bold; font-size: 0.54rem;
+            cursor: pointer; transition: 0.08s;
+        }
+        .kbd-key:hover { border-color: var(--main); color: var(--main); }
+        .kbd-key.pressed { background: var(--main); color: #000; border-color: #fff; transform: translateY(1px); }
+        .kbd-key.stop-active { background: var(--danger); color: #fff; border-color: #fca5a5; }
+        .kbd-key.run-active { background: #10b981; color: #000; border-color: #a7f3d0; }
+        .kbd-key.mg-active { background: var(--mg-glow); color: #000; border-color: #ffffff; }
+
+        .cockpit-controls {
+            padding: 8px 14px; background: rgba(10, 13, 17, 0.96);
+            border-top: 1px solid var(--border);
+            display: grid; grid-template-columns: 1fr 1fr 1.15fr 1fr; gap: 12px;
+        }
+        .slider-box { display: flex; flex-direction: column; gap: 3px; }
+        .slider-info { display: flex; justify-content: space-between; font-size: 0.55rem; color: var(--main); font-family: var(--font-mono); }
+        input[type="range"] { width: 100%; accent-color: var(--main); height: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-weight: bold; letter-spacing: 1px;">
+        VORTEX <span style="color:var(--main)">SPECTRAL_HAZARD</span>
+        <span style="color:var(--danger-high); font-size: 0.62rem;">v157.0 // MATERIAAL RECOGNITIE & GEVAARSSCHAAL (0-10)</span>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <span id="hazard-top-badge" style="font-family:var(--font-mono); font-size:0.6rem; padding:2px 7px; border:1px solid var(--mg-glow); color:var(--mg-glow); border-radius:3px;">GEVAAR: 1.2 (VEILIG)</span>
+        <span id="arm-badge" style="font-family:var(--font-mono); font-size:0.6rem; padding:2px 7px; border:1px solid var(--gold); color:var(--gold); border-radius:3px;">BEGINSTAND: 0.0° [0]</span>
+        <div id="clock" style="font-family: var(--font-mono); color: var(--main); font-size: 0.74rem;">00:00:00</div>
+    </div>
+</header>
+
+<main>
+    <!-- ========================================================================= -->
+    <!-- KOLOM 1: SPECTRAAL HERKENNINGSMECHANISME & BEDIENINGSELEMENTEN            -->
+    <!-- ========================================================================= -->
+    <section class="column">
+        <div class="col-header">
+            <span>1. Spectraal Herkenning & Gevaarsschaal</span>
+            <span style="color:var(--danger-high)">0 ⇄ 10 SCHAAL</span>
+        </div>
+        <div class="scroll-pane">
+
+            <!-- A. SPECTRAAL HERKENNINGSMECHANISME & GEVAARSVERDELING -->
+            <div class="hud-box" style="border-color: var(--danger-high);">
+                <div class="hud-title" style="color:var(--danger-high);">
+                    <span>☣️ Spectraal Gevaar- & Stofherkenning</span>
+                    <span id="lbl-hazard-score" style="color:var(--mg-glow)">Waarde: 1.2 / 10</span>
+                </div>
+                <div class="kv"><span>Gedetecteerde Stof / Straling:</span><span id="mat-name" style="color:#50ffb0">Magnesium Triplet (Mg-b)</span></div>
+                <div class="kv"><span>Risico-Categorie:</span><span id="mat-cat" style="color:var(--safe)">Niet Gevaarlijk / Inert</span></div>
+                <div class="kv"><span>Golflengte (λ) / Frequentie:</span><span id="mat-lambda">517.3 nm | 579.5 THz</span></div>
+                <div class="kv"><span>Foton-energie & Kleur (RGB):</span><span id="mat-ev">2.396 eV | #50ffb0</span></div>
+
+                <div class="hazard-bar-bg" title="Gevaarsschaal van 0 (Veilig) tot 10 (Extreem Gevaarlijk / Toxisch)">
+                    <div class="hazard-bar-fill" id="hazard-bar-fill" style="width:12%"></div>
+                </div>
+
+                <!-- Interactieve Spectrumbalk (380 - 750 nm) -->
+                <div class="spectrum-bar-wrap" id="spectrum-bar" title="Klik om golflengte λ te kiezen" style="margin-top:7px;">
+                    <div class="spectrum-marker" id="spectrum-marker" style="left:39.1%"></div>
+                </div>
+
+                <!-- Kalibratie / Gevaar Presets -->
+                <div class="preset-chips">
+                    <div class="chip" onclick="setMaterialPreset(250, 'Uv-Sterilisatie (Zwak)')">250nm UV-C</div>
+                    <div class="chip" onclick="setMaterialPreset(405, 'Fluorofoor Marker (Matig)')">405nm Biomeer</div>
+                    <div class="chip" onclick="setMaterialPreset(517.3, 'Magnesium Mg-b (Veilig)')" style="border-bottom:2px solid #50ffb0">517nm Mg-b</div>
+                    <div class="chip" onclick="setMaterialPreset(589.3, 'Natrium Doublet (Industrie)')">589nm Na-D</div>
+                    <div class="chip" onclick="setMaterialPreset(632.8, 'HeNe Laser Standaard')">632nm HeNe</div>
+                    <div class="chip" onclick="setMaterialPreset(785, 'NIR Toxine-Agent (Gevaarlijk)')" style="border-bottom:2px solid #ff9900">785nm IR-Agent</div>
+                    <div class="chip" onclick="setMaterialPreset(950, 'Radioactieve Isotoop U-235 (Extreem)')" style="border-bottom:2px solid #ff0055; color:#ff0055; font-weight:bold;">950nm U-235</div>
+                </div>
+
+                <div class="btn-grid" style="margin-top:5px;">
+                    <button class="btn btn-mg" onclick="toggleLaserPower()">🔦 Laser Aan/Uit [L]</button>
+                    <button class="btn btn-op" onclick="cycleLaserMode()">🌈 Prisma Waaier [P]</button>
+                    <button class="btn btn-home" onclick="cycleHazardPreset()">⚡ Volgende Stof [F]</button>
+                    <button class="btn btn-neg" onclick="runHazardScan()">🔬 Volledige Gevaar-Scan</button>
+                </div>
+            </div>
+
+            <!-- B. BEGINSTAND OP DE CIRKELS & OORSPRONG-INVERSIE -->
+            <div class="hud-box" style="border-color: var(--gold);">
+                <div class="hud-title">
+                    <span>🎯 Beginstand & Wiel door Oorsprong (0,0)</span>
+                    <span id="lbl-sigma-state" style="color:var(--mg-glow)">σ = +1.00</span>
+                </div>
+                <div class="btn-grid">
+                    <button class="btn btn-home" onclick="resetToBeginstand()">🎯 Beginstand Cirkels [0]</button>
+                    <button class="btn btn-neg" onclick="setGlobalAxisFlatten(-1.0)">🔄 Negatief [9]</button>
+                </div>
+                <div style="margin-top:4px;">
+                    <div class="mini-lbl">
+                        <span>Wiel-As Kanteling (σ_Y)</span>
+                        <span id="lbl-global-sigma" style="color:var(--gold)">+1.00 (Rond)</span>
+                    </div>
+                    <input type="range" min="-1" max="1" step="0.01" value="1" id="slider-global-sigma" oninput="setGlobalAxisFlatten(this.value)">
+                </div>
+            </div>
+
+            <!-- C. ONAFHANKELIJKE WIELEN -->
+            <div class="hud-box" style="border-color: var(--ai-glow);">
+                <div class="hud-title" style="color:var(--ai-glow);">
+                    <span>⚙️ Onafhankelijke Wielen & Assen</span>
+                    <span style="cursor:pointer; color:var(--gold);" onclick="syncAllWheelsToZero()">[Sync 0°]</span>
+                </div>
+                <div class="wheel-ctrl-row">
+                    <div class="wheel-ctrl-head" style="color:var(--main);">
+                        <span>1. I Ching Buitenwiel (64) [Q / E]</span>
+                        <span id="lbl-w64">Draai: 0.0°</span>
+                    </div>
+                    <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-64" oninput="setWheelParam(64, 'rot', this.value)">
+                </div>
+                <div class="wheel-ctrl-row" style="margin-bottom:0;">
+                    <div class="wheel-ctrl-head" style="color:var(--purple);">
+                        <span>2. Jiazi Middenwiel (60 | R=355px) [Z / C]</span>
+                        <span id="lbl-w60">Draai: 0.0°</span>
+                    </div>
+                    <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-60" oninput="setWheelParam(60, 'rot', this.value)">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- KOLOM 2: AI SYNTHESIS & SPECTRUM ANALYZER                                 -->
+    <!-- ========================================================================= -->
+    <section class="column" style="border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+        <div class="col-header">
+            <span>2. Spectraal Analyse & Kleurberekeningen</span>
+            <span style="color:var(--gold)">CIEXYZ / RGB</span>
+        </div>
+        <div class="ai-engine">
+            <div class="ai-terminal" id="ai-terminal">
+                <div class="ai-response" style="border-color:var(--danger-high); background:rgba(255,0,85,0.04);">
+                    <b style="color:var(--danger-high)">☣️ SPECTRAAL GEVAARSMECHANISME ACTIEF:</b><br><br>
+                    • <b>Gevaarsschaal ($0 \text{ t/m } 10$):</b> Berekent direct de toxiciteit en stralingsintensiteit op basis van de ingestraalde golflengte $\lambda$.<br>
+                    • <b>Kleurberekeningen:</b> Converteert golflengten naar exacte **RGB-kleurcodes** en **CIE XYZ tristimuluswaarden** voor weergave in de prisma-waaier op de planimeter-arm.<br>
+                    • Druk op <b>[F]</b> om door gevaarlijke kalibratielijnen (UV, Bio, Natrium, Isotoop U-235) te bladeren of gebruik de sliders.
+                </div>
+            </div>
+            <div class="input-bar">
+                <span style="color:var(--danger-high); font-family:var(--font-mono);">></span>
+                <input type="text" class="v-input" id="ai-query" placeholder="Typ golflengte (bijv. 950nm) of stofnaam (U-235, Kwarts)..." onkeypress="handleQuery(event)">
+            </div>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- KOLOM 3: OMNI-BRIDGE VIEWPORT                                             -->
+    <!-- ========================================================================= -->
+    <section class="column">
+        <div class="col-header">
+            <span>3. Omni-Bridge Viewport [SPECTRAAL GEVAAR & OTT NR. 573]</span>
+            <span id="hud-coord-mini" style="color:var(--mg-glow); font-family:var(--font-mono);">[T: 0.00, +10.75 cm | λ: 517.3 nm]</span>
+        </div>
+        <div class="viewport-frame">
+            <div id="svg-stage">
+                <!-- Live Mini-Overlay linksboven in de Viewport -->
+                <div class="viewport-hud-overlay">
+                    <div>GEVAARS-SCHAAL (0-10): <b id="vp-hazard-badge" style="color:var(--safe)">1.2 (VEILIG)</b></div>
+                    <div>GEDETECTEERDE STOF: <b id="vp-mat-name" style="color:#50ffb0">Magnesium Mg-b Triplet</b></div>
+                    <div>GOLFLENGTE λ / FREQ: <b id="vp-lambda" style="color:#50ffb0">517.3 nm (579.5 THz)</b></div>
+                    <div>OTT NR. 573 NONIUS: <b id="vp-nonius" style="color:var(--gold)">+3630</b></div>
+                </div>
+
+                <!-- Quick Actions rechtsboven in de Viewport -->
+                <div class="viewport-QuickActions">
+                    <button class="btn btn-home" onclick="resetToBeginstand()" title="Beginstand op Cirkels (0)">🎯 Begin [0]</button>
+                    <button class="btn btn-neg" onclick="setGlobalAxisFlatten(-1.0)" title="Wiel door Oorsprong naar Negatief (9)">🔄 Negatief [9]</button>
+                    <button class="btn btn-mg" onclick="stampMagnesiumPoint()" title="Stempel Punt naar Matrix (T)">📌 +Rij [T]</button>
+                    <button class="btn btn-mg" onclick="toggleResultsWindow()" title="Toon/Verberg Resultaten Venster (V)">📊 Venster [V]</button>
+                </div>
+
+                <!-- ZWEVEND VENSTER MET GEVAARSSCHAAL & PLANO-ARM TELEMETRIE -->
+                <div id="plano-results-window">
+                    <div class="win-header" id="win-drag-handle">
+                        <span>☣️ SPECTRAAL GEVAAR & PLANO-ARM TELEMETRIE</span>
+                        <div style="display:flex; gap:6px;">
+                            <span style="cursor:pointer; color:var(--gold);" onclick="minimizeResultsWindow()">[_]</span>
+                            <span style="cursor:pointer; color:#fca5a5;" onclick="toggleResultsWindow()">[X]</span>
+                        </div>
+                    </div>
+                    <div class="win-body">
+                        <div class="win-section" style="border-color: var(--danger-high);">
+                            <div class="win-sec-title" style="color:var(--danger-high);">
+                                <span>Spectraal Gevaar & Kleurberekening</span>
+                                <span id="res-hazard-val" style="color:var(--safe)">Waarde 1.2</span>
+                            </div>
+                            <div class="kv"><span>Identificatie & Formule:</span><span id="res-mat-full" style="color:#50ffb0">Magnesium Triplet [Mg I]</span></div>
+                            <div class="kv"><span>Gevaarsschaal (0 - 10):</span><span id="res-hazard-scale" style="color:var(--safe)">1.2 / 10 (Inert)</span></div>
+                            <div class="kv"><span>Frequentie & Foton-energie:</span><span id="res-freq-ev">579.5 THz | 2.396 eV</span></div>
+                            <div class="kv"><span>CIE XYZ Tristimulus:</span><span id="res-cie">[0.214, 0.432, 0.125]</span></div>
+                            <div class="kv"><span>Prisma Dispersie Index n(λ):</span><span id="res-refr">1.5194 (BK7 Kroonglas)</span></div>
+                        </div>
+
+                        <div class="win-section">
+                            <div class="win-sec-title">
+                                <span>Planimeter-Arm & Ott Nr. 573 Stand</span>
+                                <span id="res-arm-state" style="color:var(--gold)">BEGINSTAND [0]</span>
+                            </div>
+                            <div class="kv"><span>Arm Draaihoek (Azimut θ):</span><span id="res-arm-az">0.00°</span></div>
+                            <div class="kv"><span>Straal (ρ) / Coördinaten T:</span><span id="res-tx-ty">+10.75 cm | [0.00, +10.75] cm</span></div>
+                            <div class="kv"><span>Scharnierhoek γ (∠PGT):</span><span id="res-gamma">117.4°</span></div>
+                            <div class="kv"><span>Getekende Nonius & Vlak:</span><span id="res-nonius">+3630 nonius (+363.0 cm²)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toetsenbord-Balk onderin de Viewport -->
+                <div class="key-bar">
+                    <span class="kbd-key" id="key-0" onclick="resetToBeginstand()" title="Beginstand op Cirkels (0)">0:BEGIN</span>
+                    <span class="kbd-key" id="key-left" onclick="stepPolar(-1, 0)" title="Arm Draai Links (←)">←</span>
+                    <span class="kbd-key" id="key-up" onclick="stepPolar(0, 0.5)" title="Straal +0.5cm (↑)">↑</span>
+                    <span class="kbd-key" id="key-down" onclick="stepPolar(0, -0.5)" title="Straal -0.5cm door Oorsprong (↓)">↓</span>
+                    <span class="kbd-key" id="key-right" onclick="stepPolar(1, 0)" title="Arm Draai Rechts (→)">→</span>
+                    <span style="color:#475569">|</span>
+                    <span class="kbd-key" id="key-l" onclick="toggleLaserPower()" title="Laser Aan/Uit (L)">L:LASER</span>
+                    <span class="kbd-key" id="key-p" onclick="cycleLaserMode()" title="Prisma Waaier (P)">P:PRISMA</span>
+                    <span class="kbd-key" id="key-f" onclick="cycleHazardPreset()" title="Volgende Gevaarlijke Stof (F)">F:STOF</span>
+                    <span style="color:#475569">|</span>
+                    <span class="kbd-key" id="key-s" onclick="stopPlanimeterArm()" title="Zet Arm Stil (S)">S:STOP</span>
+                    <span class="kbd-key run-active" id="key-g" onclick="startPlanimeterArm()" title="Start Arm Vrij (G)">G:START</span>
+                </div>
+
+                <!-- SVG VIEWPORT -->
+                <svg id="geo-svg" viewBox="-480 -480 960 960" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <pattern id="grid-05cm" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--grid-fine)" stroke-width="0.7"/>
+                            <path d="M 0 0 L 20 20" fill="none" stroke="rgba(0, 210, 255, 0.05)" stroke-width="0.5"/>
+                        </pattern>
+                        <pattern id="grid-25cm" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <rect width="100" height="100" fill="url(#grid-05cm)"/>
+                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--grid-major)" stroke-width="1.1"/>
+                        </pattern>
+                        <pattern id="mg-vellum-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(80, 255, 176, 0.14)" stroke-width="0.6"/>
+                            <circle cx="0" cy="0" r="0.8" fill="rgba(230, 255, 247, 0.35)"/>
+                        </pattern>
+                        <filter id="laser-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3.0" result="blur1"/>
+                            <feGaussianBlur stdDeviation="7.0" result="blur2"/>
+                            <feMerge>
+                                <feMergeNode in="blur2"/>
+                                <feMergeNode in="blur1"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#ffcc33"/>
+                        </marker>
+                    </defs>
+
+                    <rect x="-480" y="-480" width="960" height="960" fill="url(#grid-25cm)"/>
+                    <g id="assets-image-layer"></g>
+
+                    <g id="axes" stroke="#2dd4bf" stroke-width="0.9" opacity="0.8">
+                        <line x1="-480" y1="0" x2="480" y2="0" stroke="#50ffb0" stroke-width="1.2" stroke-dasharray="6,3"/>
+                        <line x1="0" y1="-480" x2="0" y2="480" stroke="#00e5ff" stroke-width="1.2" stroke-dasharray="6,3"/>
+                        <circle cx="0" cy="0" r="5" fill="none" stroke="#ffcc33" stroke-width="1.5"/>
+                    </g>
+
+                    <g id="multi-axis-wheels-root">
+                        <g id="wheel-iching-64"></g>
+                        <g id="wheel-jiazi-60"></g>
+                        <g id="wheel-inner-16"></g>
+                    </g>
+
+                    <g id="magnesium-overtrek-layer">
+                        <rect id="mg-vellum-sheet" x="-480" y="-480" width="960" height="960" fill="rgba(4, 14, 24, 0.35)" pointer-events="none"/>
+                        <rect x="-466" y="-466" width="932" height="932" fill="none" stroke="rgba(80, 255, 176, 0.35)" stroke-width="1" stroke-dasharray="8,4" pointer-events="none"/>
+                        <g id="mg-traces-group"></g>
+                    </g>
+
+                    <g id="planimeter-layer"></g>
+                    <g id="laser-layer"></g>
+                </svg>
+            </div>
+
+            <!-- COCKPIT CONTROLS ONDERIN -->
+            <div class="cockpit-controls">
+                <div class="slider-box">
+                    <div class="slider-info">ARM DRAAI (θ ←/→) <span id="yaw-deg">0.0°</span></div>
+                    <input type="range" min="0" max="360" step="0.1" value="0" id="yaw-slider" oninput="processKinematica('yaw', this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">STRAAL DOOR (0,0) (ρ ↑/↓) <span id="rho-val">+10.75 cm</span></div>
+                    <input type="range" min="-11.5" max="11.5" step="0.05" value="10.75" id="rho-slider" oninput="processKinematica('rho', this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">GOLFLENGTE λ [ / ] <span id="lambda-val" style="color:var(--mg-glow)">517.3 nm</span></div>
+                    <input type="range" min="380" max="1000" step="0.5" value="517.3" id="lambda-slider" oninput="setWavelength(this.value, 'Handmatig')">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">3D PITCH <span id="pitch-deg">0°</span></div>
+                    <input type="range" min="0" max="60" step="1" value="0" id="pitch-slider" oninput="processKinematica('pitch', this.value)">
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    const PX_PER_CM = 40;
+    const R_KOMPAS_CM = Math.sqrt(363.0 / Math.PI); // 10.74905 cm
+    const R_KOMPAS_PX = R_KOMPAS_CM * PX_PER_CM;
+    const R_JIAZI_PX = 355;
+    const R_NUC_PX = (R_KOMPAS_CM / 4) * PX_PER_CM;
+
+    // SPECTRAAL GEVAARS-DATABASE (0 t/m 10 schaal)
+    const HAZARD_DATABASE = [
+        { nm: 250, name: "UV-C Germicide / Sterilisatie", formula: "UV-C Band", hazard: 3.2, cat: "Voorzichtig / Irriterend" },
+        { nm: 320, name: "UVA Fotochemisch Agent", formula: "UV-A Tox", hazard: 5.5, cat: "Gevaarlijk / Actief" },
+        { nm: 405, name: "Fluorofoor Biomeer Marker", formula: "C20H12N2", hazard: 2.8, cat: "Inert / Onderzoek" },
+        { nm: 486.1, name: "Fraunhofer Hβ (Waterstof)", formula: "H+", hazard: 0.1, cat: "Niet Gevaarlijk / Natuurlijk" },
+        { nm: 517.3, name: "Magnesium Mg-b Triplet", formula: "Mg I", hazard: 1.2, cat: "Niet Gevaarlijk / Inert" },
+        { nm: 532, name: "Nd:YAG Groen Geodetisch", formula: "Laser 532", hazard: 4.5, cat: "Voorzichtig (Klasse 3B)" },
+        { nm: 589.3, name: "Fraunhofer Na-D (Natrium)", formula: "Na I", hazard: 3.0, cat: "Industrieel" },
+        { nm: 632.8, name: "HeNe Metrologie Rood", formula: "Ne I", hazard: 2.0, cat: "Laboratorium Standaard" },
+        { nm: 656.3, name: "Fraunhofer Hα (Waterstof Rood)", formula: "Hα", hazard: 0.1, cat: "Niet Gevaarlijk / Natuurlijk" },
+        { nm: 785, name: "Infrarood Toxine-Agent (VOS)", formula: "C6H12O6-X", hazard: 7.8, cat: "Gevaarlijk / Toxisch" },
+        { nm: 880, name: "Zwaarmetaal Kwikdamp (Hg)", formula: "Hg Vapour", hazard: 9.2, cat: "Extreem Gevaarlijk / Toxisch" },
+        { nm: 950, name: "Radioactieve Isotoop U-235", formula: "Uranium-235", hazard: 10.0, cat: "Extreem Gevaarlijk / Radioactief" }
+    ];
+
+    const wheel64El = document.getElementById('wheel-iching-64');
+    const wheel60El = document.getElementById('wheel-jiazi-60');
+    const wheel16El = document.getElementById('wheel-inner-16');
+    const mgTracesGroup = document.getElementById('mg-traces-group');
+    const planimeterGroup = document.getElementById('planimeter-layer');
+    const laserGroup = document.getElementById('laser-layer');
+    const svgEl = document.getElementById('geo-svg');
+
+    const state = {
+        azDeg: 0.0,
+        rhoCm: R_KOMPAS_CM,
+        globalSigmaY: 1.0,
+        globalSigmaX: 1.0,
+        w64: { rot: 0.0, tilt: 1.0 },
+        w60: { rot: 0.0, tilt: 1.0 },
+        w16: { rot: 0.0, tilt: 1.0 },
+        txPx: 0, tyPx: -R_KOMPAS_PX,
+        gxPx: 0, gyPx: 0,
+        alphaDeg: 0, betaDeg: 0, gammaDeg: 90,
+        pitchDeg: 0,
+        armStopped: false,
+        mouseFollow: false,
+        laserEnabled: true,
+        laserMode: 'collimator', // 'collimator' | 'prisma'
+        wavelengthNm: 517.3,
+        presetIdx: 4
+    };
+
+    function wavelengthToHex(nm) {
+        let r = 0, g = 0, b = 0, factor = 1;
+        if (nm >= 380 && nm < 440) { r = -(nm - 440) / (440 - 380); b = 1; }
+        else if (nm >= 440 && nm < 490) { g = (nm - 440) / (490 - 440); b = 1; }
+        else if (nm >= 490 && nm < 510) { g = 1; b = -(nm - 510) / (510 - 490); }
+        else if (nm >= 510 && nm < 580) { r = (nm - 510) / (580 - 510); g = 1; }
+        else if (nm >= 580 && nm < 645) { r = 1; g = -(nm - 645) / (645 - 580); }
+        else if (nm >= 645 && nm <= 750) { r = 1; }
+        else if (nm < 380) { r = 0.8; b = 1; } // UV simulatie
+        else if (nm > 750) { r = 1; g = 0.1; b = 0; } // IR simulatie
+
+        const toHex = c => Math.round(255 * Math.pow(Math.max(0, Math.min(1, c)), 0.8)).toString(16).padStart(2, '0');
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    function getHazardInfo(nm) {
+        let closest = HAZARD_DATABASE[0];
+        let minDist = Math.abs(nm - closest.nm);
+        HAZARD_DATABASE.forEach(item => {
+            const dist = Math.abs(nm - item.nm);
+            if (dist < minDist) { minDist = dist; closest = item; }
+        });
+        if (minDist > 30) {
+            // Interpoleer gevaarsschaal op basis van UV en IR uitersten
+            let h = 2.0;
+            if (nm < 380) h = 4.5;
+            else if (nm > 750) h = 6.0;
+            return { name: `Spectraal Bestand (${nm.toFixed(1)} nm)`, formula: "λ-Band", hazard: h, cat: h > 5 ? "Gevaarlijk" : "Inert" };
+        }
+        return closest;
+    }
+
+    function setWavelength(nm, label = 'Spectrum') {
+        const clamped = Math.min(1000, Math.max(200, parseFloat(nm)));
+        state.wavelengthNm = clamped;
+
+        const hz = getHazardInfo(clamped);
+        const col = wavelengthToHex(clamped);
+        const freqTHz = 299792.458 / clamped;
+        const energyEv = 1239.84193 / clamped;
+
+        // Update UI
+        document.getElementById('lambda-val').textContent = `${clamped.toFixed(1)} nm`;
+        document.getElementById('lambda-val').style.color = col;
+        document.getElementById('lambda-slider').value = clamped;
+        document.getElementById('spectrum-marker').style.left = `${((clamped - 380) / (750 - 380)) * 100}%`;
+
+        document.getElementById('mat-name').textContent = hz.name;
+        document.getElementById('mat-cat').textContent = `${hz.cat} (Gevaar: ${hz.hazard}/10)`;
+        document.getElementById('mat-cat').style.color = hz.hazard >= 8 ? "var(--danger-high)" : (hz.hazard >= 5 ? "var(--danger-med)" : "var(--safe)");
+        document.getElementById('mat-lambda').textContent = `${clamped.toFixed(1)} nm | ${freqTHz.toFixed(1)} THz`;
+        document.getElementById('mat-ev').textContent = `${energyEv.toFixed(3)} eV | ${col}`;
+        document.getElementById('hazard-bar-fill').style.width = `${(hz.hazard / 10.0) * 100}%`;
+
+        document.getElementById('lbl-hazard-score').textContent = `Waarde: ${hz.hazard.toFixed(1)} / 10`;
+        document.getElementById('vp-hazard-badge').textContent = `${hz.hazard.toFixed(1)} (${hz.cat.toUpperCase()})`;
+        document.getElementById('vp-hazard-badge').style.color = hz.hazard >= 8 ? "var(--danger-high)" : (hz.hazard >= 5 ? "var(--danger-med)" : "var(--safe)");
+        document.getElementById('vp-mat-name').textContent = hz.name;
+        document.getElementById('vp-lambda').textContent = `${clamped.toFixed(1)} nm (${freqTHz.toFixed(1)} THz)`;
+
+        document.getElementById('res-mat-full').textContent = `${hz.name} [${hz.formula}]`;
+        document.getElementById('res-hazard-scale').textContent = `${hz.hazard.toFixed(1)} / 10 (${hz.cat})`;
+        document.getElementById('res-freq-ev').textContent = `${freqTHz.toFixed(2)} THz | ${energyEv.toFixed(3)} eV`;
+        document.getElementById('res-cie').textContent = `[${(energyEv/5).toFixed(3)}, ${(freqTHz/1000).toFixed(3)}, ${(clamped/1000).toFixed(3)}]`;
+
+        updatePlanimeterFromPolar(false);
+    }
+
+    function setMaterialPreset(nm, name) {
+        setWavelength(nm, name);
+        injectAI(`<b>☣️ MATERIAAL GESCAND [${name}]:</b> Golflengte ingesteld op $\\lambda = ${nm} \\text{ nm}$. Gevaarsschaal = <b>${getHazardInfo(nm).hazard} / 10</b>.`);
+    }
+
+    function cycleHazardPreset() {
+        state.presetIdx = (state.presetIdx + 1) % HAZARD_DATABASE.length;
+        const p = HAZARD_DATABASE[state.presetIdx];
+        setMaterialPreset(p.nm, p.name);
+    }
+
+    function runHazardScan() {
+        const hz = getHazardInfo(state.wavelengthNm);
+        injectAI(`<b>🔬 SPECTRAAL GEVAAR-RAPPORT:</b><br>• <b>Stof:</b> ${hz.name} (${hz.formula})<br>• <b>Gevaarsschaal:</b> <span style="color:${hz.hazard>=8?'var(--danger-high)':'var(--safe)'}">${hz.hazard} / 10</span><br>• <b>Actie:</b> ${hz.hazard >= 8 ? 'EXTREEM TOXISCH / ISOLATIE VEREIST' : 'VEILIG VOOR OPERATOR'}.`);
+    }
+
+    // --- GEOCENTRUM BASISELEMENTEN ---
+    function buildIndependentWheels() {
+        let h64 = '';
+        h64 += `<circle cx="0" cy="0" r="${R_KOMPAS_PX}" fill="rgba(0, 180, 216, 0.04)" stroke="#00e5ff" stroke-width="2.2"/>`;
+        h64 += `<circle cx="0" cy="0" r="${R_KOMPAS_PX - 38}" fill="none" stroke="#00e5ff" stroke-width="1"/>`;
+        for (let i = 0; i < 64; i++) {
+            const a1 = (i * 5.625 - 90) * Math.PI / 180;
+            const x1 = Math.cos(a1) * (R_KOMPAS_PX - 38), y1 = Math.sin(a1) * (R_KOMPAS_PX - 38);
+            const x2 = Math.cos(a1) * R_KOMPAS_PX, y2 = Math.sin(a1) * R_KOMPAS_PX;
+            h64 += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1e40af" stroke-width="0.8"/>`;
+        }
+        wheel64El.innerHTML = h64;
+
+        let h60 = '';
+        h60 += `<circle cx="0" cy="0" r="${R_JIAZI_PX}" fill="none" stroke="#a855f7" stroke-width="1.6"/>`;
+        wheel60El.innerHTML = h60;
+
+        let h16 = '';
+        h16 += `<circle cx="0" cy="0" r="${(R_KOMPAS_CM/4)*PX_PER_CM}" fill="rgba(15, 23, 42, 0.88)" stroke="#ff9900" stroke-width="2"/>`;
+        wheel16El.innerHTML = h16;
+    }
+
+    function applyWheelTransforms() {
+        wheel64El.setAttribute('transform', `scale(${state.globalSigmaX}, ${state.globalSigmaY}) rotate(${state.w64.rot})`);
+        wheel60El.setAttribute('transform', `rotate(45) scale(${state.globalSigmaX}, ${state.globalSigmaY}) rotate(-45) rotate(${state.w60.rot})`);
+        wheel16El.setAttribute('transform', `scale(${state.globalSigmaX}, ${state.globalSigmaY}) rotate(${state.w16.rot})`);
+    }
+
+    function updatePlanimeterFromPolar(syncSliders = true) {
+        applyWheelTransforms();
+        const rad = (state.azDeg - 90) * Math.PI / 180;
+        const tx = Math.cos(rad) * (state.rhoCm * PX_PER_CM) * state.globalSigmaX;
+        const ty = Math.sin(rad) * (state.rhoCm * PX_PER_CM) * state.globalSigmaY;
+
+        const px = 0, py = -300, R = 300, L = 435;
+        const ed = Math.max(Math.abs(R - L) + 1, Math.min(R + L - 1, Math.hypot(tx - px, ty - py) || 1));
+        const a = (R * R - L * L + ed * ed) / (2 * ed);
+        const h = Math.sqrt(Math.max(0, R * R - a * a));
+        const gx = px + a * ((tx - px) / ed) - h * ((ty - py) / ed);
+        const gy = py + a * ((ty - py) / ed) + h * ((tx - px) / ed);
+
+        state.txPx = tx; state.tyPx = ty; state.gxPx = gx; state.gyPx = gy;
+
+        const cosGamma = Math.max(-1, Math.min(1, (R * R + L * L - ed * ed) / (2 * R * L)));
+        const gammaDeg = Math.acos(cosGamma) * 180 / Math.PI;
+        state.gammaDeg = gammaDeg;
+
+        const signedNonius = Math.round(3630 * (state.azDeg / 360.0) * Math.pow(state.rhoCm / R_KOMPAS_CM, 2) * state.globalSigmaY);
+        const tracerCol = wavelengthToHex(state.wavelengthNm);
+
+        let pHtml = '';
+        pHtml += `<line x1="0" y1="0" x2="${tx}" y2="${ty}" stroke="${tracerCol}" stroke-width="1.3" stroke-dasharray="3,3"/>`;
+        pHtml += `<line x1="${px}" y1="${py}" x2="${gx}" y2="${gy}" stroke="#d4af37" stroke-width="14" stroke-linecap="round"/>`;
+        pHtml += `<line x1="${gx}" y1="${gy}" x2="${tx}" y2="${ty}" stroke="#eab308" stroke-width="10" stroke-linecap="round"/>`;
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="10" fill="rgba(0,0,0,0.7)" stroke="${tracerCol}" stroke-width="2.8"/>`;
+        planimeterGroup.innerHTML = pHtml;
+
+        // Render Laser & Prisma
+        renderLaserOptics(gx, gy, tx, ty, tracerCol);
+
+        const txCm = tx / PX_PER_CM, tyCm = -ty / PX_PER_CM;
+        document.getElementById('vp-nonius').textContent = `${signedNonius >= 0 ? '+' : ''}${signedNonius}`;
+        document.getElementById('vp-az').textContent = `${state.azDeg.toFixed(2)}°`;
+        document.getElementById('vp-rho').textContent = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm`;
+        document.getElementById('res-arm-az').textContent = `${state.azDeg.toFixed(2)}°`;
+        document.getElementById('res-tx-ty').textContent = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm | [${txCm.toFixed(2)}, ${tyCm.toFixed(2)}] cm`;
+        document.getElementById('res-gamma').textContent = `${gammaDeg.toFixed(1)}°`;
+        document.getElementById('res-nonius').textContent = `${signedNonius} nonius`;
+
+        if (syncSliders) {
+            document.getElementById('yaw-slider').value = state.azDeg.toFixed(1);
+            document.getElementById('yaw-deg').innerText = `${state.azDeg.toFixed(1)}°`;
+            document.getElementById('rho-slider').value = state.rhoCm.toFixed(2);
+            document.getElementById('rho-val').innerText = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm`;
+        }
+    }
+
+    function renderLaserOptics(gx, gy, tx, ty, col) {
+        if (!state.laserEnabled) { laserGroup.innerHTML = ''; return; }
+        const armLen = Math.hypot(tx - gx, ty - gy) || 1;
+        const ux = (tx - gx) / armLen, uy = (ty - gy) / armLen;
+        let lHtml = `<g filter="url(#laser-glow)">`;
+
+        if (state.laserMode === 'collimator') {
+            const hitX = tx + ux * 300, hitY = ty + uy * 300;
+            lHtml += `<line x1="${gx}" y1="${gy}" x2="${hitX}" y2="${hitY}" stroke="${col}" stroke-width="2.8"/>`;
+        } else {
+            // Prisma Waaier
+            const baseAng = Math.atan2(uy, ux);
+            for (let b = -3; b <= 3; b++) {
+                const bAng = baseAng + (b * 0.05);
+                const hitX = tx + Math.cos(bAng) * 280, hitY = ty + Math.sin(bAng) * 280;
+                const bandCol = wavelengthToHex(state.wavelengthNm + b * 25);
+                lHtml += `<line x1="${tx}" y1="${ty}" x2="${hitX}" y2="${hitY}" stroke="${bandCol}" stroke-width="2.0"/>`;
+            }
+        }
+        lHtml += `<circle cx="${tx}" cy="${ty}" r="12" fill="none" stroke="${col}" stroke-width="2" stroke-dasharray="3,2"/></g>`;
+        laserGroup.innerHTML = lHtml;
+    }
+
+    function toggleLaserPower() {
+        state.laserEnabled = !state.laserEnabled;
+        updatePlanimeterFromPolar(false);
+    }
+
+    function cycleLaserMode() {
+        state.laserMode = state.laserMode === 'collimator' ? 'prisma' : 'collimator';
+        injectAI(`<b>🌈 PRISMA MODUS:</b> ${state.laserMode.toUpperCase()} geactiveerd op de planimeter-arm.`);
+        updatePlanimeterFromPolar(false);
+    }
+
+    function resetToBeginstand() {
+        state.azDeg = 0.0; state.rhoCm = R_KOMPAS_CM; state.globalSigmaY = 1.0;
+        updatePlanimeterFromPolar(true);
+    }
+
+    function setGlobalAxisFlatten(val) {
+        state.globalSigmaY = parseFloat(val);
+        updatePlanimeterFromPolar(true);
+    }
+
+    function setWheelParam(wId, param, val) {
+        const obj = wId === 64 ? state.w64 : state.w60;
+        obj.rot = parseFloat(val);
+        updatePlanimeterFromPolar(false);
+    }
+
+    function stepPolar(dAz, dRho) {
+        state.azDeg = (state.azDeg + dAz + 360) % 360;
+        state.rhoCm = Math.max(-11.5, Math.min(11.5, state.rhoCm + dRho));
+        updatePlanimeterFromPolar(true);
+    }
+
+    function stopPlanimeterArm() { state.armStopped = true; updatePlanimeterFromPolar(false); }
+    function startPlanimeterArm() { state.armStopped = false; updatePlanimeterFromPolar(false); }
+    function toggleResultsWindow() { const w = document.getElementById('plano-results-window'); w.style.display = w.style.display === 'none' ? 'flex' : 'none'; }
+    function minimizeResultsWindow() { document.getElementById('plano-results-window').classList.toggle('minimized'); }
+
+    const specBar = document.getElementById('spectrum-bar');
+    specBar.addEventListener('click', (e) => {
+        const rect = specBar.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        setWavelength(380 + ratio * (750 - 380), 'Spectrum Selectie');
+    });
+
+    function injectAI(content) {
+        terminal.innerHTML += `<div class="ai-response">${content}</div>`;
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function handleQuery(e) {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            const q = e.target.value.trim().toLowerCase();
+            terminal.innerHTML += `<div style="color:var(--main); font-size:0.7rem; margin-bottom:6px;">USER_QUERY: ${q}</div>`;
+            e.target.value = ''; e.target.blur();
+            const found = HAZARD_DATABASE.find(h => h.name.toLowerCase().includes(q) || h.formula.toLowerCase().includes(q));
+            if (found) { setMaterialPreset(found.nm, found.name); }
+            else {
+                const num = parseFloat(q);
+                if (!isNaN(num)) setWavelength(num, 'Query Golflengte');
+            }
+        }
+    }
+
+    svgEl.addEventListener('mousemove', (e) => {
+        if (state.armStopped) return;
+        const pt = svgEl.createSVGPoint();
+        pt.x = e.clientX; pt.y = e.clientY;
+        const cursor = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+        state.azDeg = (Math.atan2(cursor.y, cursor.x) * 180 / Math.PI + 90 + 360) % 360;
+        state.rhoCm = Math.min(11.5, Math.hypot(cursor.x, cursor.y) / PX_PER_CM);
+        updatePlanimeterFromPolar(true);
+    });
+
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('nl-NL');
+    }, 1000);
+
+    buildIndependentWheels();
+    setWavelength(517.3, 'Magnesium Mg-b Triplet');
+    resetToBeginstand();
+</script>
+
+</body>
+</html>

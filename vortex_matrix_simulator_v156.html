@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS v156.2 (v0.2 Vivaldi Fix) // Multi-Viewport, 3D MapGlobe, Zeekaarten & Ott Nr. 573</title>
+    <!-- MapLibre GL JS v4.7.1 voor 3D Globe & API-vrije Land/Zeekaarten -->
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="assets/assets_manifest.js" onerror="window.VORTEX_ASSETS_MANIFEST = [];"></script>
+    <style>
+        /* ========================================================================= */
+        /* 5.2 VIER LICHT- EN KLEURMODI (MAGRITTE DUAL-SKY THEMES)                   */
+        /* ========================================================================= */
+        :root, [data-theme="dark"] {
+            --bg: #050608;
+            --panel: #0a0d14;
+            --surface: #101726;
+            --border: #1e2d42;
+            --main: #00ffcc;
+            --mg-glow: #50ffb0;
+            --mg-white: #e6fff7;
+            --neg-glow: #ff3385;
+            --ai-glow: #00a2ff;
+            --gold: #ffcc33;
+            --purple: #a855f7;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --grid-fine: rgba(0, 210, 255, 0.14);
+            --grid-major: rgba(0, 210, 255, 0.30);
+            --font-mono: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+            --ui-scale: 1;
+            --col1-w: 330px;
+            --col2-w: 390px;
+            --log-h: 115px;
+        }
+
+        /* ☀️ HELDER (High-contrast Wit / Blauw) */
+        [data-theme="light"] {
+            --bg: #f1f5f9;
+            --panel: #ffffff;
+            --surface: #e2e8f0;
+            --border: #cbd5e1;
+            --main: #0284c7;
+            --mg-glow: #059669;
+            --mg-white: #0f172a;
+            --neg-glow: #e11d48;
+            --ai-glow: #2563eb;
+            --gold: #b45309;
+            --purple: #7c3aed;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --grid-fine: rgba(2, 132, 199, 0.18);
+            --grid-major: rgba(2, 132, 199, 0.38);
+        }
+
+        /* 🌤️ DAGLICHT (Warm Cartografisch Papier / Sepia) */
+        [data-theme="daylight"] {
+            --bg: #f4ecd8;
+            --panel: #fbf6e9;
+            --surface: #eaddc0;
+            --border: #c8b48a;
+            --main: #0d5c75;
+            --mg-glow: #1b7340;
+            --mg-white: #2c221e;
+            --neg-glow: #b91c1c;
+            --ai-glow: #1d4ed8;
+            --gold: #9a5b06;
+            --purple: #6d28d9;
+            --text: #2c221e;
+            --text-muted: #6e5a47;
+            --grid-fine: rgba(13, 92, 117, 0.18);
+            --grid-major: rgba(13, 92, 117, 0.36);
+        }
+
+        /* 🔴 NACHTLICHT (Astronomisch Amber / Rood) */
+        [data-theme="nightlight"] {
+            --bg: #090202;
+            --panel: #140505;
+            --surface: #220808;
+            --border: #451010;
+            --main: #ff4500;
+            --mg-glow: #ff7733;
+            --mg-white: #ffccb3;
+            --neg-glow: #ff0055;
+            --ai-glow: #ff8800;
+            --gold: #ffaa00;
+            --purple: #cc3366;
+            --text: #ff9966;
+            --text-muted: #aa5533;
+            --grid-fine: rgba(255, 69, 0, 0.16);
+            --grid-major: rgba(255, 69, 0, 0.32);
+        }
+
+        * { box-sizing: border-box; -webkit-user-drag: none; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--ai-glow); border-radius: 10px; }
+
+        body {
+            margin: 0; padding: 0; width: 100vw; height: 100vh;
+            background: var(--bg); color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow: hidden; user-select: none;
+            display: flex; flex-direction: column;
+        }
+
+        /* Vivaldi-veilige globale UI-schaal wrapper */
+        #app-scale-root {
+            width: calc(100vw / var(--ui-scale));
+            height: calc(100vh / var(--ui-scale));
+            transform: scale(var(--ui-scale));
+            transform-origin: top left;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* TOP HEADER & ROUTING BAR */
+        header {
+            height: 46px; border-bottom: 1px solid var(--border); background: var(--panel);
+            display: flex; align-items: center; padding: 0 12px; justify-content: space-between;
+            gap: 8px; z-index: 40; flex-shrink: 0;
+        }
+
+        .brand-cluster { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.78rem; }
+        .page-tabs { display: flex; gap: 4px; }
+        .tab-btn {
+            background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
+            padding: 4px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.58rem;
+            cursor: pointer; font-weight: bold; transition: 0.12s;
+        }
+        .tab-btn:hover, .tab-btn.active { border-color: var(--main); color: var(--main); background: rgba(0,255,204,0.1); }
+
+        .theme-bar { display: flex; gap: 3px; align-items: center; }
+
+        /* ========================================================================= */
+        /* 5.1 MULTI-VIEWPORT WORKSPACE & TRAPLOOS VERSCHAALBARE SPLITTERS           */
+        /* ========================================================================= */
+        .workspace-shell {
+            flex: 1; display: flex; width: 100%; min-height: 0; overflow: hidden; background: var(--bg);
+        }
+
+        .column {
+            background: var(--bg); display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+        }
+        #col-left { width: var(--col1-w); min-width: 200px; max-width: 550px; flex-shrink: 0; }
+        #col-mid  { width: var(--col2-w); min-width: 240px; max-width: 620px; flex-shrink: 0; }
+        #col-right { flex: 1; min-width: 320px; }
+
+        .v-splitter {
+            width: 6px; cursor: col-resize; background: var(--panel);
+            border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; z-index: 25; color: var(--text-muted); font-size: 10px;
+            touch-action: none;
+        }
+        .v-splitter:hover, .v-splitter.dragging, .h-splitter:hover, .h-splitter.dragging {
+            background: var(--main); color: #000;
+        }
+
+        .h-splitter {
+            height: 6px; cursor: row-resize; background: var(--panel);
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; z-index: 25; color: var(--text-muted); font-size: 10px;
+            touch-action: none;
+        }
+
+        .col-header {
+            padding: 6px 10px; font-size: 0.6rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid var(--border); background: var(--panel); letter-spacing: 1px;
+            color: var(--ai-glow); display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+
+        .scroll-pane { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+
+        /* VENSTER-BEDIENINGSELEMENTEN (— Inklappen, ❐ Zwevend, ⛶ Volledig scherm) */
+        .hud-box {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 5px; padding: 6px 8px; font-family: var(--font-mono); font-size: 0.59rem;
+            display: flex; flex-direction: column; transition: box-shadow 0.15s;
+        }
+        .hud-box.collapsed > .hud-body { display: none !important; }
+        .hud-box.floating-win {
+            position: fixed !important; top: 70px !important; left: 120px !important;
+            width: 410px !important; z-index: 2200 !important;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.85), 0 0 0 1px var(--main);
+        }
+        .hud-box.maximized-win {
+            position: fixed !important; inset: 50px 10px 10px 10px !important;
+            width: auto !important; height: auto !important; z-index: 2500 !important;
+            overflow-y: auto !important;
+        }
+
+        .hud-title {
+            color: var(--gold); font-size: 0.58rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 204, 51, 0.22); padding-bottom: 3px; margin-bottom: 5px;
+            display: flex; justify-content: space-between; align-items: center; gap: 4px;
+        }
+        .win-Finding-btns { display: inline-flex; gap: 2px; margin-left: auto; }
+        .win-ctrl {
+            background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+            width: 18px; height: 16px; border-radius: 3px; font-size: 0.52rem; line-height: 1;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+        }
+        .win-ctrl:hover { border-color: var(--main); color: var(--main); }
+
+        .kv { display: flex; justify-content: space-between; margin: 2px 0; }
+        .kv span:first-child { color: var(--text-muted); }
+        .kv span:last-child { color: var(--main); font-weight: bold; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn, select.vortex-select {
+            background: var(--surface); color: var(--text); border: 1px solid var(--border);
+            border-radius: 3px; padding: 4px 5px; font-size: 0.55rem; font-family: var(--font-mono);
+            cursor: pointer; transition: 0.12s; text-align: center; font-weight: bold;
+        }
+        select.vortex-select { width: 100%; text-align: left; margin-bottom: 4px; }
+        .btn:hover, select.vortex-select:hover { border-color: var(--main); color: var(--main); }
+        .btn.active { background: rgba(0, 255, 204, 0.2); border-color: var(--main); color: var(--main); }
+        .btn-home { background: rgba(255, 204, 51, 0.16); border-color: var(--gold); color: var(--gold); }
+        .btn-stop { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
+        .btn-start { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #6ee7b7; }
+        .btn-neg { background: rgba(255, 51, 133, 0.2); border-color: var(--neg-glow); color: #ff99c2; }
+        .btn-op { background: rgba(0, 162, 255, 0.14); border-color: var(--ai-glow); color: var(--ai-glow); }
+        .btn-mg { background: rgba(80, 255, 176, 0.15); border-color: var(--mg-glow); color: var(--mg-glow); }
+
+        /* Planimeter Trommelwieltjes */
+        .vernier-drums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 4px 0; text-align: center; }
+        .drum-card {
+            background: var(--surface); border: 1px solid var(--gold); border-radius: 4px;
+            padding: 3px 2px; cursor: pointer;
+        }
+        .drum-card:hover { border-color: var(--main); }
+        .drum-card small { display: block; font-size: 0.48rem; color: var(--text-muted); }
+        .drum-card strong { font-size: 0.84rem; color: var(--gold); font-family: var(--font-mono); }
+
+        .io-dropzone {
+            border: 1px dashed var(--mg-glow); background: rgba(80, 255, 176, 0.04);
+            border-radius: 4px; padding: 6px; text-align: center; cursor: pointer;
+            font-size: 0.55rem; color: var(--text); margin-bottom: 4px;
+        }
+        .io-dropzone:hover, .io-dropzone.dragover { background: rgba(80, 255, 176, 0.15); border-color: var(--main); }
+
+        .layer-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface); border: 1px solid var(--border);
+            border-left: 3px solid var(--mg-glow); border-radius: 3px;
+            padding: 3px 5px; margin-bottom: 3px; font-size: 0.54rem;
+        }
+
+        .wheel-ctrl-row { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 4px 5px; margin-bottom: 4px; }
+        .wheel-ctrl-head { display: flex; justify-content: space-between; font-size: 0.56rem; font-weight: bold; margin-bottom: 2px; }
+        .dual-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; align-items: center; }
+        .mini-lbl { font-size: 0.52rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+
+        textarea.matrix-raw-io {
+            width: 100%; height: 56px; background: var(--surface); color: var(--mg-glow);
+            border: 1px solid var(--border); border-radius: 3px; padding: 4px;
+            font-family: var(--font-mono); font-size: 0.55rem; resize: vertical; outline: none;
+        }
+
+        .matrix-grid-wrap { max-height: 145px; overflow-y: auto; border: 1px solid var(--border); border-radius: 3px; background: var(--surface); margin-top: 4px; }
+        table.mat-table { width: 100%; border-collapse: collapse; font-size: 0.54rem; text-align: right; font-family: var(--font-mono); }
+        table.mat-table th { position: sticky; top: 0; background: var(--panel); color: var(--gold); padding: 3px 4px; border-bottom: 1px solid var(--border); text-align: right; z-index: 2; }
+        table.mat-table th:first-child, table.mat-table td:first-child { text-align: left; }
+        table.mat-table td { padding: 2px 4px; border-bottom: 1px solid rgba(148,163,184,0.1); color: var(--text); }
+        table.mat-table tr:hover { background: rgba(0, 255, 204, 0.12); cursor: pointer; }
+        table.mat-table tr.sim-active-row { background: rgba(80, 255, 176, 0.25) !important; font-weight: bold; }
+
+        .expr-bar { display: flex; gap: 4px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 3px 5px; margin-top: 4px; }
+        .expr-inp { flex: 1; background: transparent; border: none; color: var(--gold); font-family: var(--font-mono); font-size: 0.58rem; outline: none; }
+
+        .chk-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; cursor: pointer; font-size: 0.56rem; }
+        .chk-row input { accent-color: var(--main); cursor: pointer; margin: 0; }
+
+        .hex-box { display: flex; justify-content: space-around; text-align: center; margin-top: 4px; padding-top: 4px; border-top: 1px dashed var(--border); }
+        .bit-bar { width: 22px; height: 3.5px; margin: 2px auto; background: var(--gold); }
+        .bit-0 { background: linear-gradient(90deg, var(--gold) 0%, var(--gold) 40%, transparent 40%, transparent 60%, var(--gold) 60%, var(--gold) 100%); }
+
+        /* ========================================================================= */
+        /* KOLOM 3: OMNI-BRIDGE VIEWPORT + ONDERSTE SYSTEEMLOGBOEK                   */
+        /* ========================================================================= */
+        .viewport-frame { flex: 1; background: var(--bg); position: relative; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+        #svg-stage {
+            flex: 1; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; position: relative; perspective: 1200px; min-height: 0;
+            background: radial-gradient(circle at center, rgba(16, 26, 46, 0.5) 0%, var(--bg) 100%);
+        }
+
+        #mapglobe-bg {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none; opacity: 0.85;
+        }
+        #mapglobe-bg.interactive-globe { pointer-events: auto !important; z-index: 4; cursor: grab; }
+
+        #custom-grid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+
+        #geo-svg {
+            position: relative; z-index: 3; width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+            cursor: crosshair; background: transparent; touch-action: none;
+        }
+
+        .viewport-hud-overlay {
+            position: absolute; top: 8px; left: 10px; pointer-events: none;
+            font-family: var(--font-mono); font-size: 0.57rem; color: var(--main);
+            background: rgba(5, 8, 15, 0.86); border: 1px solid var(--border);
+            padding: 6px 9px; border-radius: 4px; line-height: 1.4; z-index: 10;
+        }
+
+        .viewport-QuickActions { position: absolute; top: 8px; right: 10px; display: flex; gap: 4px; z-index: 12; flex-wrap: wrap; }
+
+        #plano-results-window {
+            position: absolute; top: 40px; right: 10px; width: 350px;
+            background: var(--panel); border: 1px solid var(--mg-glow); border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
+            font-family: var(--font-mono); font-size: 0.56rem; color: var(--text);
+            z-index: 15; display: flex; flex-direction: column; overflow: hidden;
+        }
+        #plano-results-window.minimized { height: 26px !important; }
+        .win-header {
+            background: var(--surface); border-bottom: 1px solid var(--border);
+            padding: 4px 8px; font-weight: bold; color: var(--main);
+            display: flex; justify-content: space-between; align-items: center; cursor: move;
+        }
+        .win-body { padding: 5px 7px; overflow-y: auto; max-height: 52vh; display: flex; flex-direction: column; gap: 4px; }
+        .win-section { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px; }
+        .win-sec-title { color: var(--mg-glow); font-size: 0.55rem; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; display: flex; justify-content: space-between; }
+
+        .parity-bar-bg { width: 100%; height: 5px; background: #0f172a; border-radius: 3px; overflow: hidden; margin-top: 3px; border: 1px solid var(--border); }
+        .parity-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neg-glow), var(--mg-glow)); width: 100%; transition: width 0.08s; }
+
+        .key-bar {
+            position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 3px; align-items: center; z-index: 14;
+            background: var(--panel); border: 1px solid var(--border);
+            padding: 3px 7px; border-radius: 5px; font-family: var(--font-mono); font-size: 0.53rem; white-space: nowrap;
+        }
+        .kbd-key {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 19px; padding: 0 4px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 3px; color: var(--text); font-weight: bold; font-size: 0.52rem; cursor: pointer;
+        }
+        .kbd-key:hover { border-color: var(--main); color: var(--main); }
+        .kbd-key.pressed, .kbd-key.mg-active { background: var(--mg-glow); color: #000; }
+        .kbd-key.stop-active { background: var(--danger); color: #fff; }
+        .kbd-key.run-active { background: #10b981; color: #000; }
+        .kbd-key.neg-active { background: var(--neg-glow); color: #fff; }
+
+        .cockpit-controls {
+            padding: 6px 12px; background: var(--panel); border-top: 1px solid var(--border); z-index: 20;
+            display: grid; grid-template-columns: 1fr 1fr 1.1fr 1fr; gap: 10px; flex-shrink: 0;
+        }
+        .slider-box { display: flex; flex-direction: column; gap: 2px; }
+        .slider-info { display: flex; justify-content: space-between; font-size: 0.54rem; color: var(--main); font-family: var(--font-mono); }
+        input[type="range"] { width: 100%; accent-color: var(--main); height: 4px; cursor: pointer; }
+
+        /* ONDERSTE SYSTEEMLOGBOEK (MET HORIZONTALE SPLITTER) */
+        #logbook-pane {
+            height: var(--log-h); min-height: 28px; max-height: 45vh;
+            background: var(--panel); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden;
+        }
+        #logbook-list {
+            flex: 1; overflow-y: auto; padding: 4px 10px; font-family: var(--font-mono); font-size: 0.55rem; line-height: 1.4;
+        }
+        .log-row { border-bottom: 1px dashed rgba(148,163,184,0.12); padding: 1.5px 0; display: flex; gap: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="app-scale-root">
+    <!-- TOP BAR MET 5.2 MAGRITTE DUAL-SKY THEMES, 5.1 SCHAALREGELAAR & 5.3 ROUTING -->
+    <header>
+        <div class="brand-cluster">
+            <span>🧭 VORTEX <span style="color:var(--main)">OS v156.2 (v0.2)</span></span>
+            <div class="page-tabs">
+                <button class="tab-btn active" onclick="routeVortex('PAGE-03','MAP-COCKPIT','SUB-OTT-573', this)">PAGE-03 // COCKPIT</button>
+                <button class="tab-btn" onclick="routeVortex('PAGE-01','MAP-KAARTEN','SUB-CELLARIUS', this)">PAGE-01 // KAARTEN</button>
+                <button class="tab-btn" onclick="routeVortex('PAGE-02','MAP-PDF','SUB-PLANIT-PDF', this)">PAGE-02 // PDF & LASER</button>
+                <button class="tab-btn" onclick="routeVortex('PAGE-04','MAP-REIMERSWAAL','SUB-THOLEN-825', this)">PAGE-04 // REIMERSWAAL</button>
+            </div>
+        </div>
+
+        <!-- 5.2 VIER LICHT- EN KLEURMODI + 5.1 UI-SCHAAL (75% - 135%) -->
+        <div class="theme-bar">
+            <button class="btn" onclick="setThemeMode('light')" title="Helder (High-contrast Wit/Blauw)">☀️ Helder</button>
+            <button class="btn active" id="th-dark" onclick="setThemeMode('dark')" title="Donker (VORTEX Deep-Slate)">🌑 Donker</button>
+            <button class="btn" onclick="setThemeMode('daylight')" title="Daglicht (Warm Cartografisch Papier/Sepia)">🌤️ Daglicht</button>
+            <button class="btn" onclick="setThemeMode('nightlight')" title="Nachtlicht (Astronomisch Rood/Amber)">🔴 Nacht</button>
+
+            <div style="display:flex; align-items:center; gap:4px; margin-left:6px; padding:2px 6px; border:1px solid var(--border); border-radius:4px; font-family:var(--font-mono); font-size:0.56rem;">
+                <span>🔍 UI:</span>
+                <input type="range" min="0.75" max="1.35" step="0.05" value="1.00" style="width:55px;" oninput="setGlobalUiScale(this.value)">
+                <strong id="lbl-ui-scale" style="color:var(--gold); min-width:30px;">100%</strong>
+            </div>
+
+            <span id="origin-badge" style="font-family:var(--font-mono); font-size:0.56rem; padding:2px 6px; border:1px solid var(--mg-glow); color:var(--mg-glow); border-radius:3px;">σ = +1.00</span>
+            <div id="clock" style="font-family: var(--font-mono); color: var(--main); font-size: 0.68rem; font-weight:bold;">00:00:00</div>
+        </div>
+    </header>
+
+    <!-- MULTI-VIEWPORT WORKSPACE MET TRAPLOOS VERSCHAALBARE SPLITTERS -->
+    <div class="workspace-shell">
+
+        <!-- ========================================================================= -->
+        <!-- KOLOM 1: 3D MAPGLOBE, ZEEKAARTEN, EIGEN GRID UPLOADS & SCHAALMODELLEN     -->
+        <!-- ========================================================================= -->
+        <section class="column" id="col-left">
+            <div class="col-header">
+                <span>1. Kaarten, Eigen Grids & Schaalmodellen</span>
+                <span id="active-route-chip" style="color:var(--gold)">MAP-COCKPIT</span>
+            </div>
+            <div class="scroll-pane">
+
+                <!-- VENSTER 1A: 3D MAPGLOBE & API-VRIJE ZEE-/LANDKAARTEN -->
+                <div class="hud-box" id="win-MAP-GLOBE" style="border-color: var(--main);">
+                    <div class="hud-title" style="color:var(--main);">
+                        <span>🌐 3D MapGlobe & Zeekaarten (API-Vrij)</span>
+                        <div class="win-Finding-btns">
+                            <button class="win-ctrl" onclick="winAction('win-MAP-GLOBE','collapse')" title="Inklappen">—</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-GLOBE','float')" title="Zwevend">❐</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-GLOBE','max')" title="Volledig scherm">⛶</button>
+                        </div>
+                    </div>
+                    <div class="hud-body">
+                        <select class="vortex-select" id="sel-basemap" onchange="switchBasemapStyle(this.value)">
+                            <option value="carto_dark">🌑 CARTO Dark Matter (Nacht / Contrast)</option>
+                            <option value="osm_std">🗺️ OpenStreetMap Standaard (Landcartografie)</option>
+                            <option value="opentopo">⛰️ OpenTopoMap (Reliëf & Hoogtelijnen)</option>
+                            <option value="esri_sat">🛰️ ESRI World Imagery (Satelliet & Kust)</option>
+                            <option value="emodnet_bathy">🌊 EMODnet Bathymetrie (Zeebodem Diepte)</option>
+                        </select>
+
+                        <label class="chk-row"><input type="checkbox" id="chk-openseamap" checked onchange="toggleSeaLayer('openseamap-layer', this.checked)"> ⚓ <b>OpenSeaMap Zeekaart</b> (Boeien, Lichten, Banken)</label>
+                        <label class="chk-row"><input type="checkbox" id="chk-k7-globe" checked onchange="toggleSeaLayer('k7-envelope-layer', this.checked); toggleSeaLayer('k7-chords-layer', this.checked);"> 🌸 <b>k=7 Caustiek</b> (6-Bladerige Epicycloïde)</label>
+                        <label class="chk-row"><input type="checkbox" id="chk-vec245-globe" checked onchange="toggleSeaLayer('245-vector-layer', this.checked)"> 🧭 <b>245,91° Eclipsvector</b> & Vlaamse Banken</label>
+
+                        <div class="btn-grid-3" style="margin-top:4px;">
+                            <button class="btn active" id="btn-globe-3d" onclick="toggleGlobeProjectionMode()">🌐 3D Bol / 2D</button>
+                            <button class="btn" id="btn-globe-nav" onclick="toggleGlobeInteraction()">🖐️ Globe [M]</button>
+                            <button class="btn btn-home" onclick="syncGlobeToPlanimeter()">🔗 Sync Arm</button>
+                        </div>
+
+                        <div class="btn-grid" style="margin-top:4px;">
+                            <button class="btn btn-op" onclick="flyGlobeTo(5.2200, 52.2500, 5.2, 35)">📍 Laren P (NL)</button>
+                            <button class="btn btn-op" onclick="flyGlobeTo(3.6500, 51.4500, 8.5, 25)">⚓ Zeeland / Banken</button>
+                            <button class="btn btn-op" onclick="flyGlobeTo(-1.2500, 46.2500, 5.8, 40)">🌊 Biskaje (17/85)</button>
+                            <button class="btn btn-op" onclick="flyGlobeTo(-6.5000, 43.5500, 6.2, 45)">🌑 Eclips '26 Spanje</button>
+                        </div>
+
+                        <div style="margin-top:4px;">
+                            <div class="mini-lbl"><span>MapGlobe Transparantie onder Planimeter</span><span id="lbl-globe-op">85%</span></div>
+                            <input type="range" min="0" max="100" value="85" oninput="setGlobeOpacity(this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VENSTER 1B: KAARTEN, EIGEN GRIDS INLADEN & SCHAALMODELLEN -->
+                <div class="hud-box" id="win-MAP-GRIDS" style="border-color: var(--mg-glow);">
+                    <div class="hud-title" style="color:var(--mg-glow);">
+                        <span>📐 Eigen Grid Uploads & Schaalmodellen</span>
+                        <div class="win-Finding-btns">
+                            <button class="win-ctrl" onclick="winAction('win-MAP-GRIDS','collapse')">—</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-GRIDS','float')">❐</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-GRIDS','max')">⛶</button>
+                        </div>
+                    </div>
+                    <div class="hud-body">
+                        <input type="file" id="file-layer-input" accept=".txt,.csv,.svg,.json,.geojson,.png,.jpg,.jpeg,.webp,.stl" multiple style="display:none;" onchange="ingestLayerFiles(this.files)">
+                        <div class="io-dropzone" id="io-dropzone" onclick="document.getElementById('file-layer-input').click()">
+                            📥 <b>Upload Eigen Kaart / Grid / 3D Schaalmodel</b><br>
+                            <span style="font-size:0.5rem; color:var(--text-muted);">Sleep <code>.png/.jpg</code>, <code>.svg</code>, <code>.geojson</code>, <code>.stl</code>, <code>.csv</code> of <code>.txt</code> hierheen</span>
+                        </div>
+
+                        <div id="ingested-layers-list"></div>
+
+                        <div class="mini-lbl"><span>1. Parametrisch Eigen Onder-Grid (Laag 2):</span></div>
+                        <select class="vortex-select" id="sel-custom-grid" onchange="renderCustomUnderGrid()">
+                            <option value="polar_vortex">🕸️ Polair 64/60/16 + 0,5cm Vakjesrooster</option>
+                            <option value="cellarius_hex">✡️ Cellarius √3 (60°) Hexagonaal & Driehoeksgrid</option>
+                            <option value="rd_metric">📏 Orthogonaal Rijksdriehoek / Vakjesgrid</option>
+                            <option value="nautical_rose">🧭 Maritiem Zeekaart Kompasrozen-Grid (32 str.)</option>
+                            <option value="none">🚫 Geen Parametrisch Grid</option>
+                        </select>
+
+                        <div class="mini-lbl"><span>2. Cartografisch Schaalmodel & 3D STL Preset:</span></div>
+                        <select class="vortex-select" id="sel-scale-model" onchange="applyScaleModelPreset(this.value)">
+                            <option value="1">📐 Schaal 1:1 — A. Ott Nr. 573 Tafelmodel (363,00 cm²)</option>
+                            <option value="25000">🗺️ Schaal 1:25.000 — Topografische Stafkaart / Tholen</option>
+                            <option value="100000">⚓ Schaal 1:100.000 — Noordzee & Vlaamse Banken Zeekaart</option>
+                            <option value="2500000">🌍 Schaal 1:2.500.000 — Trans-Europese Eclips-Corridor</option>
+                            <option value="stl_maya">🏛️ 3D Schaalmodel: maya.stl / bredaspiegel.stl Wireframe</option>
+                        </select>
+
+                        <div class="dual-sliders">
+                            <div>
+                                <div class="mini-lbl"><span>Grid/Kaart Schaal</span><span id="lbl-ugrid-scale">100%</span></div>
+                                <input type="range" min="25" max="250" value="100" id="sl-ugrid-scale" oninput="updateUnderGridParams()">
+                            </div>
+                            <div>
+                                <div class="mini-lbl"><span>Grid Rotatie</span><span id="lbl-ugrid-rot">0°</span></div>
+                                <input type="range" min="0" max="360" value="0" id="sl-ugrid-rot" oninput="updateUnderGridParams()">
+                            </div>
+                        </div>
+                        <div class="dual-sliders" style="margin-top:3px;">
+                            <div>
+                                <div class="mini-lbl"><span>Kaart Alpha</span><span id="lbl-img-op">75%</span></div>
+                                <input type="range" min="0" max="100" value="75" id="sl-img-op" oninput="updateUnderGridParams()">
+                            </div>
+                            <div>
+                                <div class="mini-lbl"><span>SVG Raster Alpha</span><span id="lbl-svg-grid-op">35%</span></div>
+                                <input type="range" min="0" max="100" value="35" id="sl-svg-grid-op" oninput="updateUnderGridParams()">
+                            </div>
+                        </div>
+
+                        <div class="btn-grid" style="margin-top:5px;">
+                            <button class="btn btn-mg" onclick="loadPresetMatrix('assets8')">🏛️ 8 Assets Matrix</button>
+                            <button class="btn btn-mg" onclick="loadPresetMatrix('anchors')">🎯 Vector-Ankers</button>
+                            <button class="btn" onclick="loadPresetMatrix('iching16')">☯️ 16-Ster Cyclus</button>
+                            <button class="btn" onclick="stampMagnesiumPoint()">📌 +Stempel Arm [T]</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VENSTER 1C: OTT NR. 573 TROMMELWIELTJES & OORSPRONG (0,0) -->
+                <div class="hud-box" id="win-MAP-OTT" style="border-color: var(--gold);">
+                    <div class="hud-title">
+                        <span>⚙️ Ott Nr. 573 Trommelwieltjes & (0,0)</span>
+                        <div class="win-Finding-btns">
+                            <button class="win-ctrl" onclick="winAction('win-MAP-OTT','collapse')">—</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-OTT','float')">❐</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-OTT','max')">⛶</button>
+                        </div>
+                    </div>
+                    <div class="hud-body">
+                        <div class="vernier-drums">
+                            <div class="drum-card" onclick="bumpPlanimeterVernier(100)" title="+100 Nonius (+10 cm²)">
+                                <small>TELWIEL ×1000</small>
+                                <strong id="drum-th">3</strong>
+                            </div>
+                            <div class="drum-card" onclick="bumpPlanimeterVernier(10)" title="+10 Nonius (+1 cm²)">
+                                <small>MEETROL ×10</small>
+                                <strong id="drum-te">63</strong>
+                            </div>
+                            <div class="drum-card" onclick="bumpPlanimeterVernier(1)" title="+1 Nonius (+0.1 cm²)">
+                                <small>NONIUS (0,1)</small>
+                                <strong id="drum-un">0</strong>
+                            </div>
+                        </div>
+
+                        <div class="btn-grid">
+                            <button class="btn btn-home" onclick="resetToBeginstand()">🎯 Beginstand [0]</button>
+                            <button class="btn btn-neg" id="btn-fold-anim" onclick="toggleOriginFoldAnimation()">🌀 Vouw (0,0) [X]</button>
+                        </div>
+                        <div class="btn-grid-3">
+                            <button class="btn btn-start" onclick="setGlobalAxisFlatten(1.0)">➕ Positief [7]</button>
+                            <button class="btn btn-home" onclick="setGlobalAxisFlatten(0.0)">➖ Plat (0,0) [8]</button>
+                            <button class="btn btn-neg" onclick="setGlobalAxisFlatten(-1.0)">🔄 Negatief [9]</button>
+                        </div>
+                        <div style="margin-top:4px;">
+                            <div class="mini-lbl">
+                                <span>Wiel-As Kanteling Door Oorsprong (σ_Y)</span>
+                                <span id="lbl-global-sigma" style="color:var(--gold)">+1.00 (Rond)</span>
+                            </div>
+                            <input type="range" min="-1" max="1" step="0.01" value="1" id="slider-global-sigma" oninput="setGlobalAxisFlatten(this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VENSTER 1D: ONAFHANKELIJKE WIELEN (64 / 60 / 16) -->
+                <div class="hud-box" id="win-MAP-WHEELS" style="border-color: var(--ai-glow);">
+                    <div class="hud-title" style="color:var(--ai-glow);">
+                        <span>⚙️ Onafhankelijke Wielen (64 / 60 / 16)</span>
+                        <div class="win-Finding-btns">
+                            <button class="win-ctrl" onclick="syncAllWheelsToZero()" title="Reset 0°">0°</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-WHEELS','collapse')">—</button>
+                        </div>
+                    </div>
+                    <div class="hud-body">
+                        <div class="wheel-ctrl-row">
+                            <div class="wheel-ctrl-head" style="color:var(--main);">
+                                <span>1. I Ching Wiel (64) [Q/E]</span><span id="lbl-w64">0.0° | +1.00</span>
+                            </div>
+                            <div class="dual-sliders">
+                                <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-64" oninput="setWheelParam(64, 'rot', this.value)">
+                                <input type="range" min="-1" max="1" step="0.02" value="1" id="sl-tilt-64" oninput="setWheelParam(64, 'tilt', this.value)">
+                            </div>
+                        </div>
+                        <div class="wheel-ctrl-row">
+                            <div class="wheel-ctrl-head" style="color:var(--purple);">
+                                <span>2. Jiazi Wiel (60) [Z/C]</span><span id="lbl-w60">0.0° | +1.00</span>
+                            </div>
+                            <div class="dual-sliders">
+                                <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-60" oninput="setWheelParam(60, 'rot', this.value)">
+                                <input type="range" min="-1" max="1" step="0.02" value="1" id="sl-tilt-60" oninput="setWheelParam(60, 'tilt', this.value)">
+                            </div>
+                        </div>
+                        <div class="wheel-ctrl-row" style="margin-bottom:0;">
+                            <div class="wheel-ctrl-head" style="color:var(--gold);">
+                                <span>3. Binnenwiel (16) [U/I]</span><span id="lbl-w16">0.0° | +1.00</span>
+                            </div>
+                            <div class="dual-sliders">
+                                <input type="range" min="0" max="360" step="0.5" value="0" id="sl-rot-16" oninput="setWheelParam(16, 'rot', this.value)">
+                                <input type="range" min="-1" max="1" step="0.02" value="1" id="sl-tilt-16" oninput="setWheelParam(16, 'tilt', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- VERTICALE SPLITTER 1 -->
+        <div class="v-splitter" id="vSplit1" title="Sleep om Kolom 1 te verschalen">⋮</div>
+
+        <!-- ========================================================================= -->
+        <!-- KOLOM 2: MATRIX REKENOMGEVING, SANITIZER, OPERATOREN & ANALYZER           -->
+        <!-- ========================================================================= -->
+        <section class="column" id="col-mid">
+            <div class="col-header">
+                <span>2. Matrix Simulator & Operator Tools</span>
+                <span id="sim-status" style="color:var(--mg-glow)">VIVALDI // READY</span>
+            </div>
+            <div class="scroll-pane">
+
+                <div class="hud-box" id="win-MAP-SANITIZER" style="border-color: var(--ai-glow);">
+                    <div class="hud-title" style="color:var(--ai-glow);">
+                        <span>🧹 1. Matrix Inlezen & Opschonen</span>
+                        <span id="lbl-clean-stats" style="color:var(--mg-glow)">8×7 actief</span>
+                        <div class="win-Finding-btns">
+                            <button class="win-ctrl" onclick="winAction('win-MAP-SANITIZER','collapse')">—</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-SANITIZER','max')">⛶</button>
+                        </div>
+                    </div>
+                    <div class="hud-body">
+                        <textarea id="raw-matrix-buffer" class="matrix-raw-io" placeholder="Plak telemetrie, .txt, .csv of coördinaten..."></textarea>
+                        <div class="btn-grid-3">
+                            <button class="btn btn-mg" onclick="parseAndCleanRawBuffer()">🧹 Schoon Op</button>
+                            <button class="btn btn-op" onclick="exportCleanMatrix('csv')">📤 CSV</button>
+                            <button class="btn btn-op" onclick="exportCleanMatrix('scilab')">📤 Scilab/R</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud-box" id="win-MAP-OPS" style="border-color: var(--gold);">
+                    <div class="hud-title">
+                        <span>⚡ 2. Operator Tools (M' = Ô(M))</span>
+                        <div class="win-Finding-btns">
+                            <button class="win-ctrl" onclick="winAction('win-MAP-OPS','collapse')">—</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-OPS','float')">❐</button>
+                        </div>
+                    </div>
+                    <div class="hud-body">
+                        <div class="btn-grid-4">
+                            <button class="btn btn-home" onclick="applyMatrixOperator('flatten0')">P̂_0 Plat</button>
+                            <button class="btn btn-neg" onclick="applyMatrixOperator('invert_origin')">Î_-1 Oorspr.</button>
+                            <button class="btn btn-start" onclick="applyMatrixOperator('restore_pos')">Î_+1 Pos.</button>
+                            <button class="btn btn-op" onclick="applyMatrixOperator('transpose')">T̂ (X↔Y)</button>
+                        </div>
+                        <div class="btn-grid-4">
+                            <button class="btn btn-op" onclick="applyMatrixOperator('rot_sy')">R̂(+5.625°)</button>
+                            <button class="btn btn-op" onclick="applyMatrixOperator('rot_60')">R̂(+60°)</button>
+                            <button class="btn btn-mg" onclick="applyMatrixOperator('hinge_involute')">Ĝ (Scharnier)</button>
+                            <button class="btn btn-mg" onclick="applyMatrixOperator('nuclear_hugua')">N̂ (Hu Gua)</button>
+                        </div>
+                        <div class="btn-grid">
+                            <button class="btn" onclick="applyMatrixOperator('snap_vakjes')">📏 Snap 0,5cm Vakjes</button>
+                            <button class="btn" onclick="applyMatrixOperator('normalize_circle')">⭕ Norm. 363cm² Cirkel</button>
+                        </div>
+                        <div class="expr-bar">
+                            <span style="color:var(--gold); font-weight:bold;">Ô:</span>
+                            <input type="text" id="inp-op-expr" class="expr-inp" placeholder="theta + 29 | rho * -1 | sigma = 0" onkeypress="if(event.key==='Enter') runCustomOperatorExpr()">
+                            <button class="btn btn-home" onclick="runCustomOperatorExpr()">Run</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud-box" id="win-MAP-SEQ" style="border-color: var(--mg-glow);">
+                    <div class="hud-title" style="color:var(--mg-glow);">
+                        <span>🎛️ 3. Matrix Sequencer (<span id="lbl-mat-dim">8×7</span>)</span>
+                        <span id="lbl-sim-step" style="color:var(--gold)">Rij: #1 / 8</span>
+                        <div class="win-Finding-btns">
+                            <button class="win-ctrl" onclick="winAction('win-MAP-SEQ','collapse')">—</button>
+                            <button class="win-ctrl" onclick="winAction('win-MAP-SEQ','max')">⛶</button>
+                        </div>
+                    </div>
+                    <div class="hud-body">
+                        <div class="btn-grid-4">
+                            <button class="btn btn-start" id="btn-sim-play" onclick="toggleMatrixSimulator()">▶️ Simuleer</button>
+                            <button class="btn btn-op" onclick="stepMatrixSimulator(-1)">⏮️ Vorige</button>
+                            <button class="btn btn-op" onclick="stepMatrixSimulator(1)">⏭️ Volgende</button>
+                            <button class="btn btn-stop" onclick="stopPlanimeterArm()">🛑 Stop [S]</button>
+                        </div>
+                        <div class="matrix-grid-wrap">
+                            <table class="mat-table">
+                                <thead>
+                                    <tr><th>Rij</th><th>X</th><th>Y</th><th>θ (°)</th><th>ρ</th><th>σ</th><th>Nonius</th><th>H (6-bit)</th></tr>
+                                </thead>
+                                <tbody id="matrix-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hud-box" id="win-MAP-SPEC">
+                    <div class="hud-title">
+                        <span>📊 4. Spectrale Invarianten & Schaalmodel</span>
+                        <span id="an-rank" style="color:var(--main)">Rang = 2</span>
+                    </div>
+                    <div class="hud-body">
+                        <div class="kv"><span>Zwaartepunt μ(x̄, ȳ):</span><span id="an-centroid">[0.00, 0.00] cm</span></div>
+                        <div class="kv"><span>Covariantie Tr(Σ) / Det(Σ):</span><span id="an-tr-det">Tr=0.00 | det=0.00</span></div>
+                        <div class="kv"><span>Eigenwaarden (λ₁, λ₂):</span><span id="an-eigen" style="color:var(--gold)">λ₁=0.0, λ₂=0.0</span></div>
+                        <div class="kv"><span>Matrix Padlengte (∑ Δs):</span><span id="an-path-len">0.00 cm</span></div>
+                        <div class="kv"><span>Shoelace Oppervlakte:</span><span id="an-shoelace" style="color:var(--mg-glow)">0.00 cm²</span></div>
+                        <div class="kv"><span>6-Bit Hamming-Flux:</span><span id="an-hamming" style="color:var(--purple)">0 flips</span></div>
+                        <label class="chk-row"><input type="checkbox" id="chk-pyramid" checked onchange="renderConcentricPyramid()"> Toon 8-Assets Concentrische Piramide [F]</label>
+                        <label class="chk-row"><input type="checkbox" id="chk-adapt-trace" checked onchange="renderMagnesiumOvertrek()"> Pas Matrix-Laag aan op Oorsprong (σ)</label>
+                        <label class="chk-row"><input type="checkbox" id="chk-hinge-locus" checked onchange="renderMagnesiumOvertrek()"> Toon Scharnier-Involute Baan (G)</label>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- VERTICALE SPLITTER 2 -->
+        <div class="v-splitter" id="vSplit2" title="Sleep om Kolom 2 te verschalen">⋮</div>
+
+        <!-- ========================================================================= -->
+        <!-- KOLOM 3: OMNI-BRIDGE VIEWPORT + HORIZONTALE SPLITTER + SYSTEEMLOGBOEK     -->
+        <!-- ========================================================================= -->
+        <section class="column" id="col-right">
+            <div class="col-header">
+                <span>3. Omni-Bridge Viewport [3D MAPGLOBE + ZEEKAARTEN + EIGEN GRID + OTT NR. 573]</span>
+                <span id="hud-coord-mini" style="color:var(--mg-glow); font-family:var(--font-mono);">[T: 0.00, +10.75 cm]</span>
+            </div>
+
+            <div class="viewport-frame">
+                <div id="svg-stage">
+                    <!-- LAAG 1: 3D MAPGLOBE & ZEEKAARTEN -->
+                    <div id="mapglobe-bg"></div>
+
+                    <!-- LAAG 2: EIGEN GRID & 3D SCHAALMODEL CANVAS -->
+                    <canvas id="custom-grid-canvas"></canvas>
+
+                    <div class="viewport-hud-overlay">
+                        <div>SIMULATOR RIJ: <b id="vp-sim-row" style="color:var(--gold)">#1 (BEGINSTAND)</b></div>
+                        <div>OTT NR. 573 NONIUS: <b id="vp-nonius" style="color:var(--gold)">+3630</b> (<b id="vp-area">+363.0 cm²</b>)</div>
+                        <div>SCHAALMODEL VLAK: <b id="vp-model-area" style="color:var(--main)">363,00 cm² (1:1)</b></div>
+                        <div>VOLGSTIFT T(θ, ρ): <b id="vp-az">0.00°</b> | ρ = <b id="vp-rho">+10.75 cm</b></div>
+                        <div>GIS / ZEEKAART LOCK: <b id="vp-gis-coord" style="color:var(--ai-glow)">52.250°N, 5.220°E</b></div>
+                        <div>OORSPRONG-AS (det J): <b id="vp-parity" style="color:var(--mg-glow)">σ = +1.00 (ROND)</b></div>
+                    </div>
+
+                    <div class="viewport-QuickActions">
+                        <button class="btn btn-op" id="btn-vp-globe-nav" onclick="toggleGlobeInteraction()">🌍 Draai Globe [M]</button>
+                        <button class="btn btn-home" onclick="resetToBeginstand()">🎯 Begin [0]</button>
+                        <button class="btn" onclick="setGlobalAxisFlatten(0.0)">➖ Plat [8]</button>
+                        <button class="btn btn-neg" onclick="setGlobalAxisFlatten(-1.0)">🔄 Negatief [9]</button>
+                        <button class="btn btn-mg" onclick="stampMagnesiumPoint()">📌 +Rij [T]</button>
+                        <button class="btn btn-mg" onclick="toggleResultsWindow()">📊 Telemetrie [V]</button>
+                    </div>
+
+                    <!-- ZWEVEND TELEMETRIE VENSTER -->
+                    <div id="plano-results-window">
+                        <div class="win-header" id="win-drag-handle">
+                            <span>📐 PLANO-ARM, I CHING & SCHAAL TELEMETRIE</span>
+                            <div style="display:flex; gap:5px;">
+                                <button class="win-ctrl" onclick="minimizeResultsWindow()">—</button>
+                                <button class="win-ctrl" onclick="toggleResultsWindow()">✕</button>
+                            </div>
+                        </div>
+                        <div class="win-body">
+                            <div class="win-section">
+                                <div class="win-sec-title">
+                                    <span>1. Planimeter-Arm & Coördinaten</span>
+                                    <span id="res-arm-state" style="color:var(--gold)">BEGINSTAND [0]</span>
+                                </div>
+                                <div class="kv"><span>Arm Draaihoek (θ):</span><span id="res-arm-az">0.00° (N)</span></div>
+                                <div class="kv"><span>Straal (ρ_eff):</span><span id="res-arm-rho">+10.75 cm</span></div>
+                                <div class="kv"><span>Volgstift T(x, y):</span><span id="res-tx-ty">[0.00, +10.75] cm</span></div>
+                                <div class="kv"><span>Scharnier G(x, y):</span><span id="res-gx-gy">[-3.48, +6.65] cm</span></div>
+                                <div class="kv"><span>Hoeken α | β | γ:</span><span id="res-angles">195° | 72° | 117.4°</span></div>
+                                <div class="kv"><span>Projectie-As (σ_Y):</span><span id="res-jacobian" style="color:var(--mg-glow)">+1.00</span></div>
+                                <div class="parity-bar-bg"><div class="parity-bar-fill" id="res-parity-bar"></div></div>
+                            </div>
+
+                            <div class="win-section">
+                                <div class="win-sec-title">
+                                    <span>2. I Ching (64) & Binnenwielen</span>
+                                    <span id="res-chirality-badge" style="color:var(--main)">CHIRALITEIT: +</span>
+                                </div>
+                                <div class="kv"><span>I Ching Wiel (64):</span><span id="res-iching-wheel">#0 (111111)</span></div>
+                                <div class="kv"><span>Antipode door (0,0):</span><span id="res-iching-inv" style="color:var(--neg-glow)">#32 (000000)</span></div>
+                                <div class="kv"><span>Jiazi Wiel (60):</span><span id="res-jiazi-wheel">Jia-Zi (#1/60)</span></div>
+                                <div class="kv"><span>Binnenwiel (16):</span><span id="res-inner-wheel">N (#0) | N²=111111</span></div>
+                                <div class="hex-box">
+                                    <div><div style="font-size:0.48rem;">H (Actief)</div><div id="vis-H"></div><div id="lbl-H" style="color:var(--main);">111111</div></div>
+                                    <div><div style="font-size:0.48rem;">N (Hu Gua)</div><div id="vis-N"></div><div id="lbl-N" style="color:var(--gold);">111111</div></div>
+                                    <div><div style="font-size:0.48rem;">N² / Inv</div><div id="vis-N2"></div><div id="lbl-N2" style="color:var(--neg-glow);">111111</div></div>
+                                </div>
+                            </div>
+
+                            <div class="win-section">
+                                <div class="win-sec-title">
+                                    <span>3. Nonius & Schaalmodel Integratie</span>
+                                    <span id="res-nonius-badge" style="color:var(--gold)">+3630 nonius</span>
+                                </div>
+                                <div class="kv"><span>Tafeloppervlak (1:1):</span><span id="res-sector-area">+363.00 cm²</span></div>
+                                <div class="kv"><span>Werkelijk Vlak (∬ dA):</span><span id="res-gis-area" style="color:var(--ai-glow)">363.00 cm²</span></div>
+                                <div class="kv"><span>Matrix-Polygoon:</span><span id="res-poly-area" style="color:var(--mg-glow)">0.0 cm | 0.0 cm²</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="key-bar">
+                        <span class="kbd-key" id="key-0" onclick="resetToBeginstand()">0:BEGIN</span>
+                        <span class="kbd-key" id="key-left" onclick="stepPolar(-1, 0)">←</span>
+                        <span class="kbd-key" id="key-up" onclick="stepPolar(0, 0.5)">↑</span>
+                        <span class="kbd-key" id="key-down" onclick="stepPolar(0, -0.5)">↓</span>
+                        <span class="kbd-key" id="key-right" onclick="stepPolar(1, 0)">→</span>
+                        <span style="color:var(--border)">|</span>
+                        <span class="kbd-key" id="key-8" onclick="setGlobalAxisFlatten(0.0)">8:PLAT(0)</span>
+                        <span class="kbd-key" id="key-9" onclick="setGlobalAxisFlatten(-1.0)">9:NEG(-1)</span>
+                        <span class="kbd-key" id="key-7" onclick="setGlobalAxisFlatten(1.0)">7:POS(+1)</span>
+                        <span style="color:var(--border)">|</span>
+                        <span class="kbd-key" id="key-m" onclick="toggleGlobeInteraction()">M:GLOBE</span>
+                        <span class="kbd-key mg-active" id="key-p" onclick="toggleMatrixSimulator()">P:SIM</span>
+                        <span class="kbd-key" id="key-s" onclick="stopPlanimeterArm()">S:STOP</span>
+                        <span class="kbd-key run-active" id="key-g" onclick="startPlanimeterArm()">G:VRIJ</span>
+                        <span class="kbd-key mg-active" id="key-t" onclick="stampMagnesiumPoint()">T:+RIJ</span>
+                    </div>
+
+                    <!-- LAAG 3: SVG PLANIMETER & WIELEN -->
+                    <svg id="geo-svg" viewBox="-480 -480 960 960" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <pattern id="grid-05cm" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--grid-fine)" stroke-width="0.7"/>
+                                <path d="M 0 0 L 20 20" fill="none" stroke="rgba(0, 210, 255, 0.05)" stroke-width="0.5"/>
+                            </pattern>
+                            <pattern id="grid-25cm" width="100" height="100" patternUnits="userSpaceOnUse">
+                                <rect width="100" height="100" fill="url(#grid-05cm)"/>
+                                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--grid-major)" stroke-width="1.1"/>
+                            </pattern>
+                            <filter id="laser-glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="3.0" result="blur1"/>
+                                <feMerge><feMergeNode in="blur1"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                            <filter id="mg-flare" x="-30%" y="-30%" width="160%" height="160%">
+                                <feGaussianBlur stdDeviation="2.0" result="mgBlur"/>
+                                <feMerge><feMergeNode in="mgBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                            <marker id="arrow-magenta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3385"/>
+                            </marker>
+                        </defs>
+
+                        <rect id="svg-base-grid-rect" x="-480" y="-480" width="960" height="960" fill="url(#grid-25cm)" opacity="0.35"/>
+                        <g id="assets-image-layer" opacity="0.75"></g>
+                        <g id="pyramid-footprint-layer"></g>
+
+                        <g id="axes" opacity="0.85">
+                            <line x1="-480" y1="0" x2="480" y2="0" stroke="#50ffb0" stroke-width="1.2" stroke-dasharray="6,3"/>
+                            <line x1="0" y1="-480" x2="0" y2="480" stroke="#00e5ff" stroke-width="1.2" stroke-dasharray="6,3"/>
+                            <circle cx="0" cy="0" r="5" fill="none" stroke="#ffcc33" stroke-width="1.5"/>
+                            <text x="10" y="-8" fill="#ffcc33" font-size="9" font-family="Courier New" font-weight="bold">OORSPRONG (0,0)</text>
+                        </g>
+
+                        <g id="multi-axis-wheels-root">
+                            <g id="wheel-iching-64"></g>
+                            <g id="wheel-jiazi-60"></g>
+                            <g id="wheel-inner-16"></g>
+                        </g>
+
+                        <g id="magnesium-overtrek-layer">
+                            <rect x="-466" y="-466" width="932" height="932" fill="none" stroke="rgba(80, 255, 176, 0.35)" stroke-width="1" stroke-dasharray="8,4" pointer-events="none"/>
+                            <g id="mg-traces-group" filter="url(#mg-flare)"></g>
+                        </g>
+
+                        <g id="planimeter-layer"></g>
+                        <g id="laser-layer"></g>
+                    </svg>
+                </div>
+
+                <div class="cockpit-controls">
+                    <div class="slider-box">
+                        <div class="slider-info">ARM DRAAI (θ ←/→) <span id="yaw-deg">0.0°</span></div>
+                        <input type="range" min="0" max="360" step="0.1" value="0" id="yaw-slider" oninput="processKinematica('yaw', this.value)">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-info">STRAAL DOOR (0,0) (ρ ↑/↓) <span id="rho-val">+10.75 cm</span></div>
+                        <input type="range" min="-11.5" max="11.5" step="0.05" value="10.75" id="rho-slider" oninput="processKinematica('rho', this.value)">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-info">WIEL PLAT → NEGATIEF (σ) <span id="sigma-val" style="color:var(--mg-glow)">+1.00</span></div>
+                        <input type="range" min="-1" max="1" step="0.01" value="1.0" id="sigma-slider" oninput="setGlobalAxisFlatten(this.value)">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-info">3D PITCH / GOLFLENGTE <span id="pitch-deg">0° | 517.3nm</span></div>
+                        <input type="range" min="0" max="60" step="1" value="0" id="pitch-slider" oninput="processKinematica('pitch', this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- HORIZONTALE SPLITTER VOOR HET SYSTEEMLOGBOEK -->
+            <div class="h-splitter" id="hSplitLog" title="Sleep om het Systeemlogboek te verschalen">⋯</div>
+
+            <!-- SYSTEEMLOGBOEK (PAGE-ID -> MAP-ID -> SUBMAP-ID TELEMETRIE) -->
+            <footer id="logbook-pane">
+                <div class="col-header" style="padding: 4px 10px;">
+                    <span>📜 VORTEX Systeemlogboek (pageId → mapId → submapId)</span>
+                    <div style="display:flex; gap:6px;">
+                        <span id="log-counter" style="color:var(--gold)">0 events</span>
+                        <button class="win-ctrl" onclick="clearVortexLog()" title="Wis Logboek">🗑️</button>
+                    </div>
+                </div>
+                <div id="logbook-list"></div>
+            </footer>
+        </section>
+
+    </div>
+</div>
+
+<script>
+    // --- CONSTANTES & SCHAAL ---
+    const PX_PER_CM = 40;
+    const R_KOMPAS_CM = Math.sqrt(363.0 / Math.PI); // 10.74905 cm
+    const R_KOMPAS_PX = R_KOMPAS_CM * PX_PER_CM;    // 429.96 px
+    const R_JIAZI_PX  = 355;
+    const R_NUC_PX    = (R_KOMPAS_CM / 4) * PX_PER_CM;
+
+    const STEMS = ["Jia","Yi","Bing","Ding","Wu","Ji","Geng","Xin","Ren","Gui"];
+    const BRANCHES = ["Zi","Chou","Yin","Mao","Chen","Si","Wu","Wei","Shen","You","Xu","Hai"];
+    const COMPASS_16 = ["N","NNO","NO","ONO","O","OZO","ZO","ZZO","Z","ZZW","ZW","WZW","W","WNW","NW","NNW"];
+    const CORE_COLORS = { "00": "#3b82f6", "10": "#eab308", "01": "#ec4899", "11": "#ef4444" };
+
+    const FUNDAMENTAL_ASSETS = [
+        { name: "vizierkerf.png", width_px: 671, height_px: 355, width_cm: 16.78, height_cm: 8.88, area_cm2: 148.9, nonius: 1489, diagAngle: 62.1, rhoCm: 8.875, color: "#50ffb0" },
+        { name: "Schermafdruk_2026-10-08.png", width_px: 1953, height_px: 786, width_cm: 48.8, height_cm: 19.6, area_cm2: 959.5, nonius: 9595, diagAngle: 68.1, rhoCm: 9.50, color: "#38bdf8" },
+        { name: "cellarius-horizon-oost-v5.png", width_px: 1950, height_px: 1125, width_cm: 48.8, height_cm: 28.1, area_cm2: 1370.8, nonius: 13708, diagAngle: 60.0, rhoCm: 10.00, color: "#ffcc33" },
+        { name: "cellarius-raster-v3.png", width_px: 1500, height_px: 1500, width_cm: 37.5, height_cm: 37.5, area_cm2: 1406.2, nonius: 14062, diagAngle: 45.0, rhoCm: 10.25, color: "#00ffcc" },
+        { name: "breda-spiegel-wnw-v8.png", width_px: 2048, height_px: 1195, width_cm: 51.2, height_cm: 29.9, area_cm2: 1529.9, nonius: 15299, diagAngle: 59.7, rhoCm: 10.50, color: "#f97316" },
+        { name: "cellarius-raster-v2.png", width_px: 2027, height_px: 2048, width_cm: 50.7, height_cm: 51.2, area_cm2: 2594.3, nonius: 25943, diagAngle: 44.7, rhoCm: 10.65, color: "#a855f7" },
+        { name: "cellarius-raster-v4.png", width_px: 2048, height_px: 2048, width_cm: 51.2, height_cm: 51.2, area_cm2: 2621.4, nonius: 26214, diagAngle: 135.0, rhoCm: 10.75, color: "#ff3385" },
+        { name: "nebra-pleiaden-overlay.png", width_px: 2048, height_px: 2048, width_cm: 51.2, height_cm: 51.2, area_cm2: 2621.4, nonius: 26214, diagAngle: 225.0, rhoCm: 10.75, color: "#fde047" }
+    ];
+
+    const assetsLayerEl = document.getElementById('assets-image-layer');
+    const pyramidLayerEl = document.getElementById('pyramid-footprint-layer');
+    const wheel64El = document.getElementById('wheel-iching-64');
+    const wheel60El = document.getElementById('wheel-jiazi-60');
+    const wheel16El = document.getElementById('wheel-inner-16');
+    const mgTracesGroup = document.getElementById('mg-traces-group');
+    const planimeterGroup = document.getElementById('planimeter-layer');
+    const laserGroup = document.getElementById('laser-layer');
+    const svgEl = document.getElementById('geo-svg');
+
+    const state = {
+        pageId: 'PAGE-03', mapId: 'MAP-COCKPIT', submapId: 'SUB-OTT-573',
+        uiScale: 1.0,
+        scaleModelRatio: 1,
+        stlWireframeActive: false,
+        azDeg: 0.0,
+        rhoCm: R_KOMPAS_CM,
+        globalSigmaY: 1.0,
+        globalSigmaX: 1.0,
+        w64: { rot: 0.0, tilt: 1.0 },
+        w60: { rot: 0.0, tilt: 1.0 },
+        w16: { rot: 0.0, tilt: 1.0 },
+        poleX: 0, poleY: -300,
+        txPx: 0, tyPx: -R_KOMPAS_PX,
+        gxPx: 0, gyPx: 0,
+        alphaDeg: 0, betaDeg: 0, gammaDeg: 90,
+        pitchDeg: 0,
+        armStopped: false,
+        mouseFollow: false,
+        foldAnimTimer: null,
+        foldDirection: -1,
+        laserEnabled: true,
+        matrix: [],
+        activeSimRow: 0,
+        simTimer: null,
+        ingestedLayers: [],
+        eigenAngleDeg: 0, eigenVal1: 0, eigenVal2: 0,
+        centroidX: 0, centroidY: 0,
+        globe3D: true,
+        globeInteractive: false,
+        uGridScale: 1.0,
+        uGridRot: 0,
+        logCount: 0
+    };
+
+    // --- SYSTEEMLOGBOEK & HIËRARCHISCHE ROUTING (5.3) ---
+    function logVortex(action, pId, mId, sId, msg) {
+        state.logCount++;
+        document.getElementById('log-counter').textContent = `${state.logCount} events`;
+        const list = document.getElementById('logbook-list');
+        const t = new Date().toLocaleTimeString('nl-NL');
+        const row = document.createElement('div');
+        row.className = 'log-row';
+        row.innerHTML = `<span style="color:var(--text-muted)">[${t}]</span> <b style="color:var(--gold)">${action}</b> <span style="color:var(--ai-glow)">${pId}→${mId}→${sId}</span> <span>${msg}</span>`;
+        list.prepend(row);
+    }
+
+    function clearVortexLog() {
+        document.getElementById('logbook-list').innerHTML = '';
+        state.logCount = 0;
+        document.getElementById('log-counter').textContent = '0 events';
+    }
+
+    function routeVortex(pId, mId, sId, btnEl) {
+        state.pageId = pId; state.mapId = mId; state.submapId = sId;
+        window.location.hash = `#${pId}/${mId}/${sId}`;
+        document.getElementById('active-route-chip').textContent = `${pId} // ${mId}`;
+        document.querySelectorAll('.page-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+        if (btnEl) btnEl.classList.add('active');
+
+        if (pId === 'PAGE-01') {
+            document.getElementById('sel-custom-grid').value = 'cellarius_hex';
+            renderCustomUnderGrid();
+            loadPresetMatrix('assets8');
+        } else if (pId === 'PAGE-02') {
+            loadPresetMatrix('anchors');
+        } else if (pId === 'PAGE-04') {
+            flyGlobeTo(4.1600, 51.4900, 9.2, 30);
+            state.azDeg = 82.5;
+            updatePlanimeterFromPolar(true);
+        }
+        logVortex('ROUTE_NAV', pId, mId, sId, `Navigatie geactiveerd in Vivaldi workspace`);
+    }
+
+    // --- 5.1 & 5.2 THEMA'S, UI-SCHAAL & VENSTERBEDIENING ---
+    function setThemeMode(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        logVortex('THEME_SET', state.pageId, 'UI-THEME', theme.toUpperCase(), `Magritte Dual-Sky modus: ${theme}`);
+        renderCustomUnderGrid();
+    }
+
+    function setGlobalUiScale(val) {
+        state.uiScale = parseFloat(val) || 1.0;
+        document.documentElement.style.setProperty('--ui-scale', state.uiScale);
+        document.getElementById('lbl-ui-scale').textContent = `${Math.round(state.uiScale * 100)}%`;
+        setTimeout(() => {
+            renderCustomUnderGrid();
+            if (globeMap) globeMap.resize();
+        }, 60);
+    }
+
+    function winAction(winId, action) {
+        const el = document.getElementById(winId);
+        if (!el) return;
+        if (action === 'collapse') el.classList.toggle('collapsed');
+        else if (action === 'float') { el.classList.remove('maximized-win'); el.classList.toggle('floating-win'); }
+        else if (action === 'max') { el.classList.remove('floating-win'); el.classList.toggle('maximized-win'); }
+        logVortex('WIN_' + action.toUpperCase(), state.pageId, winId, state.submapId, `Vensterstatus aangepast`);
+    }
+
+    // --- SCHAALMODELLEN & 3D STL WIREFRAME PROJECTIE ---
+    function applyScaleModelPreset(val) {
+        if (val === 'stl_maya') {
+            state.stlWireframeActive = true;
+            state.scaleModelRatio = 100;
+            renderCustomUnderGrid();
+            logVortex('SCALE_MODEL', state.pageId, 'MAP-ASSETS3D', 'SUB-STL-MAYA', '3D STL Schaalmodel Wireframe geprojecteerd onder Planimeter');
+            return;
+        }
+        state.stlWireframeActive = false;
+        state.scaleModelRatio = parseFloat(val) || 1;
+        renderCustomUnderGrid();
+        updatePlanimeterFromPolar(false);
+        logVortex('SCALE_MODEL', state.pageId, 'MAP-REKENTOOLS', `1:${state.scaleModelRatio}`, `Cartografisch schaalmodel ingesteld op 1:${state.scaleModelRatio.toLocaleString('nl-NL')}`);
+    }
+
+    // =========================================================================================
+    // 0. VIVALDI-VEILIGE 3D MAPGLOBE & ZEEKAARTEN (MAPLIBRE GL JS v4)
+    // =========================================================================================
+    let globeMap = null;
+
+    const FREE_TILE_SOURCES = {
+        carto_dark: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png', 'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'],
+        osm_std: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+        opentopo: ['https://a.tile.opentopomap.org/{z}/{x}/{y}.png', 'https://b.tile.opentopomap.org/{z}/{x}/{y}.png'],
+        esri_sat: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        emodnet_bathy: ['https://tiles.emodnet-bathymetry.eu/2020/baselayer/web_mercator/{z}/{x}/{y}.png']
+    };
+
+    function generateK7GlobeGeoJSON(centerLng = 1.85, centerLat = 47.25, radiusDeg = 6.0) {
+        const N = 260, m = 7, features = [], pts = [];
+        for (let i = 0; i < N; i++) {
+            const theta = (Math.PI / 2) - (2 * Math.PI * i / N);
+            pts.push([centerLng + radiusDeg * Math.cos(theta) * 1.45, centerLat + radiusDeg * Math.sin(theta)]);
+        }
+        for (let x = 0; x < N; x++) {
+            const target = (m * x) % N;
+            features.push({
+                type: 'Feature',
+                properties: { type: 'chord' },
+                geometry: { type: 'LineString', coordinates: [pts[x], pts[target]] }
+            });
+        }
+        const envCoords = [];
+        for (let i = 0; i <= 360; i++) {
+            const t = (2 * Math.PI * i) / 360;
+            const r = radiusDeg / (m + 1);
+            const ex = r * (m * Math.cos(t) + Math.cos(m * t)) * 1.45;
+            const ey = r * (m * Math.sin(t) - Math.sin(m * t));
+            envCoords.push([centerLng + ex, centerLat + ey]);
+        }
+        features.push({
+            type: 'Feature',
+            properties: { type: 'envelope' },
+            geometry: { type: 'LineString', coordinates: envCoords }
+        });
+        return { type: 'FeatureCollection', features };
+    }
+
+    function initMapGlobe() {
+        if (typeof maplibregl === 'undefined') return;
+        try {
+            globeMap = new maplibregl.Map({
+                container: 'mapglobe-bg',
+                preserveDrawingBuffer: true, // Voorkomt Vivaldi WebGL context clear bug
+                style: {
+                    version: 8,
+                    sources: {
+                        'base-tiles': {
+                            type: 'raster',
+                            tiles: FREE_TILE_SOURCES.carto_dark,
+                            tileSize: 256,
+                            attribution: '© CARTO © OpenStreetMap © OpenSeaMap'
+                        },
+                        'openseamap-tiles': {
+                            type: 'raster',
+                            tiles: ['https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png'],
+                            tileSize: 256
+                        }
+                    },
+                    layers: [
+                        { id: 'base-raster-layer', type: 'raster', source: 'base-tiles', minzoom: 0, maxzoom: 22 },
+                        { id: 'openseamap-layer', type: 'raster', source: 'openseamap-tiles', minzoom: 0, maxzoom: 18 }
+                    ]
+                },
+                center: [1.85, 47.25],
+                zoom: 4.1,
+                pitch: 35,
+                bearing: 0
+            });
+
+            globeMap.on('style.load', () => {
+                if (typeof globeMap.setProjection === 'function') {
+                    try { globeMap.setProjection({ type: 'globe' }); } catch (e) {}
+                }
+            });
+
+            globeMap.on('load', () => {
+                globeMap.addSource('k7-matrix', {
+                    type: 'geojson',
+                    data: generateK7GlobeGeoJSON(1.85, 47.25, 6.0)
+                });
+                globeMap.addLayer({
+                    id: 'k7-chords-layer',
+                    type: 'line',
+                    source: 'k7-matrix',
+                    filter: ['==', ['get', 'type'], 'chord'],
+                    paint: { 'line-color': '#00e5ff', 'line-width': 0.85, 'line-opacity': 0.35 }
+                });
+                globeMap.addLayer({
+                    id: 'k7-envelope-layer',
+                    type: 'line',
+                    source: 'k7-matrix',
+                    filter: ['==', ['get', 'type'], 'envelope'],
+                    paint: { 'line-color': '#ff3385', 'line-width': 2.5, 'line-opacity': 0.92 }
+                });
+
+                globeMap.addSource('eclips-vector', {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: [{
+                            type: 'Feature',
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: [
+                                    [5.2200, 52.2500],
+                                    [4.1600, 51.4900],
+                                    [2.8800, 51.3200],
+                                    [1.8500, 47.2500],
+                                    [-1.2500, 46.2500],
+                                    [-6.5000, 43.5500]
+                                ]
+                            }
+                        }]
+                    }
+                });
+                globeMap.addLayer({
+                    id: '245-vector-layer',
+                    type: 'line',
+                    source: 'eclips-vector',
+                    paint: { 'line-color': '#ffcc33', 'line-width': 3, 'line-dasharray': [4, 2] }
+                });
+
+                globeMap.addSource('tracer-point', {
+                    type: 'geojson',
+                    data: { type: 'Feature', geometry: { type: 'Point', coordinates: [5.22, 52.25] } }
+                });
+                globeMap.addLayer({
+                    id: 'tracer-point-layer',
+                    type: 'circle',
+                    source: 'tracer-point',
+                    paint: {
+                        'circle-radius': 7,
+                        'circle-color': '#50ffb0',
+                        'circle-stroke-color': '#ffffff',
+                        'circle-stroke-width': 2
+                    }
+                });
+            });
+        } catch (err) {
+            logVortex('WEBGL_WARN', 'PAGE-03', 'MAP-GLOBE', 'FALLBACK', 'MapGlobe overgeschakeld op 2D Canvas modus');
+        }
+    }
+
+    // Vivaldi-compatibele basemap wissel (werkt ook als setTiles niet ondersteund wordt)
+    function switchBasemapStyle(styleKey) {
+        if (!globeMap) return;
+        const tiles = FREE_TILE_SOURCES[styleKey] || FREE_TILE_SOURCES.carto_dark;
+        const src = globeMap.getSource('base-tiles');
+        if (src && typeof src.setTiles === 'function') {
+            src.setTiles(tiles);
+        } else {
+            if (globeMap.getLayer('base-raster-layer')) globeMap.removeLayer('base-raster-layer');
+            if (globeMap.getSource('base-tiles')) globeMap.removeSource('base-tiles');
+            globeMap.addSource('base-tiles', { type: 'raster', tiles: tiles, tileSize: 256 });
+            globeMap.addLayer({ id: 'base-raster-layer', type: 'raster', source: 'base-tiles', minzoom: 0, maxzoom: 22 }, 'openseamap-layer');
+        }
+        logVortex('MAP_STYLE', state.pageId, 'MAP-KAARTEN', styleKey.toUpperCase(), `Kaartlaag gewisseld naar ${styleKey}`);
+    }
+
+    function toggleSeaLayer(layerId, visible) {
+        if (!globeMap || !globeMap.getLayer(layerId)) return;
+        globeMap.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+    }
+
+    function toggleGlobeProjectionMode() {
+        if (!globeMap || typeof globeMap.setProjection !== 'function') return;
+        state.globe3D = !state.globe3D;
+        try { globeMap.setProjection({ type: state.globe3D ? 'globe' : 'mercator' }); } catch (e) {}
+        document.getElementById('btn-globe-3d').classList.toggle('active', state.globe3D);
+    }
+
+    function toggleGlobeInteraction() {
+        state.globeInteractive = !state.globeInteractive;
+        const el = document.getElementById('mapglobe-bg');
+        el.classList.toggle('interactive-globe', state.globeInteractive);
+        document.getElementById('btn-globe-nav').classList.toggle('active', state.globeInteractive);
+        document.getElementById('btn-vp-globe-nav').classList.toggle('active', state.globeInteractive);
+        document.getElementById('key-m').classList.toggle('mg-active', state.globeInteractive);
+    }
+
+    function flyGlobeTo(lng, lat, zoom = 5.5, pitch = 40) {
+        if (!globeMap) return;
+        globeMap.flyTo({ center: [lng, lat], zoom, pitch, duration: 1300 });
+        logVortex('GLOBE_FLY', state.pageId, 'MAP-COCKPIT', `${lat.toFixed(2)}N_${lng.toFixed(2)}E`, `Camera verplaatst`);
+    }
+
+    function setGlobeOpacity(val) {
+        document.getElementById('lbl-globe-op').textContent = `${val}%`;
+        document.getElementById('mapglobe-bg').style.opacity = val / 100;
+    }
+
+    function syncGlobeToPlanimeter() {
+        if (!globeMap) return;
+        const txCm = state.txPx / PX_PER_CM;
+        const tyCm = -state.tyPx / PX_PER_CM;
+        const lng = 1.85 + txCm * 0.78;
+        const lat = 47.25 + tyCm * 0.52;
+        globeMap.easeTo({ center: [lng, lat], bearing: -state.w64.rot, duration: 500 });
+    }
+
+    // =========================================================================================
+    // 0B. EIGEN GRID & 3D SCHAALMODEL GENERATOR OP CANVAS LAAG 2 (#custom-grid-canvas)
+    // =========================================================================================
+    function updateUnderGridParams() {
+        const sc = parseInt(document.getElementById('sl-ugrid-scale').value);
+        const rot = parseInt(document.getElementById('sl-ugrid-rot').value);
+        const imgOp = parseInt(document.getElementById('sl-img-op').value);
+        const svgOp = parseInt(document.getElementById('sl-svg-grid-op').value);
+
+        state.uGridScale = sc / 100.0;
+        state.uGridRot = rot;
+
+        document.getElementById('lbl-ugrid-scale').textContent = `${sc}%`;
+        document.getElementById('lbl-ugrid-rot').textContent = `${rot}°`;
+        document.getElementById('lbl-img-op').textContent = `${imgOp}%`;
+        document.getElementById('lbl-svg-grid-op').textContent = `${svgOp}%`;
+
+        assetsLayerEl.setAttribute('opacity', (imgOp / 100).toFixed(2));
+        assetsLayerEl.setAttribute('transform', `scale(${state.uGridScale}) rotate(${state.uGridRot})`);
+        document.getElementById('svg-base-grid-rect').setAttribute('opacity', (svgOp / 100).toFixed(2));
+
+        renderCustomUnderGrid();
+    }
+
+    function renderCustomUnderGrid() {
+        const canvas = document.getElementById('custom-grid-canvas');
+        if (!canvas) return;
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = Math.max(100, (rect.width / state.uiScale) || 800);
+        canvas.height = Math.max(100, (rect.height / state.uiScale) || 800);
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const maxR = Math.min(cx, cy) * 0.92 * state.uGridScale;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate((state.uGridRot * Math.PI) / 180);
+
+        const mode = document.getElementById('sel-custom-grid').value;
+        if (mode === 'polar_vortex') {
+            ctx.strokeStyle = 'rgba(80, 255, 176, 0.22)';
+            ctx.lineWidth = 1;
+            for (let r = maxR / 6; r <= maxR; r += maxR / 6) {
+                ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+            }
+            for (let a = 0; a < 360; a += 15) {
+                const rad = (a * Math.PI) / 180;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(rad) * maxR, Math.sin(rad) * maxR); ctx.stroke();
+            }
+        } else if (mode === 'cellarius_hex') {
+            ctx.strokeStyle = 'rgba(255, 204, 51, 0.28)';
+            ctx.lineWidth = 1;
+            const step = Math.max(18, 42 * state.uGridScale);
+            for (let a = 0; a < 180; a += 60) {
+                const rad = (a * Math.PI) / 180;
+                const nx = -Math.sin(rad), ny = Math.cos(rad);
+                for (let d = -maxR; d <= maxR; d += step) {
+                    const px = nx * d, py = ny * d;
+                    ctx.beginPath();
+                    ctx.moveTo(px - Math.cos(rad) * maxR, py - Math.sin(rad) * maxR);
+                    ctx.lineTo(px + Math.cos(rad) * maxR, py + Math.sin(rad) * maxR);
+                    ctx.stroke();
+                }
+            }
+        } else if (mode === 'rd_metric') {
+            ctx.strokeStyle = 'rgba(0, 229, 255, 0.24)';
+            ctx.lineWidth = 0.9;
+            const step = Math.max(12, 24 * state.uGridScale);
+            for (let x = -maxR; x <= maxR; x += step) {
+                ctx.beginPath(); ctx.moveTo(x, -maxR); ctx.lineTo(x, maxR); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(-maxR, x); ctx.lineTo(maxR, x); ctx.stroke();
+            }
+        } else if (mode === 'nautical_rose') {
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.30)';
+            ctx.lineWidth = 1.1;
+            for (let i = 0; i < 32; i++) {
+                const rad = (i * 11.25 * Math.PI) / 180;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(rad) * maxR, Math.sin(rad) * maxR); ctx.stroke();
+            }
+            ctx.beginPath(); ctx.arc(0, 0, maxR, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(0, 0, maxR * 0.65, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        // Teken 3D STL Schaalmodel Wireframe (maya.stl / bredaspiegel.stl) indien actief
+        if (state.stlWireframeActive) {
+            ctx.strokeStyle = 'rgba(255, 204, 51, 0.55)';
+            ctx.lineWidth = 1.2;
+            for (let lvl = 1; lvl <= 5; lvl++) {
+                const s = (maxR * 0.78) * (lvl / 5);
+                ctx.strokeRect(-s, -s * 0.75, s * 2, s * 1.5);
+                ctx.beginPath();
+                ctx.moveTo(-s, -s * 0.75); ctx.lineTo(0, 0);
+                ctx.moveTo(s, -s * 0.75); ctx.lineTo(0, 0);
+                ctx.moveTo(-s, s * 0.75); ctx.lineTo(0, 0);
+                ctx.moveTo(s, s * 0.75); ctx.lineTo(0, 0);
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+    }
+
+    function getShaoYongBits(idx) {
+        const cleanIdx = ((idx % 64) + 64) % 64;
+        const val = cleanIdx < 32 ? (63 - cleanIdx) : (cleanIdx - 32);
+        return val.toString(2).padStart(6, '0');
+    }
+
+    function invertBits(bits) {
+        return bits.split('').map(b => b === '1' ? '0' : '1').join('');
+    }
+
+    function computeNuclear(bits) {
+        const b2 = bits[1], b3 = bits[2], b4 = bits[3], b5 = bits[4];
+        return { N: `${b2}${b3}${b4}${b3}${b4}${b5}`, N2: `${b3}${b4}${b3}${b4}${b3}${b4}`, core: `${b3}${b4}` };
+    }
+
+    function hammingDistance(b1, b2) {
+        let d = 0;
+        for (let i = 0; i < 6; i++) if (b1[i] !== b2[i]) d++;
+        return d;
+    }
+
+    function normalizeMatrixRow(raw, idx) {
+        let x_cm = parseFloat(raw.x_cm);
+        let y_cm = parseFloat(raw.y_cm);
+        let azDeg = parseFloat(raw.azDeg);
+        let rhoCm = parseFloat(raw.rhoCm);
+        let sigma = (raw.sigma !== undefined && !isNaN(parseFloat(raw.sigma))) ? parseFloat(raw.sigma) : state.globalSigmaY;
+
+        if (!isNaN(x_cm) && !isNaN(y_cm) && (isNaN(azDeg) || isNaN(rhoCm))) {
+            rhoCm = Math.hypot(x_cm, y_cm);
+            azDeg = (Math.atan2(x_cm, y_cm) * 180 / Math.PI + 360) % 360;
+        } else {
+            if (isNaN(azDeg)) azDeg = 0;
+            if (isNaN(rhoCm)) rhoCm = R_KOMPAS_CM;
+            azDeg = ((azDeg % 360) + 360) % 360;
+            const rad = (azDeg - 90) * Math.PI / 180;
+            x_cm = Math.cos(rad) * rhoCm;
+            y_cm = -Math.sin(rad) * rhoCm * sigma;
+        }
+
+        const isNeg = (sigma * (rhoCm >= 0 ? 1 : -1)) < 0;
+        const effAz = ((azDeg + (isNeg ? 180 : 0)) % 360 + 360) % 360;
+        const syIdx = Math.floor(effAz / 5.625) % 64;
+        const bits = (raw.bits && /^[01]{6}$/.test(raw.bits)) ? raw.bits : getShaoYongBits(syIdx);
+
+        const sweepFrac = azDeg === 0 ? 1.0 : (azDeg / 360.0);
+        const calcNonius = Math.round(3630 * sweepFrac * Math.pow(rhoCm / R_KOMPAS_CM, 2) * (rhoCm >= 0 ? 1 : -1) * sigma);
+        const nonius = (raw.nonius !== undefined && !isNaN(parseInt(raw.nonius))) ? parseInt(raw.nonius) : calcNonius;
+
+        return {
+            idx: idx + 1,
+            label: raw.label || `R${idx + 1}`,
+            x_cm: Number(x_cm.toFixed(3)),
+            y_cm: Number(y_cm.toFixed(3)),
+            azDeg: Number(azDeg.toFixed(2)),
+            rhoCm: Number(rhoCm.toFixed(3)),
+            sigma: Number(sigma.toFixed(2)),
+            nonius: nonius,
+            syIdx: syIdx,
+            bits: bits
+        };
+    }
+
+    // =========================================================================================
+    // 1. LAYER & EIGEN GRID IN- EN UITVOER INLEZEN
+    // =========================================================================================
+    function setupDragAndDropIO() {
+        const dz = document.getElementById('io-dropzone');
+        dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+        dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+        dz.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dz.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) ingestLayerFiles(e.dataTransfer.files);
+        });
+    }
+
+    function ingestLayerFiles(files) {
+        Array.from(files).forEach(file => {
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (['png', 'jpg', 'jpeg', 'webp'].includes(ext)) {
+                const url = URL.createObjectURL(file);
+                assetsLayerEl.innerHTML = `<image href="${url}" x="-430" y="-430" width="860" height="860" preserveAspectRatio="xMidYMid meet"/>`;
+                addIngestedLayerBadge(file.name, 'KAART / GRID', 1);
+                logVortex('UPLOAD_IMG', state.pageId, 'MAP-KAARTEN', file.name, 'Eigen kaart/grid onder planimeter geladen');
+                return;
+            }
+            if (ext === 'stl') {
+                document.getElementById('sel-scale-model').value = 'stl_maya';
+                applyScaleModelPreset('stl_maya');
+                addIngestedLayerBadge(file.name, '3D STL MODEL', 1);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const content = ev.target.result;
+                if (ext === 'geojson' || (ext === 'json' && content.includes('FeatureCollection'))) {
+                    try {
+                        const geoObj = JSON.parse(content);
+                        if (globeMap && globeMap.getSource('k7-matrix')) {
+                            globeMap.getSource('k7-matrix').setData(geoObj);
+                        }
+                        addIngestedLayerBadge(file.name, 'GEOJSON GLOBE', (geoObj.features || []).length);
+                    } catch (err) {}
+                }
+                document.getElementById('raw-matrix-buffer').value = content;
+                const extractedRows = parseAndCleanTextToMatrix(content, file.name);
+                addIngestedLayerBadge(file.name, ext.toUpperCase(), extractedRows.length);
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    function addIngestedLayerBadge(name, type, rowCount) {
+        state.ingestedLayers.push({ name, type, rowCount });
+        const listEl = document.getElementById('ingested-layers-list');
+        listEl.innerHTML = state.ingestedLayers.slice(-3).map(l => `
+            <div class="layer-item">
+                <span>📄 <b>${l.name.slice(0, 18)}</b> (${l.type})</span>
+                <span style="color:var(--mg-glow)">${l.rowCount}</span>
+            </div>
+        `).join('');
+    }
+
+    // =========================================================================================
+    // 2. MATRIX OPSCHONEN (SANITIZER) & PARSER
+    // =========================================================================================
+    function parseAndCleanRawBuffer() {
+        const rawText = document.getElementById('raw-matrix-buffer').value;
+        parseAndCleanTextToMatrix(rawText, 'Buffer');
+    }
+
+    function parseAndCleanTextToMatrix(rawText, sourceName) {
+        if (!rawText || !rawText.trim()) return [];
+        let noiseRemoved = 0;
+        let cleanedText = rawText
+            .replace(/\\\\/g, '')
+            .replace(/\\theta|\\rho|\\sigma|\\text\{[^}]*\}|\^\\circ|\$/g, (m) => { noiseRemoved += m.length; return ' '; })
+            .replace(/<[^>]+>/g, () => { noiseRemoved++; return '\n'; });
+
+        const rows = [];
+        const lines = cleanedText.split(/\r?\n/);
+
+        lines.forEach((line) => {
+            const l = line.trim();
+            if (!l || l.startsWith('===') || l.startsWith('---') || l.startsWith('Tijdstip')) {
+                if (l) noiseRemoved++;
+                return;
+            }
+            const mMatch = l.match(/T\(\s*([+-]?\d+(?:[.,]\d+)?)\s*,\s*([+-]?\d+(?:[.,]\d+)?)\s*\).*?Draai=\s*([+-]?\d+(?:[.,]\d+)?).*?As_Sigma=\s*([+-]?\d+(?:[.,]\d+)?).*?Nonius=\s*([+-]?\d+).*?\(([01]{6})\)/i);
+            if (mMatch) {
+                const x_cm = parseFloat(mMatch[1].replace(',', '.'));
+                const y_cm = parseFloat(mMatch[2].replace(',', '.'));
+                const azDeg = parseFloat(mMatch[3].replace(',', '.'));
+                const sigma = parseFloat(mMatch[4].replace(',', '.'));
+                const nonius = parseInt(mMatch[5]);
+                const bits = mMatch[6];
+                rows.push({ label: `M${rows.length + 1}`, x_cm, y_cm, azDeg, rhoCm: Math.hypot(x_cm, y_cm), sigma, nonius, bits });
+                return;
+            }
+            const nums = l.replace(/,/g, '.').match(/[+-]?\d+(?:\.\d+)?/g);
+            if (nums && nums.length >= 2 && !l.toLowerCase().includes('name,url')) {
+                rows.push({
+                    label: `R${rows.length + 1}`,
+                    x_cm: parseFloat(nums[0]),
+                    y_cm: parseFloat(nums[1]),
+                    azDeg: nums[2] !== undefined ? parseFloat(nums[2]) : undefined,
+                    rhoCm: nums[3] !== undefined ? parseFloat(nums[3]) : undefined,
+                    sigma: nums[4] !== undefined ? parseFloat(nums[4]) : state.globalSigmaY,
+                    nonius: nums[5] !== undefined ? parseInt(nums[5]) : undefined
+                });
+            } else {
+                noiseRemoved++;
+            }
+        });
+
+        const cleanMatrix = [];
+        rows.forEach((r) => {
+            const norm = normalizeMatrixRow(r, cleanMatrix.length);
+            const prev = cleanMatrix[cleanMatrix.length - 1];
+            if (!prev || Math.hypot(norm.x_cm - prev.x_cm, norm.y_cm - prev.y_cm) > 0.005 || norm.azDeg !== prev.azDeg) {
+                cleanMatrix.push(norm);
+            } else {
+                noiseRemoved++;
+            }
+        });
+
+        document.getElementById('lbl-clean-stats').textContent = `${noiseRemoved} ruis → ${cleanMatrix.length}×7`;
+        if (cleanMatrix.length > 0) setMatrixData(cleanMatrix, sourceName);
+        return cleanMatrix;
+    }
+
+    function loadPresetMatrix(type) {
+        let rawRows = [];
+        if (type === 'assets8') {
+            rawRows = FUNDAMENTAL_ASSETS.map((a) => ({
+                label: a.name.slice(0, 12), azDeg: a.diagAngle, rhoCm: a.rhoCm, sigma: state.globalSigmaY, nonius: a.nonius
+            }));
+        } else if (type === 'anchors') {
+            rawRows = [
+                { label: "0°_BEGIN", azDeg: 0.0, rhoCm: R_KOMPAS_CM, sigma: 1.0 },
+                { label: "29°_NYC", azDeg: 29.0, rhoCm: R_KOMPAS_CM, sigma: 1.0 },
+                { label: "51.4°_TAURUS", azDeg: 51.4, rhoCm: R_KOMPAS_CM, sigma: 1.0 },
+                { label: "60°_CELLARIUS", azDeg: 60.0, rhoCm: R_KOMPAS_CM, sigma: 1.0 },
+                { label: "82.5°_THOLEN", azDeg: 82.5, rhoCm: R_KOMPAS_CM, sigma: 1.0 },
+                { label: "108°_GOSECK", azDeg: 108.0, rhoCm: R_KOMPAS_CM, sigma: 1.0 },
+                { label: "198.8°_LOT46", azDeg: 198.79, rhoCm: R_KOMPAS_CM, sigma: 1.0 },
+                { label: "245.9°_ECLIPS", azDeg: 245.91, rhoCm: R_KOMPAS_CM, sigma: 1.0 }
+            ];
+        } else if (type === 'iching16') {
+            for (let s = 0; s < 16; s++) {
+                rawRows.push({ label: COMPASS_16[s], azDeg: s * 22.5, rhoCm: (s % 2 === 0) ? R_KOMPAS_CM : 8.875, sigma: state.globalSigmaY });
+            }
+        }
+        const cleaned = rawRows.map((r, i) => normalizeMatrixRow(r, i));
+        setMatrixData(cleaned, type.toUpperCase());
+    }
+
+    function setMatrixData(newMatrix, src = 'Matrix') {
+        state.matrix = newMatrix.map((r, i) => ({ ...r, idx: i + 1 }));
+        state.activeSimRow = 0;
+        document.getElementById('raw-matrix-buffer').value = state.matrix.map(r =>
+            `${r.label}\t${r.x_cm.toFixed(2)}\t${r.y_cm.toFixed(2)}\t${r.azDeg.toFixed(2)}\t${r.rhoCm.toFixed(2)}\t${r.sigma.toFixed(2)}\t${r.nonius}\t${r.bits}`
+        ).join('\n');
+        renderMatrixTable();
+        analyzeActiveMatrix();
+        projectMatrixToMagnesiumLayer();
+        logVortex('MATRIX_LOAD', state.pageId, 'MAP-REKENTOOLS', src, `${state.matrix.length}×7 matrix geladen`);
+    }
+
+    function renderMatrixTable() {
+        const tbody = document.getElementById('matrix-tbody');
+        document.getElementById('lbl-mat-dim').textContent = `${state.matrix.length}×7`;
+        tbody.innerHTML = state.matrix.map((r, i) => `
+            <tr class="${i === state.activeSimRow ? 'sim-active-row' : ''}" onclick="jumpSimulatorToRow(${i})">
+                <td style="color:var(--mg-glow)">#${r.idx} ${r.label.slice(0,7)}</td>
+                <td>${r.x_cm >= 0 ? '+' : ''}${r.x_cm.toFixed(2)}</td>
+                <td>${r.y_cm >= 0 ? '+' : ''}${r.y_cm.toFixed(2)}</td>
+                <td style="color:var(--gold)">${r.azDeg.toFixed(1)}°</td>
+                <td>${r.rhoCm >= 0 ? '+' : ''}${r.rhoCm.toFixed(2)}</td>
+                <td style="color:${r.sigma < 0 ? 'var(--neg-glow)' : 'var(--main)'}">${r.sigma >= 0 ? '+' : ''}${r.sigma.toFixed(2)}</td>
+                <td style="color:var(--gold); font-weight:bold;">${r.nonius}</td>
+                <td>${r.bits}</td>
+            </tr>
+        `).join('');
+    }
+
+    function analyzeActiveMatrix() {
+        const M = state.matrix, N = M.length;
+        if (N === 0) return;
+        let sumX = 0, sumY = 0;
+        M.forEach(r => { sumX += r.x_cm; sumY += r.y_cm; });
+        const meanX = sumX / N, meanY = sumY / N;
+        state.centroidX = meanX; state.centroidY = meanY;
+
+        let cxx = 0, cyy = 0, cxy = 0;
+        M.forEach(r => {
+            const dx = r.x_cm - meanX, dy = r.y_cm - meanY;
+            cxx += dx * dx; cyy += dy * dy; cxy += dx * dy;
+        });
+        cxx /= N; cyy /= N; cxy /= N;
+
+        const traceCov = cxx + cyy, detCov = cxx * cyy - cxy * cxy;
+        const disc = Math.sqrt(Math.max(0, Math.pow(cxx - cyy, 2) + 4 * cxy * cxy));
+        const lambda1 = (traceCov + disc) / 2.0, lambda2 = (traceCov - disc) / 2.0;
+        const eigenAngleDeg = (0.5 * Math.atan2(2 * cxy, cxx - cyy) * 180 / Math.PI + 360) % 180;
+
+        state.eigenAngleDeg = eigenAngleDeg; state.eigenVal1 = lambda1; state.eigenVal2 = lambda2;
+        const rank = Math.abs(lambda2) < 1e-3 ? (Math.abs(lambda1) < 1e-3 ? 0 : 1) : 2;
+
+        let pathLenCm = 0, shoelaceSum = 0, hammingFlux = 0;
+        for (let i = 0; i < N; i++) {
+            const j = (i + 1) % N;
+            if (i < N - 1) {
+                pathLenCm += Math.hypot(M[j].x_cm - M[i].x_cm, M[j].y_cm - M[i].y_cm);
+                hammingFlux += hammingDistance(M[i].bits, M[j].bits);
+            }
+            if (N >= 3) shoelaceSum += M[i].x_cm * M[j].y_cm - M[j].x_cm * M[i].y_cm;
+        }
+        const areaCm2 = (Math.abs(shoelaceSum) / 2.0) * (state.globalSigmaY < 0 ? -1 : 1);
+        const areaNonius = Math.round(areaCm2 * 10);
+
+        document.getElementById('an-rank').textContent = `Rang = ${rank}`;
+        document.getElementById('an-centroid').textContent = `[${meanX.toFixed(2)}, ${meanY.toFixed(2)}] cm`;
+        document.getElementById('an-tr-det').textContent = `Tr=${traceCov.toFixed(1)} | det=${detCov.toFixed(1)}`;
+        document.getElementById('an-eigen').textContent = `λ₁=${lambda1.toFixed(1)}, λ₂=${lambda2.toFixed(1)} @ ${eigenAngleDeg.toFixed(1)}°`;
+        document.getElementById('an-path-len').textContent = `${pathLenCm.toFixed(2)} cm`;
+        document.getElementById('an-shoelace').textContent = `${areaCm2.toFixed(2)} cm² (${areaNonius}n)`;
+        document.getElementById('an-hamming').textContent = `${hammingFlux} flips`;
+        document.getElementById('res-poly-area').textContent = `${pathLenCm.toFixed(1)} cm | ${areaCm2.toFixed(1)} cm²`;
+    }
+
+    function applyMatrixOperator(opType) {
+        if (state.matrix.length === 0) return;
+        let updated = state.matrix.map((r, i) => {
+            let { x_cm, y_cm, azDeg, rhoCm, sigma, nonius, bits, label } = r;
+            if (opType === 'flatten0') { sigma = 0.0; y_cm = 0.0; nonius = 0; }
+            else if (opType === 'invert_origin') { x_cm = -x_cm; y_cm = -y_cm; rhoCm = -rhoCm; sigma = sigma === 0 ? -1.0 : -sigma; nonius = -nonius; bits = invertBits(bits); }
+            else if (opType === 'restore_pos') { sigma = 1.0; rhoCm = Math.abs(rhoCm); const rad = (azDeg - 90) * Math.PI / 180; x_cm = Math.cos(rad) * rhoCm; y_cm = -Math.sin(rad) * rhoCm; }
+            else if (opType === 'transpose') { const tmp = x_cm; x_cm = y_cm; y_cm = tmp; azDeg = (90 - azDeg + 360) % 360; }
+            else if (opType === 'rot_sy') { azDeg = (azDeg + 5.625) % 360; const rad = (azDeg - 90) * Math.PI / 180; x_cm = Math.cos(rad) * rhoCm; y_cm = -Math.sin(rad) * rhoCm * sigma; }
+            else if (opType === 'rot_60') { azDeg = (azDeg + 60.0) % 360; const rad = (azDeg - 90) * Math.PI / 180; x_cm = Math.cos(rad) * rhoCm; y_cm = -Math.sin(rad) * rhoCm * sigma; }
+            else if (opType === 'hinge_involute') {
+                const tx = x_cm * PX_PER_CM, ty = -y_cm * PX_PER_CM;
+                const px = state.poleX, py = state.poleY, R = 300, L = 435;
+                const dx = tx - px, dy = ty - py;
+                const ed = Math.max(Math.abs(R - L) + 1, Math.min(R + L - 1, Math.hypot(dx, dy) || 1));
+                const a = (R * R - L * L + ed * ed) / (2 * ed), h = Math.sqrt(Math.max(0, R * R - a * a));
+                const mx = px + a * (dx / ed), my = py + a * (dy / ed);
+                const gx = mx - h * (dy / ed), gy = my + h * (dx / ed);
+                x_cm = gx / PX_PER_CM; y_cm = -gy / PX_PER_CM;
+                rhoCm = Math.hypot(x_cm, y_cm); azDeg = (Math.atan2(x_cm, y_cm) * 180 / Math.PI + 360) % 360;
+            } else if (opType === 'nuclear_hugua') { bits = computeNuclear(bits).N; }
+            else if (opType === 'snap_vakjes') { x_cm = Math.round(x_cm / 0.5) * 0.5; y_cm = Math.round(y_cm / 0.5) * 0.5; rhoCm = Math.hypot(x_cm, y_cm); azDeg = (Math.atan2(x_cm, y_cm) * 180 / Math.PI + 360) % 360; }
+            else if (opType === 'normalize_circle') { rhoCm = R_KOMPAS_CM; const rad = (azDeg - 90) * Math.PI / 180; x_cm = Math.cos(rad) * rhoCm; y_cm = -Math.sin(rad) * rhoCm * sigma; }
+            return normalizeMatrixRow({ label, x_cm, y_cm, azDeg, rhoCm, sigma, nonius, bits }, i);
+        });
+        if (opType === 'flatten0') setGlobalAxisFlatten(0.0, false);
+        if (opType === 'invert_origin') setGlobalAxisFlatten(state.globalSigmaY === 0 ? -1.0 : -state.globalSigmaY, false);
+        if (opType === 'restore_pos') setGlobalAxisFlatten(1.0, false);
+        setMatrixData(updated, opType.toUpperCase());
+        jumpSimulatorToRow(state.activeSimRow);
+    }
+
+    function runCustomOperatorExpr() {
+        const expr = document.getElementById('inp-op-expr').value.trim().toLowerCase();
+        if (!expr) return;
+        const numMatch = expr.match(/([+-]?\d+(?:[.,]\d+)?)/);
+        const val = numMatch ? parseFloat(numMatch[1].replace(',', '.')) : 0;
+        const updated = state.matrix.map((r, i) => {
+            let { x_cm, y_cm, azDeg, rhoCm, sigma, nonius, bits, label } = r;
+            if (expr.includes('theta') || expr.includes('az')) azDeg = expr.includes('*') ? azDeg * val : (azDeg + val) % 360;
+            else if (expr.includes('rho') || expr.includes('r')) rhoCm = expr.includes('*') ? rhoCm * val : rhoCm + val;
+            else if (expr.includes('sigma') || expr.includes('plat')) sigma = val;
+            const rad = (azDeg - 90) * Math.PI / 180;
+            x_cm = Math.cos(rad) * rhoCm; y_cm = -Math.sin(rad) * rhoCm * sigma;
+            return normalizeMatrixRow({ label, x_cm, y_cm, azDeg, rhoCm, sigma, nonius, bits }, i);
+        });
+        setMatrixData(updated, 'EXPR');
+        jumpSimulatorToRow(state.activeSimRow);
+    }
+
+    function jumpSimulatorToRow(rowIdx) {
+        if (state.matrix.length === 0) return;
+        state.activeSimRow = ((rowIdx % state.matrix.length) + state.matrix.length) % state.matrix.length;
+        const r = state.matrix[state.activeSimRow];
+        state.azDeg = r.azDeg; state.rhoCm = r.rhoCm; state.globalSigmaY = r.sigma;
+        document.getElementById('slider-global-sigma').value = r.sigma;
+        document.getElementById('sigma-slider').value = r.sigma;
+        document.getElementById('lbl-sim-step').textContent = `Rij: #${r.idx} / ${state.matrix.length}`;
+        document.getElementById('vp-sim-row').textContent = `#${r.idx} ${r.label} (θ=${r.azDeg.toFixed(1)}°)`;
+        renderMatrixTable();
+        updatePlanimeterFromPolar(true);
+    }
+
+    function stepMatrixSimulator(delta) { jumpSimulatorToRow(state.activeSimRow + delta); }
+
+    function toggleMatrixSimulator() {
+        const btn = document.getElementById('btn-sim-play');
+        const keyP = document.getElementById('key-p');
+        if (state.simTimer) {
+            clearInterval(state.simTimer); state.simTimer = null;
+            btn.textContent = "▶️ Simuleer"; keyP.classList.remove('stop-active');
+        } else {
+            btn.textContent = "⏹️ Stop"; keyP.classList.add('stop-active');
+            state.simTimer = setInterval(() => stepMatrixSimulator(1), 650);
+        }
+    }
+
+    function projectMatrixToMagnesiumLayer() { renderMagnesiumOvertrek(); }
+
+    function renderMagnesiumOvertrek() {
+        const adaptToSigma = document.getElementById('chk-adapt-trace').checked;
+        const showHinge = document.getElementById('chk-hinge-locus').checked;
+        const effSigmaY = state.globalSigmaY * state.w64.tilt;
+        const M = state.matrix;
+        let mHtml = '';
+
+        if (M.length > 0) {
+            const pts = M.map(r => {
+                const rad = (r.azDeg - 90) * Math.PI / 180;
+                const rawX = Math.cos(rad) * (r.rhoCm * PX_PER_CM);
+                const rawY = Math.sin(rad) * (r.rhoCm * PX_PER_CM);
+                const drawX = rawX * state.globalSigmaX;
+                const drawY = rawY * (adaptToSigma ? effSigmaY : r.sigma);
+
+                const px = state.poleX, py = state.poleY, R = 300, L = 435;
+                const dx = drawX - px, dy = drawY - py;
+                const ed = Math.max(Math.abs(R - L) + 1, Math.min(R + L - 1, Math.hypot(dx, dy) || 1));
+                const a = (R * R - L * L + ed * ed) / (2 * ed), h = Math.sqrt(Math.max(0, R * R - a * a));
+                const mx = px + a * (dx / ed), my = py + a * (dy / ed);
+                const sign = (effSigmaY * r.rhoCm) < 0 ? -1 : 1;
+                const gx = mx - sign * h * (dy / ed), gy = my + sign * h * (dx / ed);
+                return { ...r, drawX, drawY, gx, gy };
+            });
+
+            if (pts.length > 1) {
+                const dPoly = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.drawX.toFixed(1)} ${p.drawY.toFixed(1)}`).join(' ');
+                const strokeCol = effSigmaY < 0 ? "#ff3385" : "#50ffb0";
+                mHtml += `<path d="${dPoly} Z" fill="rgba(80, 255, 176, 0.11)" stroke="${strokeCol}" stroke-width="2.2"/>`;
+                if (showHinge) {
+                    const dHinge = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.gx.toFixed(1)} ${p.gy.toFixed(1)}`).join(' ');
+                    mHtml += `<path d="${dHinge}" fill="none" stroke="#ffcc33" stroke-width="1.5" stroke-dasharray="3,4"/>`;
+                }
+            }
+
+            pts.forEach((p, i) => {
+                const isSimAct = i === state.activeSimRow;
+                mHtml += `<circle cx="${p.drawX.toFixed(1)}" cy="${p.drawY.toFixed(1)}" r="${isSimAct ? 9 : 5}" fill="rgba(80,255,176,0.28)" stroke="${isSimAct ? '#ffcc33' : '#50ffb0'}" stroke-width="2"/>`;
+            });
+        }
+        mgTracesGroup.innerHTML = mHtml;
+    }
+
+    function stampMagnesiumPoint() {
+        const txCm = state.txPx / PX_PER_CM, tyCm = -state.tyPx / PX_PER_CM;
+        const effSigmaY = state.globalSigmaY * state.w64.tilt;
+        const newRow = normalizeMatrixRow({ label: `M${state.matrix.length + 1}`, x_cm: txCm, y_cm: tyCm, azDeg: state.azDeg, rhoCm: state.rhoCm, sigma: effSigmaY }, state.matrix.length);
+        state.matrix.push(newRow);
+        state.activeSimRow = state.matrix.length - 1;
+        setMatrixData(state.matrix, 'STAMP');
+    }
+
+    function bumpPlanimeterVernier(deltaNonius) {
+        const degPerNonius = 360.0 / 3630.0;
+        state.azDeg = ((state.azDeg + deltaNonius * degPerNonius) % 360 + 360) % 360;
+        updatePlanimeterFromPolar(true);
+    }
+
+    function buildIndependentWheels() {
+        let h64 = `<circle cx="0" cy="0" r="${R_KOMPAS_PX}" fill="rgba(0, 180, 216, 0.03)" stroke="#00e5ff" stroke-width="2.2"/>`;
+        h64 += `<circle cx="0" cy="0" r="${R_KOMPAS_PX - 38}" fill="none" stroke="#00e5ff" stroke-width="1"/>`;
+        [
+            { ang: 0, lbl: "0° BEGINSTAND [0]", col: "#50ffb0" },
+            { ang: 51.4, lbl: "51.4° TAURUS/PLEIADEN", col: "#38bdf8" },
+            { ang: 60, lbl: "60° √3 CELLARIUS", col: "#ffcc33" },
+            { ang: 82.5, lbl: "82.5° THOLEN/NEBRA", col: "#f97316" },
+            { ang: 108, lbl: "108° GOSECK", col: "#ff3385" },
+            { ang: 245.91, lbl: "245.91° ECLIPS '26", col: "#fde047" }
+        ].forEach(v => {
+            const rad = (v.ang - 90) * Math.PI / 180;
+            const x2 = Math.cos(rad) * (R_KOMPAS_PX + 15), y2 = Math.sin(rad) * (R_KOMPAS_PX + 15);
+            h64 += `<line x1="0" y1="0" x2="${x2}" y2="${y2}" stroke="${v.col}" stroke-width="1" stroke-dasharray="3,4" opacity="0.72"/>`;
+            h64 += `<text x="${x2 * 1.05}" y="${y2 * 1.05}" fill="${v.col}" font-size="8" font-weight="bold" text-anchor="middle">${v.lbl}</text>`;
+        });
+
+        for (let i = 0; i < 64; i++) {
+            const a1 = (i * 5.625 - 90) * Math.PI / 180, am = ((i + 0.5) * 5.625 - 90) * Math.PI / 180;
+            const bits = getShaoYongBits(i), { core } = computeNuclear(bits), col = CORE_COLORS[core];
+            const x1 = Math.cos(a1) * (R_KOMPAS_PX - 38), y1 = Math.sin(a1) * (R_KOMPAS_PX - 38);
+            const x2 = Math.cos(a1) * R_KOMPAS_PX, y2 = Math.sin(a1) * R_KOMPAS_PX;
+            h64 += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1e40af" stroke-width="0.8"/>`;
+            const bx = Math.cos(am) * (R_KOMPAS_PX - 12), by = Math.sin(am) * (R_KOMPAS_PX - 12);
+            h64 += `<circle cx="${bx}" cy="${by}" r="3.2" fill="${col}"/>`;
+        }
+        wheel64El.innerHTML = h64;
+
+        let h60 = `<circle cx="0" cy="0" r="${R_JIAZI_PX}" fill="none" stroke="#a855f7" stroke-width="1.5"/>`;
+        for (let j = 0; j < 60; j++) {
+            const am = ((j + 0.5) * 6 - 90) * Math.PI / 180;
+            const tx = Math.cos(am) * (R_JIAZI_PX - 14), ty = Math.sin(am) * (R_JIAZI_PX - 14);
+            const label = `${STEMS[j % 10][0]}${BRANCHES[j % 12][0]}${j+1}`;
+            h60 += `<text x="${tx}" y="${ty}" fill="#e9d5ff" font-size="7.2" text-anchor="middle" dominant-baseline="central" transform="rotate(${(j+0.5)*6}, ${tx}, ${ty})">${label}</text>`;
+        }
+        wheel60El.innerHTML = h60;
+
+        let h16 = `<circle cx="0" cy="0" r="${R_NUC_PX}" fill="rgba(15, 23, 42, 0.55)" stroke="#ff9900" stroke-width="2"/>`;
+        wheel16El.innerHTML = h16;
+    }
+
+    function renderConcentricPyramid() {
+        if (!document.getElementById('chk-pyramid').checked) { pyramidLayerEl.innerHTML = ''; return; }
+        const normScale = (R_KOMPAS_PX * 2) / 2048.0;
+        // Vivaldi fix: voorkom exact 0.000000 in SVG scale() matrix
+        const rawSy = document.getElementById('chk-adapt-trace').checked ? (state.globalSigmaY * state.w64.tilt) : 1.0;
+        const safeSy = Math.abs(rawSy) < 0.001 ? 0.001 : rawSy;
+        let html = '';
+        FUNDAMENTAL_ASSETS.forEach((a) => {
+            const w = a.width_px * normScale, h = a.height_px * normScale;
+            html += `<rect x="${(-w/2).toFixed(1)}" y="${(-h/2).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="none" stroke="${a.color}" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>`;
+        });
+        pyramidLayerEl.setAttribute('transform', `scale(${state.globalSigmaX}, ${safeSy})`);
+        pyramidLayerEl.innerHTML = html;
+    }
+
+    function applyWheelTransforms() {
+        const raw64 = state.globalSigmaY * state.w64.tilt;
+        const raw60 = state.globalSigmaY * state.w60.tilt;
+        const raw16 = state.globalSigmaY * state.w16.tilt;
+        // Vivaldi SVG Singular Matrix Guard
+        const sY64 = Math.abs(raw64) < 0.001 ? 0.001 : raw64;
+        const sY60 = Math.abs(raw60) < 0.001 ? 0.001 : raw60;
+        const sY16 = Math.abs(raw16) < 0.001 ? 0.001 : raw16;
+
+        wheel64El.setAttribute('transform', `scale(${state.globalSigmaX}, ${sY64}) rotate(${state.w64.rot})`);
+        wheel60El.setAttribute('transform', `rotate(45) scale(${state.globalSigmaX}, ${sY60}) rotate(-45) rotate(${state.w60.rot})`);
+        wheel16El.setAttribute('transform', `scale(${state.globalSigmaX}, ${sY16}) rotate(${state.w16.rot})`);
+
+        document.getElementById('lbl-w64').textContent = `${state.w64.rot.toFixed(1)}° | ${raw64.toFixed(2)}`;
+        document.getElementById('lbl-w60').textContent = `${state.w60.rot.toFixed(1)}° | ${raw60.toFixed(2)}`;
+        document.getElementById('lbl-w16').textContent = `${state.w16.rot.toFixed(1)}° | ${raw16.toFixed(2)}`;
+
+        renderConcentricPyramid();
+    }
+
+    function computeTransformedWheelPoint(azDeg, rhoCm) {
+        const rad = (azDeg - 90) * Math.PI / 180;
+        const rawX = Math.cos(rad) * (rhoCm * PX_PER_CM);
+        const rawY = Math.sin(rad) * (rhoCm * PX_PER_CM);
+        const effSigmaY = state.globalSigmaY * state.w64.tilt;
+        return { x: rawX * state.globalSigmaX, y: rawY * effSigmaY, effSigmaY };
+    }
+
+    function updatePlanimeterFromPolar(syncSliders = true) {
+        applyWheelTransforms();
+
+        const pt = computeTransformedWheelPoint(state.azDeg, state.rhoCm);
+        const tx = pt.x, ty = pt.y, effSigmaY = pt.effSigmaY;
+
+        const jacobian = state.globalSigmaX * effSigmaY * (state.rhoCm >= 0 ? 1 : -1);
+        const isNegativeSpace = jacobian < -0.001;
+        const isFlatOrigin = Math.abs(effSigmaY) <= 0.02 || Math.abs(state.rhoCm) <= 0.08;
+
+        const px = state.poleX, py = state.poleY, R = 300, L = 435;
+        const dx = tx - px, dy = ty - py;
+        let d = Math.hypot(dx, dy) || 1;
+        const maxReach = R + L - 1, minReach = Math.abs(R - L) + 1;
+
+        let effPy = py;
+        if (d > maxReach) effPy = ty - (maxReach * (dy / d));
+        const edx = tx - px, edy = ty - effPy;
+        let ed = Math.max(minReach, Math.min(maxReach, Math.hypot(edx, edy)));
+
+        const a = (R * R - L * L + ed * ed) / (2 * ed);
+        const h = Math.sqrt(Math.max(0, R * R - a * a));
+        const mx = px + a * (edx / ed), my = effPy + a * (edy / ed);
+
+        const chiralitySign = isNegativeSpace ? -1 : 1;
+        const gx = mx - chiralitySign * h * (edy / ed);
+        const gy = my + chiralitySign * h * (edx / ed);
+
+        const armLen = Math.hypot(tx - gx, ty - gy) || 1;
+        const ux = (tx - gx) / armLen, uy = (ty - gy) / armLen;
+        const wx = gx + ux * (L + 70), wy = gy + uy * (L + 70);
+
+        state.txPx = tx; state.tyPx = ty; state.gxPx = gx; state.gyPx = gy;
+
+        const alphaDeg = (Math.atan2(gy - effPy, gx - px) * 180 / Math.PI + 90 + 360) % 360;
+        const betaDeg  = (Math.atan2(ty - gy, tx - gx) * 180 / Math.PI + 90 + 360) % 360;
+        const cosGamma = Math.max(-1, Math.min(1, (R * R + L * L - ed * ed) / (2 * R * L)));
+        const gammaDeg = Math.acos(cosGamma) * 180 / Math.PI;
+
+        const normAz = ((state.azDeg % 360) + 360) % 360;
+        const sweepFraction = normAz === 0 ? 1.0 : (normAz / 360.0);
+        const rhoRatioSq = Math.pow(state.rhoCm / R_KOMPAS_CM, 2) * (state.rhoCm >= 0 ? 1 : -1);
+        const signedNonius = Math.round(3630 * sweepFraction * rhoRatioSq * state.globalSigmaX * effSigmaY);
+        const signedAreaCm2 = signedNonius * 0.1;
+
+        const absNon = Math.abs(signedNonius);
+        document.getElementById('drum-th').textContent = Math.floor(absNon / 1000);
+        document.getElementById('drum-te').textContent = String(Math.floor((absNon % 1000) / 10)).padStart(2, '0');
+        document.getElementById('drum-un').textContent = absNon % 10;
+
+        const armColor = state.armStopped ? "#ef4444" : (isFlatOrigin ? "#ffffff" : (isNegativeSpace ? "#ff3385" : "#eab308"));
+        const tracerStroke = isFlatOrigin ? "#ffffff" : (isNegativeSpace ? "#ff3385" : "#50ffb0");
+
+        let pHtml = '';
+        const rxOrbit = Math.abs(state.rhoCm * PX_PER_CM * state.globalSigmaX);
+        const ryOrbit = Math.abs(state.rhoCm * PX_PER_CM * effSigmaY);
+        if (ryOrbit < 1.5) {
+            pHtml += `<line x1="${-rxOrbit}" y1="0" x2="${rxOrbit}" y2="0" stroke="#ffffff" stroke-width="3" stroke-dasharray="6,3"/>`;
+        } else {
+            pHtml += `<ellipse cx="0" cy="0" rx="${rxOrbit}" ry="${ryOrbit}" fill="none" stroke="${tracerStroke}" stroke-width="1.4" stroke-dasharray="5,3"/>`;
+        }
+
+        pHtml += `<line x1="${-tx}" y1="${-ty}" x2="${tx}" y2="${ty}" stroke="${tracerStroke}" stroke-width="1.3" stroke-dasharray="3,3" opacity="0.8"/>`;
+        pHtml += `<line x1="${px}" y1="${effPy}" x2="${gx}" y2="${gy}" stroke="#d4af37" stroke-width="14" stroke-linecap="round" opacity="0.88"/>`;
+        pHtml += `<circle cx="${px}" cy="${effPy}" r="9" fill="#92400e" stroke="#fde047" stroke-width="2.2"/>`;
+        pHtml += `<text x="${px + 14}" y="${effPy + 4}" fill="#fde047" font-size="9.5" font-weight="bold">✥ Poolanker P (Ott Nr. 573)</text>`;
+
+        pHtml += `<line x1="${gx}" y1="${gy}" x2="${wx}" y2="${wy}" stroke="${armColor}" stroke-width="10" stroke-linecap="round" opacity="0.93"/>`;
+        pHtml += `<circle cx="${gx}" cy="${gy}" r="10" fill="#451a03" stroke="${tracerStroke}" stroke-width="2.5"/>`;
+
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="12" fill="rgba(0,0,0,0.65)" stroke="${tracerStroke}" stroke-width="2.8"/>`;
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="3.5" fill="#ffffff"/>`;
+        pHtml += `<text x="${tx + 15}" y="${ty - 10}" fill="#ffffff" font-size="9.5" font-family="Courier New" font-weight="bold">T (${state.azDeg.toFixed(1)}° | ρ=${state.rhoCm.toFixed(2)}cm)</text>`;
+
+        pHtml += `<circle cx="${wx}" cy="${wy}" r="20" fill="${isNegativeSpace ? '#ffe4f0' : '#fef3c7'}" stroke="${isNegativeSpace ? '#ff3385' : '#92400e'}" stroke-width="2.5"/>`;
+        pHtml += `<text x="${wx}" y="${wy + 3}" fill="#000" font-size="8.2" font-weight="bold" text-anchor="middle">${signedNonius >= 0 ? '+' : ''}${signedNonius}</text>`;
+
+        planimeterGroup.innerHTML = pHtml;
+        renderLaserOptics(gx, gy, tx, ty, tracerStroke);
+        renderMagnesiumOvertrek();
+
+        const originPhaseFlip = isNegativeSpace ? 180.0 : 0.0;
+        const relAz64 = ((state.azDeg - state.w64.rot + originPhaseFlip) % 360 + 360) % 360;
+        const syIdx = Math.floor(relAz64 / 5.625) % 64;
+        const bits = getShaoYongBits(syIdx), invBits = invertBits(bits), invIdx = (syIdx + 32) % 64;
+        const { N, N2, core } = computeNuclear(bits);
+
+        const relAz60 = ((state.azDeg - state.w60.rot + originPhaseFlip) % 360 + 360) % 360;
+        const jiaziIdx = Math.floor(relAz60 / 6.0) % 60;
+        const jiaziName = `${STEMS[jiaziIdx % 10]}-${BRANCHES[jiaziIdx % 12]}`;
+
+        const relAz16 = ((state.azDeg - state.w16.rot + originPhaseFlip) % 360 + 360) % 360;
+        const comp16Idx = Math.floor(((relAz16 + 11.25) % 360) / 22.5) % 16;
+
+        const txCm = tx / PX_PER_CM, tyCm = -ty / PX_PER_CM;
+        const gxCm = gx / PX_PER_CM, gyCm = -gy / PX_PER_CM;
+
+        // Schaalmodel Oppervlakte-berekening: A_echt = A_kaart * (Schaal^2)
+        const scaleSq = Math.pow(state.scaleModelRatio, 2);
+        const realAreaStr = state.scaleModelRatio === 1
+            ? `${signedAreaCm2.toFixed(2)} cm² (1:1)`
+            : `${((Math.abs(signedAreaCm2) * scaleSq) / 1e10).toFixed(3)} km² (1:${state.scaleModelRatio.toLocaleString('nl-NL')})`;
+        document.getElementById('vp-model-area').textContent = realAreaStr;
+        document.getElementById('res-gis-area').textContent = realAreaStr;
+
+        const gisLng = 1.85 + txCm * 0.78, gisLat = 47.25 + tyCm * 0.52;
+        document.getElementById('vp-gis-coord').textContent = `${gisLat.toFixed(3)}°N, ${gisLng.toFixed(3)}°E (${COMPASS_16[comp16Idx]})`;
+
+        if (globeMap && globeMap.getSource('tracer-point')) {
+            try {
+                globeMap.getSource('tracer-point').setData({ type: 'Feature', geometry: { type: 'Point', coordinates: [gisLng, gisLat] } });
+            } catch (e) {}
+        }
+
+        document.getElementById('vp-nonius').textContent = `${signedNonius >= 0 ? '+' : ''}${signedNonius}`;
+        document.getElementById('vp-area').textContent = `${signedAreaCm2 >= 0 ? '+' : ''}${signedAreaCm2.toFixed(1)} cm²`;
+        document.getElementById('vp-az').textContent = `${state.azDeg.toFixed(2)}°`;
+        document.getElementById('vp-rho').textContent = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm`;
+        document.getElementById('hud-coord-mini').textContent = `[T: ${txCm.toFixed(2)}, ${tyCm.toFixed(2)} cm | σ=${effSigmaY.toFixed(2)}]`;
+
+        const parityText = isFlatOrigin ? "0.00 (PLAT IN 0,0)" : (isNegativeSpace ? `${jacobian.toFixed(2)} (NEGATIEF)` : `+${jacobian.toFixed(2)} (POSITIEF)`);
+        document.getElementById('vp-parity').textContent = parityText;
+        document.getElementById('origin-badge').textContent = `σ = ${effSigmaY >= 0 ? '+' : ''}${effSigmaY.toFixed(2)}`;
+
+        document.getElementById('res-arm-az').textContent = `${state.azDeg.toFixed(2)}° (${COMPASS_16[comp16Idx]})`;
+        document.getElementById('res-arm-rho').textContent = `${state.rhoCm.toFixed(2)} cm`;
+        document.getElementById('res-tx-ty').textContent = `[${txCm.toFixed(2)}, ${tyCm.toFixed(2)}] cm`;
+        document.getElementById('res-gx-gy').textContent = `[${gxCm.toFixed(2)}, ${gyCm.toFixed(2)}] cm`;
+        document.getElementById('res-angles').textContent = `α=${alphaDeg.toFixed(1)}° | β=${betaDeg.toFixed(1)}° | γ=${gammaDeg.toFixed(1)}°`;
+        document.getElementById('res-jacobian').textContent = parityText;
+        document.getElementById('res-parity-bar').style.width = `${((effSigmaY + 1) / 2) * 100}%`;
+
+        document.getElementById('res-iching-wheel').textContent = `#${syIdx} (${bits})`;
+        document.getElementById('res-iching-inv').textContent = `#${invIdx} (${invBits})`;
+        document.getElementById('res-jiazi-wheel').textContent = `${jiaziName} (#${jiaziIdx + 1}/60)`;
+        document.getElementById('res-inner-wheel').textContent = `${COMPASS_16[comp16Idx]} | Kern ${core}→${N2}`;
+        document.getElementById('res-nonius-badge').textContent = `${signedNonius >= 0 ? '+' : ''}${signedNonius} nonius`;
+        document.getElementById('res-sector-area').textContent = `${signedAreaCm2.toFixed(2)} cm²`;
+
+        renderHexBars('vis-H', bits);
+        renderHexBars('vis-N', N);
+        renderHexBars('vis-N2', isNegativeSpace ? invBits : N2);
+        document.getElementById('lbl-H').textContent = bits;
+        document.getElementById('lbl-N').textContent = N;
+        document.getElementById('lbl-N2').textContent = isNegativeSpace ? `${invBits} (H̄)` : N2;
+
+        if (syncSliders) {
+            document.getElementById('yaw-slider').value = state.azDeg.toFixed(1);
+            document.getElementById('yaw-deg').innerText = `${state.azDeg.toFixed(1)}°`;
+            document.getElementById('rho-slider').value = state.rhoCm.toFixed(2);
+            document.getElementById('rho-val').innerText = `${state.rhoCm >= 0 ? '+' : ''}${state.rhoCm.toFixed(2)} cm`;
+        }
+    }
+
+    function renderHexBars(elId, bits) {
+        let h = '';
+        for (let i = 0; i < 6; i++) h += `<div class="bit-bar ${bits[i] === '0' ? 'bit-0' : ''}"></div>`;
+        document.getElementById(elId).innerHTML = h;
+    }
+
+    function renderLaserOptics(gx, gy, tx, ty, col) {
+        if (!state.laserEnabled) { laserGroup.innerHTML = ''; return; }
+        const armLen = Math.hypot(tx - gx, ty - gy) || 1;
+        const ux = (tx - gx) / armLen, uy = (ty - gy) / armLen;
+        const hitX = tx + ux * 260, hitY = ty + uy * 260;
+        laserGroup.innerHTML = `<g filter="url(#laser-glow)">
+            <line x1="${gx}" y1="${gy}" x2="${hitX}" y2="${hitY}" stroke="${col}" stroke-width="2.2" opacity="0.9"/>
+            <circle cx="${tx}" cy="${ty}" r="14" fill="none" stroke="${col}" stroke-width="1.4" stroke-dasharray="4,2"/>
+        </g>`;
+    }
+
+    function resetToBeginstand() {
+        if (state.foldAnimTimer) toggleOriginFoldAnimation();
+        if (state.simTimer) toggleMatrixSimulator();
+        state.azDeg = 0.0; state.rhoCm = R_KOMPAS_CM;
+        state.globalSigmaY = 1.0; state.globalSigmaX = 1.0;
+        state.w64.rot = 0.0; state.w64.tilt = 1.0;
+        state.w60.rot = 0.0; state.w60.tilt = 1.0;
+        state.w16.rot = 0.0; state.w16.tilt = 1.0;
+        state.armStopped = false; state.mouseFollow = false;
+
+        document.getElementById('slider-global-sigma').value = 1.0;
+        document.getElementById('sigma-slider').value = 1.0;
+        document.getElementById('lbl-global-sigma').textContent = "+1.00 (Rond)";
+        document.getElementById('sigma-val').textContent = "+1.00";
+        ['64', '60', '16'].forEach(w => {
+            document.getElementById(`sl-rot-${w}`).value = 0;
+            document.getElementById(`sl-tilt-${w}`).value = 1;
+        });
+        updatePlanimeterFromPolar(true);
+    }
+
+    function setGlobalAxisFlatten(val, syncMatrix = true) {
+        const sigma = Math.max(-1.0, Math.min(1.0, parseFloat(val)));
+        state.globalSigmaY = sigma;
+        document.getElementById('slider-global-sigma').value = sigma;
+        document.getElementById('sigma-slider').value = sigma;
+        document.getElementById('lbl-global-sigma').textContent = `${sigma >= 0 ? '+' : ''}${sigma.toFixed(2)}`;
+        document.getElementById('sigma-val').textContent = `${sigma >= 0 ? '+' : ''}${sigma.toFixed(2)}`;
+        document.getElementById('key-8').classList.toggle('mg-active', Math.abs(sigma) <= 0.02);
+        document.getElementById('key-9').classList.toggle('neg-active', sigma <= -0.95);
+        document.getElementById('key-7').classList.toggle('run-active', sigma >= 0.95);
+        updatePlanimeterFromPolar(true);
+        if (syncMatrix) analyzeActiveMatrix();
+    }
+
+    function toggleOriginFoldAnimation() {
+        const btn = document.getElementById('btn-fold-anim');
+        if (state.foldAnimTimer) {
+            clearInterval(state.foldAnimTimer); state.foldAnimTimer = null;
+            btn.textContent = "🌀 Vouw (0,0) [X]";
+        } else {
+            btn.textContent = "⏹️ Stop [X]";
+            state.foldAnimTimer = setInterval(() => {
+                let nextSigma = state.globalSigmaY + state.foldDirection * 0.025;
+                if (nextSigma <= -1.0) { nextSigma = -1.0; state.foldDirection = 1; }
+                else if (nextSigma >= 1.0) { nextSigma = 1.0; state.foldDirection = -1; }
+                setGlobalAxisFlatten(nextSigma);
+            }, 30);
+        }
+    }
+
+    function setWheelParam(wheelId, param, val) {
+        const num = parseFloat(val);
+        const wObj = wheelId === 64 ? state.w64 : (wheelId === 60 ? state.w60 : state.w16);
+        if (param === 'rot') wObj.rot = ((num % 360) + 360) % 360;
+        else if (param === 'tilt') wObj.tilt = Math.max(-1.0, Math.min(1.0, num));
+        updatePlanimeterFromPolar(false);
+    }
+
+    function syncAllWheelsToZero() {
+        ['64', '60', '16'].forEach(w => { setWheelParam(parseInt(w), 'rot', 0); setWheelParam(parseInt(w), 'tilt', 1.0); });
+    }
+
+    function exportCleanMatrix(format) {
+        let content = '', filename = '';
+        if (format === 'csv') {
+            content = "idx,label,x_cm,y_cm,theta_deg,rho_cm,sigma_axis,nonius,iching_6bit\n" +
+                state.matrix.map(r => `${r.idx},${r.label},${r.x_cm},${r.y_cm},${r.azDeg},${r.rhoCm},${r.sigma},${r.nonius},"${r.bits}"`).join('\n');
+            filename = 'vortex_clean_matrix.csv';
+        } else {
+            const rowsStr = state.matrix.map(r => `  ${r.x_cm}, ${r.y_cm}, ${r.azDeg}, ${r.rhoCm}, ${r.sigma}, ${r.nonius}, ${parseInt(r.bits, 2)};`).join('\n');
+            content = `M = [\n${rowsStr}\n];\n`;
+            filename = 'vortex_matrix_simulator.sce';
+        }
+        const blob = new Blob([content], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+    }
+
+    function stepPolar(dAzDeg, dRhoCm) {
+        state.armStopped = false; state.mouseFollow = false;
+        state.azDeg = (state.azDeg + dAzDeg + 360) % 360;
+        state.rhoCm = Math.max(-11.5, Math.min(11.5, state.rhoCm + dRhoCm));
+        updatePlanimeterFromPolar(true);
+    }
+
+    function stopPlanimeterArm() {
+        state.armStopped = true; state.mouseFollow = false;
+        if (state.foldAnimTimer) toggleOriginFoldAnimation();
+        if (state.simTimer) toggleMatrixSimulator();
+        document.getElementById('key-s').classList.add('stop-active');
+        document.getElementById('key-g').classList.remove('run-active');
+        updatePlanimeterFromPolar(false);
+    }
+
+    function startPlanimeterArm() {
+        state.armStopped = false; state.mouseFollow = true;
+        document.getElementById('key-s').classList.remove('stop-active');
+        document.getElementById('key-g').classList.add('run-active');
+        updatePlanimeterFromPolar(false);
+    }
+
+    function flashKey(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('pressed');
+        setTimeout(() => el.classList.remove('pressed'), 130);
+    }
+
+    // VIVALDI FIX: Capture-fase keydown handler met stopImmediatePropagation tegen Vivaldi Spatial Navigation
+    window.addEventListener('keydown', (e) => {
+        const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+        if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+            if (e.key === 'Escape') document.activeElement.blur();
+            return;
+        }
+        const azStep = e.altKey ? 5.625 : (e.shiftKey ? 0.1 : 1.0);
+        const rhoStep = e.shiftKey ? 0.1 : 0.5;
+
+        const handledKeys = ['0','Home','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','8','9','7','-','_','=','+','x','X','m','M','p','P','[',']','q','Q','e','E','z','Z','c','C','u','U','i','I','f','F',' ','s','S','g','G','t','T','Enter','v','V'];
+        if (handledKeys.includes(e.key)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }
+
+        switch (e.key) {
+            case '0': case 'Home': flashKey('key-0'); resetToBeginstand(); break;
+            case 'ArrowLeft': flashKey('key-left'); stepPolar(-azStep, 0); break;
+            case 'ArrowRight': flashKey('key-right'); stepPolar(azStep, 0); break;
+            case 'ArrowUp': flashKey('key-up'); stepPolar(0, rhoStep); break;
+            case 'ArrowDown': flashKey('key-down'); stepPolar(0, -rhoStep); break;
+            case '8': flashKey('key-8'); setGlobalAxisFlatten(0.0); break;
+            case '9': flashKey('key-9'); setGlobalAxisFlatten(-1.0); break;
+            case '7': flashKey('key-7'); setGlobalAxisFlatten(1.0); break;
+            case '-': case '_': setGlobalAxisFlatten(state.globalSigmaY - 0.05); break;
+            case '=': case '+': setGlobalAxisFlatten(state.globalSigmaY + 0.05); break;
+            case 'x': case 'X': toggleOriginFoldAnimation(); break;
+            case 'm': case 'M': flashKey('key-m'); toggleGlobeInteraction(); break;
+            case 'p': case 'P': flashKey('key-p'); toggleMatrixSimulator(); break;
+            case '[': stepMatrixSimulator(-1); break;
+            case ']': stepMatrixSimulator(1); break;
+            case 'q': case 'Q': setWheelParam(64, 'rot', state.w64.rot - 5.625); break;
+            case 'e': case 'E': setWheelParam(64, 'rot', state.w64.rot + 5.625); break;
+            case 'z': case 'Z': setWheelParam(60, 'rot', state.w60.rot - 6.0); break;
+            case 'c': case 'C': setWheelParam(60, 'rot', state.w60.rot + 6.0); break;
+            case 'u': case 'U': setWheelParam(16, 'rot', state.w16.rot - 5.625); break;
+            case 'i': case 'I': setWheelParam(16, 'rot', state.w16.rot + 5.625); break;
+            case 'f': case 'F': document.getElementById('chk-pyramid').click(); break;
+            case ' ': case 's': case 'S': flashKey('key-s'); stopPlanimeterArm(); break;
+            case 'g': case 'G': flashKey('key-g'); startPlanimeterArm(); break;
+            case 't': case 'T': case 'Enter': flashKey('key-t'); stampMagnesiumPoint(); break;
+            case 'v': case 'V': toggleResultsWindow(); break;
+        }
+    }, true);
+
+    function processKinematica(axis, val) {
+        const num = parseFloat(val);
+        if (axis === 'yaw') { state.azDeg = num; document.getElementById('yaw-deg').innerText = `${num.toFixed(1)}°`; }
+        else if (axis === 'rho') { state.rhoCm = num; document.getElementById('rho-val').innerText = `${num >= 0 ? '+' : ''}${num.toFixed(2)} cm`; }
+        else if (axis === 'pitch') {
+            state.pitchDeg = num;
+            document.getElementById('pitch-deg').innerText = `${num}° | 517.3nm`;
+            svgEl.style.transform = `rotateX(${num}deg)`;
+            if (globeMap) globeMap.setPitch(Math.min(60, num + 15));
+            return;
+        }
+        updatePlanimeterFromPolar(false);
+    }
+
+    function toggleResultsWindow() {
+        const win = document.getElementById('plano-results-window');
+        win.style.display = win.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function minimizeResultsWindow() {
+        document.getElementById('plano-results-window').classList.toggle('minimized');
+    }
+
+    // VIVALDI FIX: Veilige SVG-coördinaatprojectie die nooit crasht als getScreenCTM() null is
+    function getSafeSvgCoords(e) {
+        try {
+            const ctm = svgEl.getScreenCTM();
+            if (ctm) {
+                const inv = ctm.inverse();
+                if (inv) {
+                    const pt = svgEl.createSVGPoint();
+                    pt.x = e.clientX; pt.y = e.clientY;
+                    return pt.matrixTransform(inv);
+                }
+            }
+        } catch (err) {}
+        const rect = svgEl.getBoundingClientRect();
+        const scale = Math.min(rect.width, rect.height) / 960.0;
+        return {
+            x: (e.clientX - (rect.left + rect.width / 2)) / (scale || 1),
+            y: (e.clientY - (rect.top + rect.height / 2)) / (scale || 1)
+        };
+    }
+
+    svgEl.addEventListener('pointermove', (e) => {
+        if (state.globeInteractive) return;
+        if (e.buttons !== 1 && (state.armStopped || !state.mouseFollow)) return;
+        const cursor = getSafeSvgCoords(e);
+        state.azDeg = (Math.atan2(cursor.y, cursor.x) * 180 / Math.PI + 90 + 360) % 360;
+        state.rhoCm = Math.min(11.5, Math.hypot(cursor.x, cursor.y) / PX_PER_CM);
+        updatePlanimeterFromPolar(true);
+    });
+
+    svgEl.addEventListener('pointerdown', (e) => {
+        if (state.globeInteractive || e.button !== 0) return;
+        const cursor = getSafeSvgCoords(e);
+        if (e.shiftKey) {
+            state.poleX = cursor.x; state.poleY = cursor.y;
+            logVortex('POLE_SHIFT', state.pageId, 'MAP-ARM', 'SUB-OTT-573', `Poolanker P verplaatst naar [${(cursor.x/40).toFixed(1)}, ${(-cursor.y/40).toFixed(1)}] cm`);
+        } else {
+            state.azDeg = (Math.atan2(cursor.y, cursor.x) * 180 / Math.PI + 90 + 360) % 360;
+            state.rhoCm = Math.min(11.5, Math.hypot(cursor.x, cursor.y) / PX_PER_CM);
+        }
+        updatePlanimeterFromPolar(true);
+    });
+
+    svgEl.addEventListener('dblclick', () => stampMagnesiumPoint());
+
+    // --- 5.1 TRAPLOOS VERSCHAALBARE SPLITTERS (POINTER EVENTS VOOR VIVALDI) ---
+    (function initVivaldiSplitters() {
+        const v1 = document.getElementById('vSplit1');
+        const v2 = document.getElementById('vSplit2');
+        const hLog = document.getElementById('hSplitLog');
+        let mode = null;
+
+        v1.addEventListener('pointerdown', (e) => { mode = 'v1'; v1.setPointerCapture(e.pointerId); v1.classList.add('dragging'); });
+        v2.addEventListener('pointerdown', (e) => { mode = 'v2'; v2.setPointerCapture(e.pointerId); v2.classList.add('dragging'); });
+        hLog.addEventListener('pointerdown', (e) => { mode = 'hLog'; hLog.setPointerCapture(e.pointerId); hLog.classList.add('dragging'); });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!mode) return;
+            const sc = state.uiScale || 1;
+            if (mode === 'v1') {
+                const w1 = Math.max(200, Math.min(520, e.clientX / sc));
+                document.documentElement.style.setProperty('--col1-w', `${w1}px`);
+            } else if (mode === 'v2') {
+                const col1W = document.getElementById('col-left').getBoundingClientRect().width / sc;
+                const w2 = Math.max(240, Math.min(600, (e.clientX / sc) - col1W - 6));
+                document.documentElement.style.setProperty('--col2-w', `${w2}px`);
+            } else if (mode === 'hLog') {
+                const totalH = window.innerHeight / sc;
+                const hL = Math.max(28, Math.min(totalH * 0.45, totalH - (e.clientY / sc)));
+                document.documentElement.style.setProperty('--log-h', `${hL}px`);
+            }
+            renderCustomUnderGrid();
+            if (globeMap) globeMap.resize();
+        });
+
+        window.addEventListener('pointerup', () => {
+            mode = null;
+            v1.classList.remove('dragging'); v2.classList.remove('dragging'); hLog.classList.remove('dragging');
+        });
+    })();
+
+    // Zwevend Telemetrie Venster Dragging
+    (function initDraggableWindow() {
+        const win = document.getElementById('plano-results-window');
+        const handle = document.getElementById('win-drag-handle');
+        let isDragging = false, startX = 0, startY = 0, initLeft = 0, initTop = 0;
+        handle.addEventListener('pointerdown', (e) => {
+            if (e.target.tagName.toLowerCase() === 'button') return;
+            isDragging = true;
+            handle.setPointerCapture(e.pointerId);
+            const rect = win.getBoundingClientRect(), parentRect = win.parentElement.getBoundingClientRect();
+            const sc = state.uiScale || 1;
+            initLeft = (rect.left - parentRect.left) / sc;
+            initTop = (rect.top - parentRect.top) / sc;
+            win.style.right = 'auto'; win.style.left = `${initLeft}px`; win.style.top = `${initTop}px`;
+            startX = e.clientX; startY = e.clientY;
+        });
+        window.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const sc = state.uiScale || 1;
+            win.style.left = `${initLeft + (e.clientX - startX) / sc}px`;
+            win.style.top = `${Math.max(0, initTop + (e.clientY - startY) / sc)}px`;
+        });
+        window.addEventListener('pointerup', () => { isDragging = false; });
+    })();
+
+    // Vivaldi ResizeObserver voor automatische WebGL & Canvas synchronisatie
+    const stageObserver = new ResizeObserver(() => {
+        renderCustomUnderGrid();
+        if (globeMap) globeMap.resize();
+    });
+    stageObserver.observe(document.getElementById('svg-stage'));
+
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('nl-NL');
+    }, 1000);
+
+    // Initialisatie
+    initMapGlobe();
+    setupDragAndDropIO();
+    buildIndependentWheels();
+    renderCustomUnderGrid();
+    resetToBeginstand();
+    loadPresetMatrix('assets8');
+    logVortex('BOOT_V02', 'PAGE-03', 'MAP-COCKPIT', 'SUB-OTT-573', 'VORTEX OS v156.2 (v0.2 Vivaldi Fix) gestart met verschaalbare viewports, 4 lichtmodi & schaalmodellen');
+</script>
+
+</body>
+</html>

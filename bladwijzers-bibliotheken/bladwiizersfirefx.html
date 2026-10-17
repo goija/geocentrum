@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bladwijzeroverzicht</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #6d4aff 0%, #8b5cf6 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6d4aff;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .category-section {
+            margin-bottom: 30px;
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .category-header:hover {
+            border-color: #6d4aff;
+            background: #fff;
+        }
+        
+        .category-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .category-count {
+            background: #6d4aff;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .toggle-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .category-header.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .bookmark-list {
+            display: none;
+            padding: 15px 0;
+            list-style: none;
+        }
+        
+        .category-section.active .bookmark-list {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bookmark-item {
+            padding: 12px 15px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .bookmark-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .bookmark-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6d4aff 0%, #8b5cf6 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .bookmark-link {
+            color: #333;
+            text-decoration: none;
+            font-size: 0.95rem;
+            flex-grow: 1;
+        }
+        
+        .bookmark-link:hover {
+            color: #6d4aff;
+            text-decoration: underline;
+        }
+        
+        .bookmark-domain {
+            color: #999;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        
+        .search-box {
+            margin: 20px 0;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #6d4aff;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #6d4aff;
+            color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: #5a44d4;
+            transform: translateY(-2px);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .bookmark-item {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Bladwijzeroverzicht</h1>
+            <p>Gestructureerd overzicht van alle bladwijzers</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">Totale bladwijzers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="categoryCount">0</div>
+                <div class="stat-label">Categorieën</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="uniqueDomains">0</div>
+                <div class="stat-label">Unieke domeinen</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Zoek bladwijzers...">
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" onclick="expandAll()">Alle openen</button>
+                <button class="control-btn" onclick="collapseAll()">Alle sluiten</button>
+                <button class="control-btn" onclick="exportBookmarks()">Exporteren</button>
+            </div>
+            
+            <div id="categoriesContainer"></div>
+        </div>
+        
+        <footer>
+            <p>Gemaakt op 14 oktober 2026 | Bladwijzeranalyse Tool</p>
+        </footer>
+    </div>
+
+    <script>
+        const bookmarkData = [
+            { category: "Browser Menu", items: ["Mozilla Firefox", "Hulp verkrijgen", "Firefox aanpassen", "Meewerken", "Over ons"] },
+            { category: "Proton Diensten", items: ["Proton Mail: krijg een beveiligd en versleuteld privé-e-mailaccount", "Lumo: Privacy-first AI assistant where chats stay confidential", "Mijn bestanden - Proton Drive", "6-12 januari 2025 - Proton Calendar", "Krijg 60% korting op veilige en privé cloudopslag | Proton"] },
+            { category: "Milieu & Klimaat", items: ["CO2-compensatie van Shell en andere bedrijven zeer waarschijnlijk waardeloos - Follow the Money", "Gasunie stapt in waterstof - Artikelen - De Ingenieur", "CO2-intensieve bedrijven betalen steeds hogere marktrentes | De Nederlandsche Bank", "Unesco dreigt met intrekken werkerfgoedstatus Waddenzee - NRC", "Rechtszaak: moet Nederland de 'kraamkamer van de Noordzee' beter beschermen? - NRC", "Air Liquide B.V. - SEVESO+", "Waterschap De Vrije Polders onder Tholen, 1635-1959 - Netwerk Oorlogsbronnen"] },
+            { category: "Juridisch & Bestuur", items: ["Artikel 3:45 Awb rechtsmiddelenclausule besluit | Rechtspraak bestuursrecht", "Privacybeleid gemeente Laren | Lokale wet- en regelgeving", "Besluit Metropoolregio Amsterdam", "Gedragsregels advocatuur | Regelgeving Advocatenorde", "Wetgeving en bestuur - Nederland Rechtsstaat", "Rechtsbescherming tegen bestuurlijke gegevensverwerkingen", "Algemene beginselen van behoorlijk bestuur - YouTube", "3.2.3 Algemene rechtsbeginselen | Kenniscentrum voor beleid en regelgeving"] },
+            { category: "Geschiedenis", items: ["Een veelkoppig monster: De Nederlandse zeemacht, 1568-1780 | NMGN", "Farnese, Alexander, hertog van Parma – Jan Lampo", "Tholen, Monumenten in Nederland. Zeeland - DBNL", "Zuid-Afrika: Boerenrepublieken en Boerenoorlogen, 1795-1902 | Nationaal Archief", "Oostenrijkse Nederlanden - Wikipedia", "Second Anglo-Dutch War - Wikipedia", "Adellijke geschiedenis van de familie Van Tuyll van Serooskerken | Lumo", "Pieter van 't Rosevelt (1674–1681), Justina Paschasia Turcq (1685–Overleden) • Stamboom"] },
+            { category: "Programmeren & Tech", items: ["GitHub", "Node-RED : 192.168.2.6", "Google Dork Generator", "SuperCollider", "OneCompiler - Haskell", "OneCompiler - HTML", "Google Colab", "Replit Attached Assets", "Filebase | IPFS Made Easy", "Otio - Your personal librarian for the internet"] },
+            { category: "Sterrenkunde & Weer", items: ["Venus is avondster in januari 2025 - hemel.waarnemen.com", "SKY-MAP.ORG - Interactive Sky Map", "Live World Map of Satellite Positions - In-The-Sky.org", "KNMI - Daggegevens van het weer in Nederland", "The Sky Tonight from Amsterdam, Netherlands | TheSkyLive.com", "Astrokalender voor deze week - hemel.waarnemen.com", "Zonsverduistering - Mainzer Beobachter", "De Perseïden | De kwintencirkel"] },
+            { category: "Sociale Media", items: ["Start - Mastodon", "Home - Mastodon.nl door Stichting Activityclub", "(1) Following — Bluesky", "Tarô Mágico (@taromagico.bsky.social) — Bluesky", "X (Twitter)", "LinkedIn", "Facebook", "Pixelfed", "Substack"] },
+            { category: "Onderzoek & OSINT", items: ["OSINT Target Matrix - Dashboard", "VirusTotal - IP address - 37.128.150.227", "Robtex", "Wayback Machine", "Databases - DeSmog", "Follow the Money - Platform voor onderzoeksjournalistiek", "Search (emkvissers) | X Cancelled", "Google Scholar"] },
+            { category: "Audio & Muziek", items: ["Geen dag zonder Bach | Concertzender", "World of Jazz | radio, themakanalen, On Demand", "Play Official version of Rhiannon Sheet Music by Fleetwood Mac - MuseScore", "Luscinia Consort - Google Maps", "17-TET E-HANDPAN RESONATOR", "17-TET IMPERIAL NATURE STUDIO", "Nehalennia Vortex v4.5 - MASTER HUB"] },
+            { category: "PDFs & Documenten", items: ["Woo-instructie - woo-instructie.pdf", "De-Pluimpot_20240316_0001.pdf", "slotl.PDF - Het slot te Sint-Maartensdijk.pdf", "file149235..pdf", "Uittreksel-Eiswijziging-Stichting-Bescherming-Privacybelangen-Alphabet-Inc.-c.s.pdf", "Index-Geertruydtsbronne.pdf", "Tholen-Schakerloo.nl - vos.pdf", "Inleiding Nederlands Bestuursrecht - PUB1004"] },
+            { category: "Kadaster & Registers", items: ["Kadaster | Contact | Rijksoverheid.nl", "teboekgestelde zaak | Basisregistratie Kadaster (BRK)", "Alle bedrijven, rechtspersonen en andere organisaties - openkvk.nl", "Het Kadaster en de openbare registers zijn niet hetzelfde - AD Advocaten", "Puntenwolken Actueel Hoogtebestand Nederland"] },
+            { category: "Bibliotheken & Bronnen", items: ["https://www.pdfdrive.com/", "Rave Book Search — Free eBook & Audiobook Finder", "Metadata For 503 Manuscripts From Thüringer Universitäts Und Landesbibliothek Jena", "Mijn bibliotheek", "DBNL - Digitale Bibliotheek voor de Nederlandse Letteren", "Archive - Anansi", "PressReader.com - Digital Newspaper & Magazine Subscriptions"] },
+            { category: "Google Diensten", items: ["Google Documenten: Online document- en pdf-bewerker | Google Workspace", "Google Keep", "Google Docs", "Google Play Books", "Google Afbeeldingen", "Google Calendar", "Google NotebookLM", "Google Maps"] },
+            { category: "AI & Tools", items: ["Lumo: Privacy-first AI assistant where chats stay confidential", "Duck.ai", "Google Gemini", "NotebookLM", "Wolfram|Alpha: Computational Intelligence", "Mathgeo | Notion", "Gram"] },
+            { category: "Familie & Genealogie", items: ["goija/genelogie-export", "AMBACHTSHEERLIJKHEID_OUD_NIEUW_VOSSEMEER_EN_VRIJBERGHE", "Ons voorgeslacht", "WikiTree: The Free Family Tree", "Heren van den Berghe en Liesveld - JohnOoms.nl", "Piet Meertens - Wikipedia"] },
+            { category: "Vakantie & Reizen", items: ["Vakantiehuizen in Middelburg | Belvilla", "Comfortabel chalet met afwasmachine, strand op loopafstand | Chalet Noord-Beveland", "Ontdek Last Minute hotels in Nederland | Roompot", "Voordeeluitjes.nl - Boek"] },
+            { category: "Wikipedia", items: ["Fermion - Wikipedia", "419 (disambiguation) - Wikipedia", "Sphenic number - Wikipedia", "Oostenrijkse Nederlanden - Wikipedia", "Voxal - Wikipedia", "Orang (fruit) - Wikipedia", "Lotharingen - Wikipedia", "Eenhoorn (fabeldier) - Wikipedia", "Labor Party (Verenigd Koninkrijk) - Wikipedia"] },
+            { category: "Hackers & Cybersecurity", items: ["International Cyber Digest on X - Breaking: ShinyHunters suspect arrested", "Pepijn van der S. – De hacker met twee gezichten", "Security code Informatiebeveiliging Notariaat", "Element | deviantsecurit1", "Stop blaming hackers for your architectural debt, Odido Nederland"] },
+            { category: "Andere Bladwijzers", items: ["DuckDuckGo - Bescherming. Privacy. Gemoedsrust.", "Signal - Erik Jonker op Mastodon", "Paywall Reader | Read without paywalls for free", "g3rt.nl diagnostic tools - who.is", "Port Checker - Check Open Ports Online", "ORAU - OxCal - Radiocarbon calibration", "Physics – GeoGebra"] }
+        ];
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            const domains = new Set();
+            let totalBookmarks = 0;
+            
+            container.innerHTML = '';
+            
+            bookmarkData.forEach((category, index) => {
+                const section = document.createElement('div');
+                section.className = 'category-section';
+                
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.onclick = () => toggleCategory(index);
+                
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.textContent = category.category;
+                
+                const count = document.createElement('span');
+                count.className = 'category-count';
+                count.textContent = category.items.length;
+                
+                const icon = document.createElement('span');
+                icon.className = 'toggle-icon';
+                icon.textContent = '▼';
+                
+                header.appendChild(title);
+                header.appendChild(count);
+                header.appendChild(icon);
+                
+                const list = document.createElement('ul');
+                list.className = 'bookmark-list';
+                
+                category.items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'bookmark-item';
+                    
+                    const iconDiv = document.createElement('div');
+                    iconDiv.className = 'bookmark-icon';
+                    iconDiv.textContent = item.charAt(0).toUpperCase();
+                    
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.className = 'bookmark-link';
+                    link.textContent = item;
+                    link.onclick = () => {
+                        if (item.includes('http') || item.includes('.com') || item.includes('.nl')) {
+                            alert('Navigeren naar: ' + item);
+                        }
+                    };
+                    
+                    const domainSpan = document.createElement('span');
+                    domainSpan.className = 'bookmark-domain';
+                    const urlMatch = item.match(/(?:https?:\/\/)?([^/\s]+)/i);
+                    domainSpan.textContent = urlMatch ? urlMatch[1] : 'lokaal';
+                    domains.add(urlMatch ? urlMatch[1] : 'lokaal');
+                    
+                    li.appendChild(iconDiv);
+                    li.appendChild(link);
+                    li.appendChild(domainSpan);
+                    list.appendChild(li);
+                    totalBookmarks++;
+                });
+                
+                section.appendChild(header);
+                section.appendChild(list);
+                container.appendChild(section);
+            });
+            
+            document.getElementById('totalCount').textContent = totalBookmarks;
+            document.getElementById('categoryCount').textContent = bookmarkData.length;
+            document.getElementById('uniqueDomains').textContent = domains.size;
+            
+            setTimeout(() => {
+                document.querySelectorAll('.category-section')[0]?.classList.add('active');
+            }, 100);
+        }
+
+        function toggleCategory(index) {
+            const section = document.querySelectorAll('.category-section')[index];
+            section.classList.toggle('active');
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.category-section').forEach(section => {
+                section.classList.add('active');
+            });
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.category-section').forEach(section => {
+                section.classList.remove('active');
+            });
+        }
+
+        function exportBookmarks() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                categories: bookmarkData
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'bladwijzers-export.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Bladwijzers geëxporteerd naar bladwijzers-export.json');
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.bookmark-item');
+            const sections = document.querySelectorAll('.category-section');
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const shouldShow = text.includes(searchTerm);
+                item.style.display = shouldShow ? 'flex' : 'none';
+                
+                if (shouldShow && searchTerm) {
+                    item.closest('.category-section').classList.add('active');
+                }
+            });
+            
+            sections.forEach(section => {
+                const visibleItems = section.querySelectorAll('.bookmark-item[style="display: flex;"], .bookmark-item:not([style])');
+                if (visibleItems.length === 0 && searchTerm) {
+                    section.style.display = 'none';
+                } else {
+                    section.style.display = 'block';
+                }
+            });
+        });
+
+        renderCategories();
+    </script>
+</body>
+</html>

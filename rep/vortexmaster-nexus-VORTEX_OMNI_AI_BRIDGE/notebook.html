@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX // INTEGRATED COCKPIT v154.0</title>
+    <style>
+        :root {
+            --bg: #050608; --panel: #0a0d11; --border: #1a2228;
+            --main: #00ffcc; --ai-glow: #00a2ff; --accent: #ff9900; --text: #cbd5e1;
+            --font-mono: 'Fira Code', 'Courier New', monospace;
+        }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--ai-glow); border-radius: 10px; }
+
+        body { margin: 0; padding: 0; height: 100vh; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        header { 
+            height: 45px; border-bottom: 1px solid var(--border); background: var(--panel);
+            display: flex; align-items: center; padding: 0 20px; justify-content: space-between;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.5);
+        }
+
+        main { 
+            display: grid; height: calc(100vh - 45px); gap: 1px; background: var(--border);
+            grid-template-columns: 16.6vw 33.3vw 50vw;
+        }
+
+        @media (max-width: 1024px) {
+            main { grid-template-columns: 1fr; grid-template-rows: 55vh 1fr; }
+            .column:nth-child(1) { display: none; }
+        }
+
+        .column { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+        .col-header { 
+            padding: 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; 
+            border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.4); letter-spacing: 2px;
+            color: var(--ai-glow); display: flex; justify-content: space-between;
+        }
+
+        /* Column 1: Sources */
+        .source-list { flex: 1; overflow-y: auto; }
+        .source-item { padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.7rem; cursor: pointer; transition: 0.2s; }
+        .source-item:hover { background: rgba(0, 255, 204, 0.05); }
+        .source-item.active { border-left: 2px solid var(--main); background: rgba(0, 255, 204, 0.02); }
+
+        /* Column 2: AI Synth */
+        .ai-engine { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .ai-terminal { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.85rem; line-height: 1.6; font-family: var(--font-mono); }
+        .ai-response { margin-bottom: 20px; padding: 12px; border: 1px solid rgba(0, 162, 255, 0.1); background: rgba(0, 162, 255, 0.02); border-radius: 4px; }
+        
+        .input-bar { padding: 12px; background: #000; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+        .v-input { flex: 1; background: transparent; border: none; color: var(--main); font-family: var(--font-mono); outline: none; font-size: 0.85rem; }
+
+        /* Column 3: Integrated Viewport in plaats van iframe */
+        .viewport-frame { flex: 1; background: #000; position: relative; display: flex; flex-direction: column; }
+        
+        #integrated-viewport {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #061118 0%, #000000 100%);
+            overflow: hidden;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #vortex-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hud-overlay {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: var(--main);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            pointer-events: none;
+            text-shadow: 0 0 5px var(--main);
+        }
+
+        .crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(0, 255, 204, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .crosshair::before, .crosshair::after {
+            content: ''; position: absolute; background: var(--main);
+        }
+        .crosshair::before { top: 50%; left: -15px; right: -15px; height: 1px; }
+        .crosshair::after { left: 50%; top: -15px; bottom: -15px; width: 1px; }
+
+        /* Cockpit Overlay onderin */
+        .cockpit-controls { 
+            padding: 15px; background: rgba(10, 13, 17, 0.95); 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+        .slider-box { display: flex; flex-direction: column; gap: 5px; }
+        .slider-info { display: flex; justify-content: space-between; font-size: 0.6rem; color: var(--main); font-family: var(--font-mono); }
+        input[type="range"] { width: 100%; accent-color: var(--main); height: 4px; cursor: crosshair; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-weight: bold; letter-spacing: 1px;">VORTEX <span style="color:var(--main)">COCKPIT_INTEGRATION</span> <span style="color:var(--ai-glow); font-size: 0.6rem;">v154.0</span></div>
+    <div id="clock" style="font-family: var(--font-mono); color: var(--main); font-size: 0.75rem;">00:00:00</div>
+</header>
+
+<main>
+    <section class="column">
+        <div class="col-header">Intelligence Sources</div>
+        <div class="source-list">
+            <div class="source-item active"><b>NYC_TWIN_TOWERS</b><br><span style="opacity:0.5">29° Antenne Vector</span></div>
+            <div class="source-item"><b>THOLEN_CHURCH</b><br><span style="opacity:0.5">82.5° Ground Lock</span></div>
+            <div class="source-item"><b>SIRIUS_ANKER</b><br><span style="opacity:0.5">108° Sync Threshold</span></div>
+        </div>
+    </section>
+
+    <section class="column" style="border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+        <div class="col-header">AI Synthesis Terminal <span id="ai-status" style="color:var(--accent)">STASIS</span></div>
+        <div class="ai-engine">
+            <div class="ai-terminal" id="ai-terminal">
+                <div class="ai-response">
+                    <b>SYSTEM_READY:</b> Iframe verwijderd. Interne viewport geactiveerd. Terminal gereed voor data-injectie via de geïntegreerde sliders.
+                </div>
+            </div>
+            <div class="input-bar">
+                <span style="color:var(--ai-glow)">></span>
+                <input type="text" class="v-input" id="ai-query" placeholder="Bevraag de matrix..." onkeypress="handleQuery(event)">
+            </div>
+        </div>
+    </section>
+
+    <section class="column">
+        <div class="col-header">Omni-Bridge Viewport [LIVE_FEED]</div>
+        <div class="viewport-frame">
+            
+            <!-- HET NIEUWE INGEBOUWDE VIEWPORT -->
+            <div id="integrated-viewport">
+                <canvas id="vortex-canvas"></canvas>
+                <div class="crosshair"></div>
+                <div class="hud-overlay" id="hud-data">
+                    VECTOR: [ 0.000, 0.000 ]<br>
+                    TARGET_LOCK: OFF
+                </div>
+            </div>
+            
+            <div class="cockpit-controls">
+                <div class="slider-box">
+                    <div class="slider-info">YAW (AZIMUTH) <span id="yaw-deg">0°</span></div>
+                    <input type="range" min="0" max="360" value="0" id="yaw-slider" oninput="processKinematica('yaw', this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">PITCH (ELEVATIE) <span id="pitch-deg">0°</span></div>
+                    <input type="range" min="-90" max="90" value="0" id="pitch-slider" oninput="processKinematica('pitch', this.value)">
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    const terminal = document.getElementById('ai-terminal');
+    const status = document.getElementById('ai-status');
+    const hudData = document.getElementById('hud-data');
+    const canvas = document.getElementById('vortex-canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Huidige waarden van de assen
+    let currentYaw = 0;
+    let currentPitch = 0;
+
+    // Canvas schalen
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        drawViewport();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    // Het raster tekenen in het viewport
+    function drawViewport() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Bereken visuele verschuiving op basis van de sliders
+        // Yaw loopt van 0 tot 360, pitch van -90 tot 90
+        const offsetX = ((currentYaw % 90) / 90) * 100; 
+        const offsetY = (currentPitch / 90) * (canvas.height / 2);
+
+        ctx.strokeStyle = 'rgba(0, 162, 255, 0.15)'; // ai-glow transparant
+        ctx.lineWidth = 1;
+
+        // Horizontale lijnen tekenen
+        for(let i = -canvas.height; i < canvas.height * 2; i += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, i + offsetY);
+            ctx.lineTo(canvas.width, i + offsetY);
+            ctx.stroke();
+        }
+
+        // Verticale lijnen tekenen
+        for(let i = -canvas.width; i < canvas.width * 2; i += 40) {
+            ctx.beginPath();
+            ctx.moveTo(i - offsetX, 0);
+            ctx.lineTo(i - offsetX, canvas.height);
+            ctx.stroke();
+        }
+
+        // Horizonlijn
+        ctx.strokeStyle = 'rgba(0, 255, 204, 0.5)'; // main color
+        ctx.beginPath();
+        ctx.moveTo(0, centerY + offsetY);
+        ctx.lineTo(canvas.width, centerY + offsetY);
+        ctx.stroke();
+        
+        // Target indicator (beweegt mee met de offset)
+        ctx.fillStyle = 'rgba(255, 153, 0, 0.8)'; // accent color
+        ctx.beginPath();
+        ctx.arc(centerX - offsetX, centerY + offsetY, 3, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Kinematica data verwerken via sliders
+    function processKinematica(axis, val) {
+        document.getElementById(axis + '-deg').innerText = val + "°";
+        
+        if(axis === 'yaw') {
+            currentYaw = parseInt(val);
+            checkTriggers(val);
+        }
+        if(axis === 'pitch') {
+            currentPitch = parseInt(val);
+        }
+
+        // Werk HUD en Viewport bij
+        hudData.innerHTML = `VECTOR: [ ${currentYaw.toFixed(3)}, ${currentPitch.toFixed(3)} ]<br>TARGET_LOCK: ${currentYaw == 29 || currentYaw == 82.5 || currentYaw == 108 ? 'ACQUIRED' : 'SEARCHING...'}`;
+        drawViewport();
+    }
+
+    // AI triggers op specifieke coördinaten
+    function checkTriggers(az) {
+        if (az == 29) injectAI("<b>DETECTIE: 29° AS (NYC)</b><br>Twin Tower vector geactiveerd op geïntegreerd raster.");
+        if (az == 82) injectAI("<b>DETECTIE: 82.5° AS (THOLEN)</b><br>Grote Kerk resonantie stabiel op virtuele projectie.");
+        if (az == 108) injectAI("<b>SYNC_LOCK: 108° SIRIUS</b><br>Systeem vergrendeld op galactisch anker. Viewport gesynchroniseerd.");
+    }
+
+    function injectAI(content) {
+        status.innerText = "ANALYZED"; status.style.color = "var(--main)";
+        terminal.innerHTML += `<div class="ai-response">${content}</div>`;
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function handleQuery(e) {
+        if (e.key === 'Enter' && e.target.value) {
+            terminal.innerHTML += `<div style="color:var(--main); font-size:0.7rem; margin-bottom:10px;">USER_QUERY: ${e.target.value}</div>`;
+            e.target.value = '';
+            setTimeout(() => { injectAI("Synthese voltooid. Netwerk is operationeel."); }, 800);
+        }
+    }
+
+    // Init
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('nl-NL'); }, 1000);
+    setTimeout(resizeCanvas, 100); // Wacht even tot de DOM structuur berekend is voor het canvas
+</script>
+
+</body>
+</html>

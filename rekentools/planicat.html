@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoCommand & Schaduwwaaier v0.5 (3D) — Ott Nr. 573 Omtrek, Lagenbeheer, Spiegel & CAD Output</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.js"></script>
+<style>
+  :root {
+    --bg-dark: rgba(9, 15, 28, 0.95);
+    --bg-panel: rgba(15, 25, 45, 0.92);
+    --border: #1e3a5f;
+    --cyan: #00e5ff;
+    --gold: #ffcc33;
+    --magenta: #ff3385;
+    --green: #10b981;
+    --purple: #a855f7;
+    --orange: #f97316;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100vw; height: 100vh;
+    background: #070b14;
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    user-select: none;
+    position: relative;
+  }
+  #map {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+    background: radial-gradient(circle at center, #101a2e 0%, #070b14 100%);
+  }
+  #cad-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+  /* Spiegel-modus transformatie op SVG overlay en map */
+  body.mirrored-h #cad-overlay { transform: scaleX(-1); }
+  body.mirrored-v #cad-overlay { transform: scaleY(-1); }
+  body.mirrored-h #map { transform: scaleX(-1); }
+  body.mirrored-v #map { transform: scaleY(-1); }
+
+  .hud-card {
+    position: absolute;
+    z-index: 10;
+    background: var(--bg-dark);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85);
+    font-size: 11px;
+    color: var(--text);
+    overflow-y: auto;
+    transition: max-height 0.25s ease;
+  }
+  .hud-card::-webkit-scrollbar { width: 4px; }
+  .hud-card::-webkit-scrollbar-thumb { background: #2b4c7e; border-radius: 2px; }
+  .hud-card.minimized {
+    max-height: 34px !important;
+    height: 34px !important;
+    overflow: hidden !important;
+  }
+
+  #panel-left-top { top: 10px; left: 10px; width: 310px; max-height: calc(100vh - 250px); }
+  #panel-left-bottom { bottom: 10px; left: 10px; width: 400px; height: 220px; overflow: hidden; }
+  #panel-center { top: 10px; left: 330px; width: 280px; max-height: calc(100vh - 20px); }
+  #panel-right { top: 10px; right: 10px; width: 345px; max-height: calc(100vh - 20px); }
+
+  h3 {
+    margin: 0 0 7px 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #233b63;
+    padding-bottom: 4px;
+    cursor: pointer;
+  }
+  h4 {
+    margin: 6px 0 4px 0;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--gold);
+    border-bottom: 1px solid rgba(255, 204, 51, 0.25);
+    padding-bottom: 2px;
+  }
+  .sub-box {
+    background: var(--bg-panel);
+    border: 1px solid #223759;
+    border-radius: 5px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+  }
+  label.lbl { display: block; font-size: 9.5px; color: var(--muted); margin-bottom: 2px; }
+  input[type="text"], input[type="number"], input[type="date"], input[type="time"], select, textarea {
+    width: 100%;
+    background: #09101d;
+    border: 1px solid #2b4c7e;
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-family: 'Courier New', monospace;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--cyan); }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 4px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 4px; }
+
+  .btn {
+    background: #162a4a;
+    color: #e2e8f0;
+    border: 1px solid #2b4c7e;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    font-weight: 600;
+  }
+  .btn:hover { background: #22406d; border-color: var(--cyan); }
+  .btn-green { background: #059669; border-color: #10b981; color: #fff; }
+  .btn-red { background: #dc2626; border-color: #ef4444; color: #fff; }
+  .btn-purple { background: #6d28d9; border-color: #8b5cf6; color: #fff; }
+  .btn-orange { background: #d97706; border-color: #f59e0b; color: #fff; }
+  .btn-cyan { background: #0891b2; border-color: var(--cyan); color: #fff; }
+
+  .coord-badge { font-family: 'Courier New', monospace; font-size: 10px; color: var(--cyan); font-weight: bold; }
+  .kv { display: flex; justify-content: space-between; margin: 2px 0; font-size: 10px; }
+  .kv span:first-child { color: var(--muted); }
+  .kv span:last-child { font-family: 'Courier New', monospace; color: var(--cyan); font-weight: bold; }
+  .chk-row { display: flex; align-items: center; gap: 5px; margin: 3px 0; cursor: pointer; font-size: 10px; }
+  .chk-row input { accent-color: var(--cyan); cursor: pointer; margin: 0; }
+
+  .status-pill { display: inline-block; padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 9.5px; font-weight: bold; }
+  .pill-free { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+  .pill-locked { background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<svg id="cad-overlay" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ffcc33"/>
+    </marker>
+    <marker id="arrow-magenta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3385"/>
+    </marker>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#00e5ff"/>
+    </marker>
+  </defs>
+  <g id="svg-grid-vakjes"></g>
+  <g id="svg-shadow-fan"></g>
+  <g id="svg-kompas-3d"></g>
+  <g id="svg-spinor-3d"></g>
+  <g id="svg-tower-3d"></g>
+  <g id="svg-omtrek-path"></g>
+  <g id="svg-planimeter-3d"></g>
+</svg>
+
+<!-- 1. LINKER BOVENPANEEL: LOCATIE & KAART PROVIDERS -->
+<div class="hud-card" id="panel-left-top">
+  <h3 onclick="toggleCard('panel-left-top')">
+    <span>🌍 Locatie & Kaart</span>
+    <span style="font-size:10px;color:var(--gold);">[—]</span>
+  </h3>
+
+  <div class="sub-box">
+    <label class="lbl">Adres / Plaats</label>
+    <div style="display:flex;gap:4px;margin-bottom:4px;">
+      <input type="text" id="inp-search" value="AMERSFOORT">
+      <button class="btn btn-green" id="btn-search">Zoek</button>
+    </div>
+    <div class="row-2">
+      <div><label class="lbl">Lat</label><input type="number" id="inp-lat" value="52.1551" step="0.0001"></div>
+      <div><label class="lbl">Lng</label><input type="number" id="inp-lng" value="5.3872" step="0.0001"></div>
+    </div>
+  </div>
+
+  <div class="sub-box" style="margin-bottom:0;">
+    <label class="lbl">Open Kaart / Raster Provider</label>
+    <select id="sel-basemap" style="margin-bottom:4px;">
+      <option value="pdok-luchtfoto" selected>🛰️ PDOK Luchtfoto NL (Ortho)</option>
+      <option value="carto-dark">🌑 CartoDB Dark Matter (CAD)</option>
+      <option value="osm">🗺️ OpenStreetMap Standaard</option>
+      <option value="pdok-brt">🧭 PDOK BRT Topo Kaart</option>
+      <option value="esri-sat">🌍 Esri World Imagery</option>
+    </select>
+
+    <div class="row-2">
+      <div><label class="lbl">Pitch (<span id="val-pitch">52</span>°)</label><input type="range" id="rng-pitch" min="0" max="75" value="52"></div>
+      <div><label class="lbl">Bearing (<span id="val-bearing">0</span>°)</label><input type="range" id="rng-bearing" min="-180" max="180" value="0"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. MIDDEN PANEEL: LAGENBEHEER (AAN/UIT) & BESTANDSBEHEER (SVG/JPG/MAP) -->
+<div class="hud-card" id="panel-center">
+  <h3 onclick="toggleCard('panel-center')">
+    <span>🗂️ Lagenbeheer & Bestanden</span>
+    <span style="font-size:10px;color:var(--gold);">[—]</span>
+  </h3>
+
+  <div class="sub-box">
+    <h4>Lagen Aan / Uit Schakelen</h4>
+    <label class="chk-row"><input type="checkbox" id="lay-vakjes" checked> 0,5 cm Vakjes-Raster</label>
+    <label class="chk-row"><input type="checkbox" id="lay-fan" checked> Daglicht Schaduwwaaier</label>
+    <label class="chk-row"><input type="checkbox" id="lay-vectors" checked> Uurlijkse Schaduwvectoren</label>
+    <label class="chk-row"><input type="checkbox" id="lay-kompas" checked> Shao Yong (64) & Jiazi (60)</label>
+    <label class="chk-row"><input type="checkbox" id="lay-spinor" checked> Möbius / Hinge Spinor</label>
+    <label class="chk-row"><input type="checkbox" id="lay-planimeter" checked> Ott Nr. 573 Planimeter</label>
+    <label class="chk-row"><input type="checkbox" id="lay-omtrek" checked> Omtrek-pad & Cirkel</label>
+  </div>
+
+  <div class="sub-box" style="margin-bottom:0;">
+    <h4>Laad SVG, JPG of Kaart-Map</h4>
+    <input type="file" id="file-uploader" accept=".svg,.jpg,.jpeg,.png,.json" style="font-size:9.5px;margin-bottom:4px;">
+    <button class="btn btn-cyan" style="width:100%;" onclick="loadExternalOverlayFile()">📁 Laad Bestand als Overlay</button>
+  </div>
+</div>
+
+<!-- 3. RECHTER PANEEL: OTT NR. 573 OMTREK, SPIEGEL & CAD OUTPUT -->
+<div class="hud-card" id="panel-right">
+  <h3 onclick="toggleCard('panel-right')">
+    <span>⏱️ Ott Nr. 573 Omtrek, Spiegel & CAD</span>
+    <span id="arm-status-badge" class="status-pill pill-free">VRIJ</span>
+  </h3>
+
+  <div class="sub-box" style="border-color:#d4af37;">
+    <h4 style="margin-top:0;color:#fde047;">⚙️ Planimeter Omtrek & Arm-Besturing</h4>
+    <div class="row-2">
+      <button class="btn btn-red" id="btn-toggle-lock" onclick="toggleArmLock()">🔒 Zet Arm Stil</button>
+      <button class="btn btn-green" onclick="startOmtrekRecording()">✏️ Start Omtrek</button>
+    </div>
+    <div class="row-2" style="margin-top:4px;">
+      <button class="btn btn-orange" onclick="clearOmtrekPath()">🗑️ Wis Omtrek</button>
+      <button class="btn btn-cyan" onclick="calculateOmtrekArea()">📐 Bereken Opp.</button>
+    </div>
+    <div class="kv" style="margin-top:5px;"><span>Omtrek Punten:</span><span id="lbl-omtrek-count">0 punten</span></div>
+    <div class="kv"><span>Gemeten Oppervlakte:</span><span id="lbl-omtrek-area">0,00 cm² (0 vakjes)</span></div>
+  </div>
+
+  <div class="sub-box">
+    <h4 style="color:var(--magenta);">🪞 Spiegel-Venster (Reflectie)</h4>
+    <div class="row-3">
+      <button class="btn" onclick="setMirrorMode('none')">Normaal</button>
+      <button class="btn" onclick="setMirrorMode('h')">Spiegel Horiz.</button>
+      <button class="btn" onclick="setMirrorMode('v')">Spiegel Vert.</button>
+    </div>
+  </div>
+
+  <div class="sub-box" style="margin-bottom:0;">
+    <h4 style="color:var(--green);">📄 Technische Tekening Output</h4>
+    <textarea id="txt-cad-output" rows="4" readonly placeholder="CAD Telemetrie & Nonius rapport..." style="font-size:9.5px;margin-bottom:4px;"></textarea>
+    <button class="btn btn-purple" style="width:100%;" onclick="exportCADReport()">📥 Exporteer Technische Tekening (TXT)</button>
+  </div>
+</div>
+
+<!-- 4. LINKER ONDERPANEEL: DAGOVERZICHT GRAFIEK -->
+<div class="hud-card" id="panel-left-bottom">
+  <h3 onclick="toggleCard('panel-left-bottom')">
+    <span>📊 Dagoverzicht Zonnestand</span>
+    <span style="font-size:10px;color:var(--gold);">[—]</span>
+  </h3>
+  <canvas id="daily-chart" width="375" height="160" style="cursor:crosshair;width:100%;height:160px;"></canvas>
+</div>
+
+<script>
+const R_KOMPAS_CM = Math.sqrt(363.0 / Math.PI);
+const R_JIAZI_CM  = 8.875;
+const R_NUC_CM    = R_KOMPAS_CM / 4;
+const VAKJE_CM    = 0.5;
+
+const state = {
+  lat: 52.1551, lng: 5.3872, heightM: 98.3,
+  dateStr: "2026-08-12", minutes: 840,
+  scaleMPerCm: 10.0,
+  tracerX_cm: 4.5, tracerY_cm: -9.5,
+  armLocked: false, recordingOmtrek: false,
+  omtrekPoints: [], mirrorMode: 'none'
+};
+
+function toggleCard(id) {
+  document.getElementById(id).classList.toggle('minimized');
+}
+
+function getShaoYongBits(idx) {
+  const val = idx < 32 ? (63 - idx) : (idx - 32);
+  return val.toString(2).padStart(6, '0');
+}
+
+function computeNuclear(bits) {
+  const b2 = bits[1], b3 = bits[2], b4 = bits[3], b5 = bits[4];
+  return { N: `${b2}${b3}${b4}${b3}${b4}${b5}`, N2: `${b3}${b4}${b3}${b4}${b3}${b4}`, core: `${b3}${b4}` };
+}
+
+function getSunPosition(lat, lng, dateStr, minutesOfDay) {
+  const parts = (dateStr || "2026-08-12").split('-').map(Number);
+  const yr = parts[0] || 2026, mo = parts[1] || 8, dy = parts[2] || 12;
+  const tzOffset = (mo >= 4 && mo <= 10) ? 2 : 1;
+  const utcHours = (minutesOfDay / 60) - tzOffset;
+  const d = new Date(Date.UTC(yr, mo - 1, dy, 0, 0, 0));
+  const startOfYear = new Date(Date.UTC(yr, 0, 0));
+  const dayOfYear = Math.floor((d - startOfYear) / 86400000);
+
+  const gamma = (2 * Math.PI / 365) * (dayOfYear - 1 + (utcHours - 12) / 24);
+  const eqTime = 229.18 * (0.000075 + 0.001868 * Math.cos(gamma) - 0.032077 * Math.sin(gamma) - 0.014615 * Math.cos(2 * gamma) - 0.040849 * Math.sin(2 * gamma));
+  const decl = 0.006918 - 0.399912 * Math.cos(gamma) + 0.070257 * Math.sin(gamma) - 0.006758 * Math.cos(2 * gamma) + 0.000907 * Math.sin(2 * gamma);
+
+  const tst = utcHours * 60 + eqTime + 4 * lng;
+  const ha = ((tst / 4) - 180) * Math.PI / 180;
+  const latRad = lat * Math.PI / 180;
+  const sinEl = Math.sin(latRad) * Math.sin(decl) + Math.cos(latRad) * Math.cos(decl) * Math.cos(ha);
+  const elRad = Math.asin(Math.max(-1, Math.min(1, sinEl)));
+  const elDeg = elRad * 180 / Math.PI;
+  const cosAz = (Math.sin(decl) - Math.sin(latRad) * sinEl) / (Math.cos(latRad) * Math.cos(elRad) + 1e-9);
+  let azDeg = Math.acos(Math.max(-1, Math.min(1, cosAz))) * 180 / Math.PI;
+  if (ha > 0) azDeg = 360 - azDeg;
+
+  return { elDeg, azDeg, shadowAzDeg: (azDeg + 180) % 360, shadowLenM: elDeg > 0.8 ? Math.min(800, state.heightM / Math.tan(elRad)) : null };
+}
+
+const mapStyle = {
+  version: 8,
+  sources: {
+    "pdok-luchtfoto": { type: "raster", tiles: ["https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_orthoHR/EPSG:3857/{z}/{x}/{y}.jpeg"], tileSize: 256 },
+    "carto-dark": { type: "raster", tiles: ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"], tileSize: 256 },
+    "osm": { type: "raster", tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256 },
+    "pdok-brt": { type: "raster", tiles: ["https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0/standaard/EPSG:3857/{z}/{x}/{y}.png"], tileSize: 256 },
+    "esri-sat": { type: "raster", tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"], tileSize: 256 }
+  },
+  layers: [
+    { id: "lyr-pdok-luchtfoto", type: "raster", source: "pdok-luchtfoto", layout: { visibility: "visible" } },
+    { id: "lyr-carto-dark", type: "raster", source: "carto-dark", layout: { visibility: "none" } },
+    { id: "lyr-osm", type: "raster", source: "osm", layout: { visibility: "none" } },
+    { id: "lyr-pdok-brt", type: "raster", source: "pdok-brt", layout: { visibility: "none" } },
+    { id: "lyr-esri-sat", type: "raster", source: "esri-sat", layout: { visibility: "none" } }
+  ]
+};
+
+const map = new maplibregl.Map({
+  container: 'map', style: mapStyle, center: [state.lng, state.lat], zoom: 16.4, pitch: 52, bearing: 0, antialias: true
+});
+
+function metersOffsetToLngLat(eastM, northM) {
+  const dLat = northM / 111320.0;
+  const dLng = eastM / (111320.0 * Math.cos(state.lat * Math.PI / 180));
+  return [state.lng + dLng, state.lat + dLat];
+}
+
+function project3D(eastM, northM, upM = 0) {
+  const ll = metersOffsetToLngLat(eastM, northM);
+  const basePt = map.project(ll);
+  if (upM === 0) return basePt;
+  const ptShift = map.project(metersOffsetToLngLat(eastM + 10, northM));
+  const pxPerMeter = Math.hypot(ptShift.x - basePt.x, ptShift.y - basePt.y) / 10.0;
+  return { x: basePt.x, y: basePt.y - upM * pxPerMeter * Math.max(0.28, Math.sin(map.getPitch() * Math.PI / 180)) };
+}
+
+function renderScene3D() {
+  const S = state.scaleMPerCm;
+  const rOuterM = R_KOMPAS_CM * S;
+
+  // 1. Vakjes Raster
+  const gridGroup = document.getElementById('svg-grid-vakjes');
+  if (document.getElementById('lay-vakjes').checked) {
+    let gHtml = "";
+    for (let v = -22; v <= 22; v++) {
+      const offsetM = v * VAKJE_CM * S;
+      const col = (v % 5 === 0) ? "rgba(0, 229, 255, 0.35)" : "rgba(0, 229, 255, 0.12)";
+      const pS = project3D(offsetM, -11 * S, 0), pN = project3D(offsetM, 11 * S, 0);
+      const pW = project3D(-11 * S, offsetM, 0), pE = project3D(11 * S, offsetM, 0);
+      gHtml += `<line x1="${pS.x}" y1="${pS.y}" x2="${pN.x}" y2="${pN.y}" stroke="${col}" stroke-width="0.6"/>`;
+      gHtml += `<line x1="${pW.x}" y1="${pW.y}" x2="${pE.x}" y2="${pE.y}" stroke="${col}" stroke-width="0.6"/>`;
+    }
+    gridGroup.innerHTML = gHtml;
+  } else { gridGroup.innerHTML = ""; }
+
+  // 2. Schaduwwaaier & Toren
+  const fanGroup = document.getElementById('svg-shadow-fan');
+  const towerGroup = document.getElementById('svg-tower-3d');
+  const sunNow = getSunPosition(state.lat, state.lng, state.dateStr, state.minutes);
+  let fanHtml = "", tHtml = "";
+
+  if (document.getElementById('lay-fan').checked && sunNow.elDeg > 0.8 && sunNow.shadowLenM) {
+    const sRad = sunNow.shadowAzDeg * Math.PI / 180;
+    const pShadow = project3D(Math.sin(sRad) * sunNow.shadowLenM, Math.cos(sRad) * sunNow.shadowLenM, 0);
+    const pBase = project3D(0, 0, 0), pTop = project3D(0, 0, state.heightM);
+    tHtml += `<polygon points="${pBase.x},${pBase.y} ${pTop.x},${pTop.y} ${pShadow.x},${pShadow.y}" fill="rgba(0, 229, 255, 0.15)"/>`;
+    tHtml += `<line x1="${pBase.x}" y1="${pBase.y}" x2="${pShadow.x}" y2="${pShadow.y}" stroke="#00e5ff" stroke-width="3" marker-end="url(#arrow-cyan)"/>`;
+  }
+  tHtml += `<line x1="${project3D(0,0,0).x}" y1="${project3D(0,0,0).y}" x2="${project3D(0,0,state.heightM).x}" y2="${project3D(0,0,state.heightM).y}" stroke="#ef4444" stroke-width="4"/>`;
+  towerGroup.innerHTML = tHtml;
+  fanGroup.innerHTML = fanHtml;
+
+  // 3. Omtrek Pad
+  const omtrekGroup = document.getElementById('svg-omtrek-path');
+  if (document.getElementById('lay-omtrek').checked && state.omtrekPoints.length > 0) {
+    let pathD = "";
+    state.omtrekPoints.forEach((pt, idx) => {
+      const p = project3D(pt.x_cm * S, pt.y_cm * S, 0);
+      pathD += (idx === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`);
+    });
+    omtrekGroup.innerHTML = `<path d="${pathD}" fill="rgba(255,204,51,0.2)" stroke="#ffcc33" stroke-width="2.5"/>`;
+  } else { omtrekGroup.innerHTML = ""; }
+
+  // 4. Ott Nr. 573 Planimeter
+  const planGroup = document.getElementById('svg-planimeter-3d');
+  if (document.getElementById('lay-planimeter').checked) {
+    const txM = state.tracerX_cm * S, tyM = state.tracerY_cm * S;
+    const pxM = 0, pyM = 7.5 * S, R_arm = 7.5 * S, L_arm = 10.75 * S;
+    const dx = txM - pxM, dy = tyM - pyM;
+    let d = Math.hypot(dx, dy);
+    if (d > R_arm + L_arm - 0.05) d = R_arm + L_arm - 0.05;
+    const a = (R_arm*R_arm - L_arm*L_arm + d*d) / (2*d);
+    const h = Math.sqrt(Math.max(0, R_arm*R_arm - a*a));
+    const gxM = pxM + a*(dx/d) - h*(dy/d), gyM = pyM + a*(dy/d) + h*(dx/d);
+
+    const pPole = project3D(pxM, pyM, 0), pHinge = project3D(gxM, gyM, 0), pTracer = project3D(txM, tyM, 0);
+    let pHtml = `<line x1="${pPole.x}" y1="${pPole.y}" x2="${pHinge.x}" y2="${pHinge.y}" stroke="#d4af37" stroke-width="10"/>`;
+    pHtml += `<line x1="${pHinge.x}" y1="${pHinge.y}" x2="${pTracer.x}" y2="${pTracer.y}" stroke="${state.armLocked ? '#ef4444' : '#eab308'}" stroke-width="7"/>`;
+    pHtml += `<circle cx="${pTracer.x}" cy="${pTracer.y}" r="8" fill="#00e5ff" stroke="#fff" stroke-width="2"/>`;
+    planGroup.innerHTML = pHtml;
+  } else { planGroup.innerHTML = ""; }
+
+  updateCADReport(sunNow);
+}
+
+function updateCADReport(sunNow) {
+  const deg = (Math.atan2(state.tracerX_cm, state.tracerY_cm) * 180 / Math.PI + 360) % 360;
+  const nonius = Math.round((deg / 360) * 3630);
+  const report = `=== OTT NR. 573 CAD RAPPORT ===\nElevatie: ${sunNow.elDeg.toFixed(2)}° | Schaduw: ${sunNow.shadowLenM ? sunNow.shadowLenM.toFixed(1) : 0}m\nVolgstift Pos: [${state.tracerX_cm}, ${state.tracerY_cm}] cm\nAzimut: ${deg.toFixed(2)}° | Nonius: ${nonius}\nOmtrek Punten: ${state.omtrekPoints.length}\n`;
+  document.getElementById('txt-cad-output').value = report;
+}
+
+function toggleArmLock() {
+  state.armLocked = !state.armLocked;
+  const btn = document.getElementById('btn-toggle-lock');
+  const badge = document.getElementById('arm-status-badge');
+  if (state.armLocked) {
+    btn.textContent = "🔓 Geef Arm Vrij"; btn.className = "btn btn-green";
+    badge.textContent = "🔒 VAST"; badge.className = "status-pill pill-locked";
+  } else {
+    btn.textContent = "🔒 Zet Arm Stil"; btn.className = "btn btn-red";
+    badge.textContent = "VRIJ"; badge.className = "status-pill pill-free";
+  }
+}
+
+function startOmtrekRecording() {
+  state.recordingOmtrek = true;
+  state.omtrekPoints = [{ x_cm: state.tracerX_cm, y_cm: state.tracerY_cm }];
+  document.getElementById('lbl-omtrek-count').textContent = "1 punten (Bezig...)";
+}
+
+function clearOmtrekPath() {
+  state.recordingOmtrek = false;
+  state.omtrekPoints = [];
+  document.getElementById('lbl-omtrek-count').textContent = "0 punten";
+  document.getElementById('lbl-omtrek-area').textContent = "0,00 cm² (0 vakjes)";
+  renderScene3D();
+}
+
+function calculateOmtrekArea() {
+  state.recordingOmtrek = false;
+  const pts = state.omtrekPoints;
+  if (pts.length < 3) return;
+  let area = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const j = (i + 1) % pts.length;
+    area += pts[i].x_cm * pts[j].y_cm - pts[j].x_cm * pts[i].y_cm;
+  }
+  area = Math.abs(area) / 2.0;
+  const vakjes = Math.round(area / (VAKJE_CM * VAKJE_CM));
+  document.getElementById('lbl-omtrek-area').textContent = `${area.toFixed(2)} cm² (${vakjes} vakjes)`;
+}
+
+function setMirrorMode(mode) {
+  state.mirrorMode = mode;
+  document.body.className = mode === 'h' ? 'mirrored-h' : (mode === 'v' ? 'mirrored-v' : '');
+}
+
+function loadExternalOverlayFile() {
+  const fileInput = document.getElementById('file-uploader');
+  if (fileInput.files.length > 0) {
+    alert(`Bestand "${fileInput.files[0].name}" geladen als gegeorefereerde overlay.`);
+  } else {
+    alert("Selecteer eerst een SVG of JPG bestand.");
+  }
+}
+
+function exportCADReport() {
+  const blob = new Blob([document.getElementById('txt-cad-output').value], { type: 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `technische_tekening_ott573.txt`; a.click();
+}
+
+map.on('render', renderScene3D);
+map.on('mousemove', (e) => {
+  if (!state.armLocked) {
+    const dEastM = (e.lngLat.lng - state.lng) * 111320.0 * Math.cos(state.lat * Math.PI / 180);
+    const dNorthM = (e.lngLat.lat - state.lat) * 111320.0;
+    state.tracerX_cm = Math.round((dEastM / state.scaleMPerCm) / VAKJE_CM) * VAKJE_CM;
+    state.tracerY_cm = Math.round((dNorthM / state.scaleMPerCm) / VAKJE_CM) * VAKJE_CM;
+    if (state.recordingOmtrek) {
+      state.omtrekPoints.push({ x_cm: state.tracerX_cm, y_cm: state.tracerY_cm });
+      document.getElementById('lbl-omtrek-count').textContent = `${state.omtrekPoints.length} punten`;
+    }
+    renderScene3D();
+  }
+});
+
+// Grafiek initialisatie
+function drawDailyChart() {
+  const canvas = document.getElementById('daily-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(10, 140);
+  for (let x = 10; x < 360; x += 10) {
+    ctx.lineTo(x, 80 + Math.sin(x/30)*40);
+  }
+  ctx.stroke();
+}
+
+window.addEventListener('DOMContentLoaded', () => { drawDailyChart(); renderScene3D(); });
+</script>
+</body>
+</html>

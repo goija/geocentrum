@@ -1,0 +1,840 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Planitaire data</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+	/* Paint a complete callout box on every PDF page fragment. */
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+}
+
+/* For default-background callouts, render the border outline. */
+.callout.block-color-default_background {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+/*
+ * Toggles and callouts hold arbitrary content, so they can easily be taller
+ * than a page. They must stay breakable: avoiding breaks inside them makes
+ * Chromium push the whole block onto the next page, which leaves the previous
+ * page mostly empty before every long toggle.
+ */
+details,
+aside {
+	margin: 1.25em 0;
+}
+
+/* Keep a toggle's title on the same page as the start of its content. */
+summary {
+	page-break-after: avoid;
+	break-after: avoid;
+}
+
+/*
+ * Toggle headings render as <h1/h2/h3 style="display:inline-block"> inside
+ * <summary>. Without this reset, the heading's margin-top pushes it below the
+ * ::marker (▼), so the triangle and the title appear on separate lines.
+ */
+summary h1,
+summary h2,
+summary h3,
+summary h4 {
+	margin-top: 0;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding-inline: 0.125rem;
+	padding-block: 0.375rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+/*
+ * Render emoji icons using a ::before pseudo-element to keep the glyph
+ * out of the DOM textContent traversal. This avoids double-rendering icons
+ * in callouts and page titles.
+ * NOTE(slim/html-export-pseudo-icons): I can't tagref this because it will
+ * flag as a duplicate tag after codegen.
+ */
+.icon[data-emoji]::before {
+	content: attr(data-emoji);
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	margin-right: 0.4em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.tab {
+	margin: 1.25em 0;
+	padding-inline: 1rem;
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style><style>@import url('https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex-swap.min.css')</style></head><body><article id="3f9dd950-2e4e-80f3-b31d-e3a7b6408bf2" class="page sans"><header><h1 class="page-title" dir="auto">Planitaire data</h1><p class="page-description" dir="auto"></p><table class="properties"><tbody></tbody></table></header><div class="page-body"><p id="3f9dd950-2e4e-80e5-9ee2-e1e67b5e30aa" class="" dir="auto"><a href="https://github.com/goija?tab=repositories#start-of-content">Skip to content</a><strong>Navigation Menu</strong></p><ul id="3f9dd950-2e4e-802f-a09c-c64e65f7c56d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Platform</strong><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="3f9dd950-2e4e-808c-b5b5-e1bed832e3d0" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-806f-a2c3-fa507aee8341" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-80c8-8fbc-c12f8c93e372" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-8024-ad91-eae135f0d40b" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-8012-bb8a-db2ccd220cc2" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-800e-b4f1-dd914f52190e" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-80d1-98d6-dac56e161ee0" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪
+  ▪</code></pre></li></ul><ul id="3f9dd950-2e4e-8079-811b-da63027ae7b6" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Solutions</strong><pre id="3f9dd950-2e4e-8089-9fb9-f9cac383a6bc" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-808b-8674-c2d995e295e0" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-8014-965b-e121b5be8a62" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-805c-8b5b-cceaacbf9b42" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-805e-8e4b-c75fd9796f01" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪
+  ▪</code></pre></li></ul><ul id="3f9dd950-2e4e-80b5-bd3e-c36e07ff6ecb" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Resources</strong><pre id="3f9dd950-2e4e-806d-b612-dc83eb6864ca" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-80ce-886e-cbffee98a41d" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-80b6-80bf-fde1a831ca42" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-80a0-a0a6-c14e5e18c466" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-8089-a685-c736ada4536c" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪
+  ▪</code></pre></li></ul><ul id="3f9dd950-2e4e-8087-b0df-d07d3313db9a" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Open Source</strong><pre id="3f9dd950-2e4e-8024-8b51-d6f96a72ff28" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪</code></pre><ul id="3f9dd950-2e4e-809b-a36a-f429dc387b04" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-8073-83a7-c7c6e6725113" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪
+  ▪</code></pre><ul id="3f9dd950-2e4e-804f-9a99-e5fa71ecde52" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-805b-82ad-d3538667aecb" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪</code></pre></li></ul><ul id="3f9dd950-2e4e-8051-9a85-df745ee1e97e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Enterprise</strong><pre id="3f9dd950-2e4e-8000-8efa-d54b0cd3d98e" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪</code></pre><ul id="3f9dd950-2e4e-80d8-8f1c-c028b6ee7751" class="bulleted-list" dir="auto"><li style="list-style-type:circle"></li></ul><pre id="3f9dd950-2e4e-80d2-8e37-ccc0cb5c0240" class="code code-wrap"><code style="white-space:pre-wrap;word-break:break-all">  ▪
+  ▪
+  ▪</code></pre></li></ul><ul id="3f9dd950-2e4e-8001-8722-f9c4748d36c3" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/pricing">*Pricing</a>goija**<a href="https://github.com/goija">Overview</a><strong><a href="https://github.com/goija?tab=repositories">Repositories96</a></strong></li></ul><p id="3f9dd950-2e4e-80d9-afa8-fd71e6e43afa" class="" dir="auto"><strong>Goijagoija</strong>Multimedia developer/ Data Analyst / Data Scientist Universe Analysis <a href="https://en.wikipedia.org/wiki/Universe">https://en.wikipedia.org/wiki/Universe</a></p><ul id="3f9dd950-2e4e-808c-8146-cb05dd6c43b5" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://verdronkenstad.nl/">verdronkenstad.nl</a></li></ul><ul id="3f9dd950-2e4e-8037-adda-f4e021b35991" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://verdronkenstad.nl/tholen-de-erfgenamen/">https://verdronkenstad.nl/tholen-de-erfgenamen/</a></li></ul><ul id="3f9dd950-2e4e-8029-85f1-c8ade5ed17b2" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://goija.substack.com/">https://goija.substack.com/</a></li></ul><ul id="3f9dd950-2e4e-8068-b8af-fc91d81b76a4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://www.flickr.com/groups/14892268@N24/discuss/">https://www.flickr.com/groups/14892268@N24/discuss/</a></li></ul><ul id="3f9dd950-2e4e-806f-935e-c1b6fbc9f9f8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/-home-ontwerp-Downloads-vortexmaster-nexus-VORTEX_OMNI_AI_BRIDGE">*-home-ontwerp-Downloads-vortexmaster-nexus-VORTEX_OMNI_AI_BRIDGE</a> Public** HTML Updated on Apr 13</li></ul><ul id="3f9dd950-2e4e-8013-89cc-d0d6cf12c83f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/3dmodel-viewer">*3dmodel-viewer</a> Public** Jupyter Notebook Updated on Apr 8</li></ul><ul id="3f9dd950-2e4e-801a-8065-ee4146a4ca8e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/3dprinter">*3dprinter</a> Public** HTML Updated on Sep 1</li></ul><ul id="3f9dd950-2e4e-80c2-aa79-d7cdc8f8218d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/AGFA">*AGFA</a> Public** HTML Updated on May 24</li></ul><ul id="3f9dd950-2e4e-801f-95ce-ee724cc87b40" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/archieven">*archieven</a> Public** HTML Updated on Apr 8, 2023</li></ul><ul id="3f9dd950-2e4e-80df-ba08-f6aca1820eee" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/audio">*audio</a> Public**Updated on May 20</li></ul><ul id="3f9dd950-2e4e-8026-908a-ffedb3c4f6e7" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/belcombinatie">*belcombinatie</a> Public**</li></ul><p id="3f9dd950-2e4e-8053-bbfa-c902988d04e2" class="" dir="auto">topologieUpdated on Apr 1, 2025</p><ul id="3f9dd950-2e4e-8050-b57f-db164059a316" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/bincode">*bincode</a> Public**Forked from <a href="https://github.com/bincode-org/bincode">bincode-org/bincode</a></li></ul><p id="3f9dd950-2e4e-8029-b2e9-c6e7afa7568d" class="" dir="auto">A binary encoder / decoder implementation in Rust.Updated on Aug 15, 2025</p><ul id="3f9dd950-2e4e-80f8-9829-dd4e5f26b773" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/blog">*blog</a> Public** HTML Updated on Jun 14</li></ul><ul id="3f9dd950-2e4e-80e4-a9c0-e6867fa71ac8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/boa">*boa</a> Public**Updated on Dec 22, 2024</li></ul><ul id="3f9dd950-2e4e-8034-bade-d9559f9e3441" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/boek">*boek</a> Public**Updated on Sep 23, 2025</li></ul><ul id="3f9dd950-2e4e-808d-8f19-c331944a7717" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/boekpagina">*boekpagina</a> Public**Updated on Feb 27, 2025</li></ul><ul id="3f9dd950-2e4e-8020-a7a7-f9ac37bd27a3" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/CABR">*CABR</a> Public**</li></ul><p id="3f9dd950-2e4e-801c-833a-c0a76ea5134c" class="" dir="auto">NIODUpdated on Sep 24, 2025</p><ul id="3f9dd950-2e4e-80d9-a0c3-cc7b0eee10f5" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/canvas">*canvas</a> Public** HTML Updated on Sep 22, 2025</li></ul><ul id="3f9dd950-2e4e-805b-9182-f5697cc40f90" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/carbage">*carbage</a> Public**Updated on Sep 28, 2025</li></ul><ul id="3f9dd950-2e4e-8098-abcb-e09e5815ee71" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/Cassiopeia">*Cassiopeia</a> Public**</li></ul><p id="3f9dd950-2e4e-809d-b59a-f1510e4ebb5b" class="" dir="auto">20 augustus 1731 HTML  <a href="https://github.com/goija/Cassiopeia/stargazers">1</a> Updated on Dec 15, 2024</p><ul id="3f9dd950-2e4e-80dc-822f-dde0e6510426" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/CQL2-Model">*CQL2-Model</a> Public**</li></ul><p id="3f9dd950-2e4e-8023-841b-e68f26426ba7" class="" dir="auto">archelogie -make models HTML Updated on Sep 22, 2025</p><ul id="3f9dd950-2e4e-80c0-b498-ecf276347b15" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/dataGHOSTinTHEDARK">*dataGHOSTinTHEDARK</a> Public** Shell Updated on Sep 24, 2025</li></ul><ul id="3f9dd950-2e4e-8024-b597-ecbc2759dbc8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/dd-to-dms-">*dd-to-dms-</a> Public**</li></ul><p id="3f9dd950-2e4e-80db-acfe-e4718c449889" class="" dir="auto">converter + plot HTML Updated on Sep 22, 2025</p><ul id="3f9dd950-2e4e-80e7-b873-faf9b1e69a1d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/deBruijnsimulator">*deBruijnsimulator</a> Public**Forked from <a href="https://github.com/RAPosthumus/deBruijnsimulator">RAPosthumus/deBruijnsimulator</a> CSS Updated on Jun 2</li></ul><ul id="3f9dd950-2e4e-80ca-b681-c9f5c22d8488" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/ECP-">*ECP-</a> Public**</li></ul><p id="3f9dd950-2e4e-80fd-b77f-ed3ac4beec74" class="" dir="auto">BronnenUpdated on Jul 4</p><ul id="3f9dd950-2e4e-8022-b45b-c8a83a2f4273" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/els-vortex-">*els-vortex-</a> Public** Jupyter Notebook Updated on Apr 8</li></ul><ul id="3f9dd950-2e4e-80f8-9b3a-dd31b07bf7f8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/Emirp-Prime-Number-3D-Plotter">*Emirp-Prime-Number-3D-Plotter</a> Public**Forked from <a href="https://github.com/kvn13github/Emirp-Prime-Number-3D-Plotter">kvn13github/Emirp-Prime-Number-3D-Plotter</a></li></ul><p id="3f9dd950-2e4e-8034-9dcc-cb6fb4156d29" class="" dir="auto">Emirp prime numbers are primes that can are primes in both directions you read the digits, for example 13 and 31. This script asks a range between two numbers, and then depending on the versions pr… Jupyter Notebook Apache License 2.0 Updated on May 12, 2025</p><ul id="3f9dd950-2e4e-8008-b4c1-c03c17e8a1a9" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/ETgoHOME">*ETgoHOME</a> Public**</li></ul><p id="3f9dd950-2e4e-80f7-b558-dd9257288d2d" class="" dir="auto">SMS-code to the future <a href="https://github.com/goija/ETgoHOME/forks">1</a> Updated on Sep 24, 2025</p><ul id="3f9dd950-2e4e-8064-b6ad-d4a1c928f85f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/flask">*flask</a> Public**</li></ul><p id="3f9dd950-2e4e-8019-af32-e6cc6c627e0a" class="" dir="auto">smsUpdated on Sep 25, 2025</p><ul id="3f9dd950-2e4e-80c0-9029-f8980a9c89f2" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/fotoalbum">*fotoalbum</a> Public** HTML Updated on May 30</li></ul><ul id="3f9dd950-2e4e-8032-9287-fc105a3deeec" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/fra1-2r2vg-1775727349013-9735a4537dc5">*fra1-2r2vg-1775727349013-9735a4537dc5</a> Public**</li></ul><p id="3f9dd950-2e4e-804e-b113-cdddee239990" class="" dir="auto">MATRIX GATEWAY // STRATIGRAPHIC CORE HTML MIT License Updated on Apr 10</p><ul id="3f9dd950-2e4e-8026-8af1-d1430f2b2216" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/fs_stat">*fs_stat</a> Public**Forked from <a href="https://github.com/RAPosthumus/fs_stat">RAPosthumus/fs_stat</a></li></ul><p id="3f9dd950-2e4e-80e3-9612-f6c65241d731" class="" dir="auto">Father Son stature R GNU General Public License v3.0 Updated on Nov 16, 2019</p><ul id="3f9dd950-2e4e-80c0-a20b-dc38b330f326" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/G-PCC-Encoder">*G-PCC-Encoder</a> Public**Updated on Apr 2</li></ul><ul id="3f9dd950-2e4e-80c6-8c0b-cde174cd5a74" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/genelogie-export">*genelogie-export</a> Public**Updated on Mar 14, 2025 <strong>Footer</strong>© 2026 GitHub, Inc.<strong>Footer navigation</strong></li></ul><ul id="3f9dd950-2e4e-8030-84f9-c8004d21df80" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://docs.github.com/site-policy/github-terms/github-terms-of-service">Terms</a></li></ul><ul id="3f9dd950-2e4e-8015-a50b-ceaa399f7d4f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement">Privacy</a></li></ul><ul id="3f9dd950-2e4e-804f-b7f0-eeed23d7e9af" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/security">Security</a></li></ul><ul id="3f9dd950-2e4e-805a-9def-ff67bdacbacb" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://www.githubstatus.com/">Status</a></li></ul><ul id="3f9dd950-2e4e-8017-88cb-c7ba0bf9eac1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.community/">Community</a></li></ul><ul id="3f9dd950-2e4e-802c-8996-d643f0a8ddde" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://docs.github.com/">Docs</a></li></ul><ul id="3f9dd950-2e4e-800e-b22d-c6da4865f2f6" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://support.github.com/?tags=dotcom-footer">Contact</a></li></ul><ul id="3f9dd950-2e4e-8064-8d59-ce987b049467" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Manage cookies</li></ul><ul id="3f9dd950-2e4e-80c5-b34a-ce270f35ffd5" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Do not share my personal information</li></ul><h2 id="3f9dd950-2e4e-80a5-84c7-e54aad958979" class="" dir="auto">Planimetrische Rekenmatrix</h2><p id="3f9dd950-2e4e-80aa-bea4-cb4fe512b1f8" class="" dir="auto"><strong>Instrument:</strong> Ott Compensatie-Poolplanimeter (Nr. 573)<br/><strong>Dossier:</strong> #573-OTTIAN-GEOGEODETISCH CENTRUM<br/>09:37:12 | 14-10-2026</p><h3 id="36dff525-90b3-4dab-a8b5-ded08cd9a282" class="" dir="auto">⚙️ Instrumentele Parameters</h3><ul id="88e085e3-d955-4140-9dbf-7380955bda09" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Omlooparm (L) in mm</li></ul><ul id="d090c823-0cbf-454f-a04e-0405e92981ff" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Rolaflezing (N)</li></ul><ul id="0f07e830-49e8-4ae6-b28c-b66187ceb960" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Nonius Constante (λ) in mm²</li></ul><ul id="4996ea68-68b6-4edc-a0bc-40a64aa97a56" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Custom Schaal (1:X) 1:</li></ul><h3 id="ea8cf5df-b307-483c-b8f8-02f9c6dd522c" class="" dir="auto">Gemeten Papieroppervlak</h3><p id="38e77a48-93fc-4d93-b7a2-d2e3011e27cb" class="" dir="auto"><strong>358,40 cm² (35.840,00 mm²)</strong></p><p id="1ed84d0b-4e56-468b-8818-6b09be0b1180" class="" dir="auto">Formule: A = λ × N</p><h3 id="53030be1-cd16-4975-8fd7-b37b333a922b" class="" dir="auto">📐 Kwadratische Schaalmatrix (M²)</h3><table id="7c80f9f7-d187-4776-a151-71d3c40cc882" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="d69a97e2-9103-4610-85f0-8f7df25a5c78" dir="ltr"><th id="dOvB" class="simple-table-header-color simple-table-header">Kaartschaal</th><th id="@?G}" class="simple-table-header-color simple-table-header">Context</th><th id="^ht[" class="simple-table-header-color simple-table-header">Schaalfactor (F²)</th><th id="H~wd" class="simple-table-header-color simple-table-header">Werkelijk Oppervlak</th></tr></thead><tbody><tr id="ae1fb34f-7cf0-4ad4-8136-ad2ddd254141" dir="ltr"><td id="dOvB" class="">1:50</td><td id="@?G}" class="">Bouwtekening</td><td id="^ht[" class="">2.500</td><td id="H~wd" class="">89,60 m²</td></tr><tr id="1579fce7-519f-4963-8681-5b28ede18236" dir="ltr"><td id="dOvB" class="">1:500</td><td id="@?G}" class="">Custom Invoer</td><td id="^ht[" class="">250.000</td><td id="H~wd" class="">8.960,00 m²</td></tr><tr id="65be80de-c408-4ecc-972c-f554f240c2a0" dir="ltr"><td id="dOvB" class="">1:1.000</td><td id="@?G}" class="">Kadaster</td><td id="^ht[" class="">1.000.000</td><td id="H~wd" class="">35.840,00 m² (3,58 ha)</td></tr><tr id="6a28de70-b03f-46ef-9158-9bd82293e57e" dir="ltr"><td id="dOvB" class="">1:10.000</td><td id="@?G}" class="">Stadsontwikkeling</td><td id="^ht[" class="">100.000.000</td><td id="H~wd" class="">3,58 km²</td></tr><tr id="5fa03492-48e2-4ce3-907b-b976c6f4c2d2" dir="ltr"><td id="dOvB" class="">1:25.000</td><td id="@?G}" class="">Topografische Kaart (Tafelbergheide)</td><td id="^ht[" class="">625.000.000</td><td id="H~wd" class="">22,40 km²</td></tr><tr id="a5d9b1b2-d9e4-4386-8a81-1334c12cf606" dir="ltr"><td id="dOvB" class="">1:50.000</td><td id="@?G}" class="">Regionale Atlas Gooi &amp; Vechtstreek</td><td id="^ht[" class="">2.500.000.000</td><td id="H~wd" class="">89,60 km²</td></tr><tr id="21b4ffd5-efcc-4556-b49b-b3df8d3bbf0f" dir="ltr"><td id="dOvB" class="">1:22.000.000</td><td id="@?G}" class="">Macro-geografische kartografie</td><td id="^ht[" class="">484.000.000.000.000</td><td id="H~wd" class="">17.346.560,00 km²</td></tr></tbody></table><h3 id="3f9dd950-2e4e-80c3-8987-dd3c321c9464" class="" dir="auto">an2 Geodetische Azimut Rekentool</h3><p id="3f9dd950-2e4e-806e-b621-ec3a1cceaf40" class="" dir="auto">Vergelijking tussen geodetisch azimut <code>atan2(ΔX, ΔY)</code> en wiskundige hoek <code>atan2(ΔY, ΔX)</code>.</p><p id="0676e79d-e28a-4ded-818c-5568d2ba3806" class="" dir="auto"><strong>REFERENTIESYSTEEM:</strong> LOKAAL<br/><strong>PROJECTIE:</strong> CARTESISCH</p><aside class="block-color-blue_background callout" data-notion-callout="" data-notion-callout-icon="📍" data-notion-callout-background="blue_background" style="white-space:pre-wrap;display:flex" id="881c8dd4-f854-459e-98a2-ba5639efb8db" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="📍"></span></div><div style="width:100%"><p id="6df73fa2-d927-48e9-942a-8a5cb273a97b" class="" dir="auto">Coördinaat Invoer</p><p id="6d23a68a-908f-4b86-9a30-8429453ec0ea" class="" dir="auto"><strong>Punt 1 (Oorsprong)</strong></p><ul id="07f76382-3beb-452c-be53-40909bb8f692" class="bulleted-list" dir="auto"><li style="list-style-type:disc">X1</li></ul><ul id="12585f22-a91b-4e10-a03d-dd83a17e9cce" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Y1</li></ul><p id="6edf13e8-39fe-4b26-ac15-57c44113dfa9" class="" dir="auto"><strong>Punt 2 (Doel)</strong></p><ul id="52ab7f2f-0d33-4164-9f57-07f0532cbc11" class="bulleted-list" dir="auto"><li style="list-style-type:disc">X2</li></ul><ul id="ca060837-6716-487b-8771-b15a917fddcb" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Y2</li></ul></div></aside><h3 id="2724f0cf-5231-457c-bef5-334aaa2ebf17" class="" dir="auto">📊 Berekende Data</h3><table id="43731f33-856e-466b-a08f-538b4c97c722" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="afc4efd7-e80f-4b78-a41b-820fc2f1c298" dir="ltr"><th id="&lt;&gt;^b" class="simple-table-header-color simple-table-header">Meting</th><th id="f:tZ" class="simple-table-header-color simple-table-header">Waarde</th></tr></thead><tbody><tr id="58f1d16e-6145-4311-acd6-abd3868fbbd9" dir="ltr"><td id="&lt;&gt;^b" class="">ΔX (X2 - X1)</td><td id="f:tZ" class=""><strong>100.00</strong></td></tr><tr id="654c2854-4c9b-4fac-91b7-b0709f9f1dd9" dir="ltr"><td id="&lt;&gt;^b" class="">ΔY (Y2 - Y1)</td><td id="f:tZ" class=""><strong>100.00</strong></td></tr><tr id="2be20523-296c-4449-8e18-6d51fc380478" dir="ltr"><td id="&lt;&gt;^b" class="">Geodetisch Azimut (Noord = 0°) — <code>atan2(ΔX, ΔY)</code></td><td id="f:tZ" class=""><strong>45.00°</strong></td></tr><tr id="9f101e80-85fd-4cb1-b6d4-acfad11c2243" dir="ltr"><td id="&lt;&gt;^b" class="">Wiskundige Hoek (X-as = 0°) — <code>atan2(ΔY, ΔX)</code></td><td id="f:tZ" class="">45.00°</td></tr><tr id="b3e9d492-ea91-4ea2-aeed-3d86cf19ebb6" dir="ltr"><td id="&lt;&gt;^b" class="">Actief Kwadrant</td><td id="f:tZ" class=""><strong>I (+X, +Y) [Noordoost]</strong></td></tr></tbody></table><p id="19dc4ee4-2f01-43fd-8dff-e24b1462e2af" class="" dir="auto"><strong>📡 Geodetisch Radarscherm</strong></p><h3 id="3f9dd950-2e4e-80a4-991c-f5e7557bc2b5" class="" dir="auto">1. Noordzee Vector</h3><ul id="3f9dd950-2e4e-807f-92b2-cfc83118beb1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Oorsprong:</strong> Londen</li></ul><ul id="3f9dd950-2e4e-80fc-905c-f35553471bb9" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Grootcirkel:</strong> 291°</li></ul><ul id="3f9dd950-2e4e-8036-9be9-d75f6d4fd1fa" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Afwijking:</strong> 20.91° (Modulo 21)</li></ul><h3 id="3f9dd950-2e4e-8089-a679-f5cb8cb5a8ef" class="" dir="auto">2. Geodetische Ankers</h3><ul id="3f9dd950-2e4e-8028-a309-f0dec6c13c43" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Scherpenisse: <strong>290.91°</strong></li></ul><ul id="3f9dd950-2e4e-8060-aff4-cd3c8232ac85" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>St. Maartensdijk (Zeeland)</strong></li></ul><ul id="3f9dd950-2e4e-80ce-a682-cdc2a117edc0" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Veere: <strong>290.64°</strong></li></ul><h3 id="3f9dd950-2e4e-80c5-bc32-df49eaaaefac" class="" dir="auto">3. Lokale Atmosferische Optica</h3><ul id="3f9dd950-2e4e-806d-9465-dd023185de00" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Ankerpunt:</strong> Sloterplas</li></ul><ul id="3f9dd950-2e4e-802e-addf-dbeb3aa81b55" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Oppervlakte:</strong> 3.633 km²</li></ul><ul id="3f9dd950-2e4e-8087-a475-df4c919647a7" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Mercurius Vector:</strong> 186.15°</li></ul><ul id="3f9dd950-2e4e-8034-b028-f531b58a69da" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Dynamische Status:</strong> Voronoi Tessellation Actief</li></ul><h1 id="3f9dd950-2e4e-8044-acf9-cc3d09eb184b" class="" dir="auto"><em><strong>Ceci n&#x27;est pas une carte.</strong></em></h1><h2 id="3ba18869-d130-40c8-8ce8-ba849b28dfc0" class="" dir="auto">👁️ UI Tonen/Verbergen</h2><p id="3f9dd950-2e4e-8026-a5c4-c62076893227" class="" dir="auto"><strong>NESW</strong></p><p id="3f9dd950-2e4e-80d6-a1d2-f25336e7fddb" class="" dir="auto"><strong>0.0000°, 0.0000°</strong></p><h2 id="3f9dd950-2e4e-8062-8b00-caf9b2d32e58" class="" dir="auto">🔍 Locatie Zoeken</h2><p id="3f9dd950-2e4e-809f-8aca-e48a45016d39" class="" dir="auto"><strong>Zoek Coördinaten</strong></p><h2 id="3f9dd950-2e4e-80a0-8e9b-e98f5f550792" class="" dir="auto">💾 Geheugen Module</h2><aside class="block-color-blue_background callout" data-notion-callout="" data-notion-callout-background="blue_background" style="white-space:pre-wrap;display:flex" id="c1c5928c-e0bd-4650-aa1e-3c6a69b2c915" dir="ltr"><div style="width:100%"><p id="1d8333b5-1a03-4a27-b70f-0eb6d2a86515" class="" dir="auto"><strong>💾 OPSLAAN📂 LADEN</strong></p></div></aside><ul id="3f9dd950-2e4e-805b-8eb8-eaddabe702f1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>🖐 MODUS: HANDJE (UIT)</strong></li></ul><ul id="3f9dd950-2e4e-8001-aeb7-f22cbb704e3b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>🚩 VLAG PLAATSEN (UIT)</strong></li></ul><h2 id="3f9dd950-2e4e-8021-8ba3-f5c81472adc8" class="" dir="auto">🌍 Basis Kaartlaag (Ondergrond)</h2><ul id="3f9dd950-2e4e-8021-af92-d6762547202d" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Carto Dark Matter (Standaard)</li></ul><ul id="ea2e28da-4979-44ce-86c1-f10343e744bb" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Esri Satelliet (3D Globe)</li></ul><ul id="82dd2d2f-2193-476d-b70a-3ea9cf4e723e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">OpenStreetMap (Klassiek)</li></ul><ul id="b356eb8e-bea1-448b-9b06-9ea110c3e2ce" class="bulleted-list" dir="auto"><li style="list-style-type:disc">OpenTopoMap</li></ul><ul id="422540ca-074d-456e-bc85-7ec9bfedb8c8" class="bulleted-list" dir="auto"><li style="list-style-type:disc">⚓ Zeekaart (OpenSeaMap)</li></ul><h2 id="3f9dd950-2e4e-80b6-9e1b-ed3022d4743c" class="" dir="auto">🔗 Custom Overlay Toevoegen</h2><ul id="3f9dd950-2e4e-8020-b208-ec431eb6bbe0" class="bulleted-list" dir="auto"><li style="list-style-type:disc">XYZ Raster Tiles (Afbeeldingen)</li></ul><ul id="9c4fd497-a338-42fc-b8c3-0a5c1d77b046" class="bulleted-list" dir="auto"><li style="list-style-type:disc">GeoJSON (Vectoren/Lijnen)</li></ul><p id="3f9dd950-2e4e-8063-9a16-cdb0e0183897" class="" dir="auto"><strong>Voeg Laag Toe</strong></p><h2 id="3f9dd950-2e4e-8073-b35e-def3f4f24554" class="" dir="auto">📹 WebRTC Connectie</h2><p id="3f9dd950-2e4e-80ad-ad73-fb360cc2a91a" class="" dir="auto"><strong>Start Lokale Camera Overlay</strong></p><p id="3f9dd950-2e4e-808c-b8dd-eac5c8a9f67e" class="" dir="auto">Projecteer je lokale videofeed in een zwevend dashboard paneel via WebRTC.</p><h2 id="3f9dd950-2e4e-8052-92a1-c909afe7ee38" class="" dir="auto">Actieve Custom Lagen</h2><ul id="3f9dd950-2e4e-8082-8614-c8e19824d3a4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><em>Geen custom lagen actief.</em></li></ul><h2 id="3f9dd950-2e4e-8034-852e-ff4ec3da7065" class="" dir="auto">Lokale Hemel (Vandaag)</h2><p id="3f9dd950-2e4e-80b0-b554-d017952b0a26" class="" dir="auto"><em>Laden...</em></p><h2 id="3f9dd950-2e4e-8061-b83d-df9c6c631585" class="" dir="auto">Planeten &amp; Sterrenbeelden (Nu)</h2><p id="3f9dd950-2e4e-8082-aeb4-eb9dfcbd590b" class="" dir="auto"><em>Laden...</em></p><h2 id="3f9dd950-2e4e-8067-ae12-f833636a0610" class="" dir="auto">BepiColombo (Koers Mercurius)</h2><p id="3f9dd950-2e4e-80d5-a47d-f6078e475726" class="" dir="auto"><em>Laden...</em></p><h2 id="3f9dd950-2e4e-80ff-a4d1-edbe981293d4" class="" dir="auto">3. Locatie Analyse</h2><p id="3f9dd950-2e4e-80f5-be6c-c78cb13a3506" class="" dir="auto">Plaats een vlaggetje om de context van een punt op te halen en eigen notities toe te voegen via de pop-up.</p><h2 id="3f9dd950-2e4e-80e7-9d69-d625a2f43236" class="" dir="auto">4. Planimeter (Scroll om te besturen)</h2><ul id="3f9dd950-2e4e-800b-9716-c7ee302403ee" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Azimut↕ Scroll</li></ul><ul id="3f9dd950-2e4e-80a2-be08-c9ebad6dca3b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Kanteling↕ Scroll</li></ul><ul id="3f9dd950-2e4e-8041-9a0f-d2c3127fa833" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Zoom↕ Scroll</li></ul><p id="3f9dd950-2e4e-80b4-9940-c92ae9b91b14" class="" dir="auto"><strong>Stramien Oppervlakte:</strong></p><aside class="block-color-teal_background callout" data-notion-callout="" data-notion-callout-background="teal_background" style="white-space:pre-wrap;display:flex" id="3ac5bbe2-29e3-490c-8f1c-586effb4f016" dir="ltr"><div style="width:100%"><p id="57b8a1cd-0d64-4fed-bcf6-f2501e295ec9" class="" dir="auto"><strong>0.00</strong> <strong>∬ dA</strong> (km²)</p></div></aside><p id="3f9dd950-2e4e-8090-97d7-dac29df8ceda" class="" dir="auto"><strong>Goijagoija</strong></p><p id="87073e6c-9e18-4f86-beee-b5d68e5d8785" class="" dir="auto">Multimedia developer/ Data Analyst / Data Scientist Universe Analysis <a href="https://en.wikipedia.org/wiki/Universe">https://en.wikipedia.org/wiki/Universe</a></p><ul id="3f9dd950-2e4e-80c7-ab46-d4ec4e92e76f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://verdronkenstad.nl/">verdronkenstad.nl</a></li></ul><ul id="3f9dd950-2e4e-80a3-ae89-d10de79ccc01" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://verdronkenstad.nl/tholen-de-erfgenamen/">https://verdronkenstad.nl/tholen-de-erfgenamen/</a></li></ul><ul id="3f9dd950-2e4e-8021-84f8-eaf47fa52a1c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://goija.substack.com/">https://goija.substack.com/</a></li></ul><ul id="3f9dd950-2e4e-8054-b3d6-d88a9dc69e20" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://www.flickr.com/groups/14892268@N24/discuss/">https://www.flickr.com/groups/14892268@N24/discuss/</a></li></ul><ul id="3f9dd950-2e4e-80fa-b769-ea5d3a8046e1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/-home-ontwerp-Downloads-vortexmaster-nexus-VORTEX_OMNI_AI_BRIDGE">*-home-ontwerp-Downloads-vortexmaster-nexus-VORTEX_OMNI_AI_BRIDGE</a> Public** HTML Updated on Apr 13</li></ul><ul id="3f9dd950-2e4e-8046-ae90-d340eb4ee63b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/3dmodel-viewer">*3dmodel-viewer</a> Public** Jupyter Notebook Updated on Apr 8</li></ul><ul id="3f9dd950-2e4e-8036-8614-f516efad0880" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/3dprinter">*3dprinter</a> Public** HTML Updated on Sep 1</li></ul><ul id="3f9dd950-2e4e-808d-82cf-de43cac1624a" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/AGFA">*AGFA</a> Public** HTML Updated on May 24</li></ul><ul id="3f9dd950-2e4e-80a0-910f-ce7700056034" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/archieven">*archieven</a> Public** HTML Updated on Apr 8, 2023</li></ul><ul id="3f9dd950-2e4e-803f-af0a-d32c0effa0b4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/audio">*audio</a> Public**Updated on May 20</li></ul><ul id="3f9dd950-2e4e-80e5-8f7d-cd286a31f7f0" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/belcombinatie">*belcombinatie</a> Public**</li></ul><p id="3f9dd950-2e4e-8038-94a2-f13d7cf3b9ad" class="" dir="auto">topologie<br/>Updated on Apr 1, 2025</p><ul id="3f9dd950-2e4e-8022-854e-c05ce9e8275c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/bincode">*bincode</a> Public**Forked from <a href="https://github.com/bincode-org/bincode">bincode-org/bincode</a></li></ul><p id="3f9dd950-2e4e-8071-ae7e-ca12cddbe324" class="" dir="auto">A binary encoder / decoder implementation in Rust.<br/>Updated on Aug 15, 2025</p><ul id="3f9dd950-2e4e-8017-9d22-f719d84ebe4b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/blog">*blog</a> Public** HTML Updated on Jun 14</li></ul><ul id="3f9dd950-2e4e-80d3-811a-e29bec4beba0" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/boa">*boa</a> Public**Updated on Dec 22, 2024</li></ul><ul id="3f9dd950-2e4e-8094-97b7-eefde7d3e51c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/boek">*boek</a> Public**Updated on Sep 23, 2025</li></ul><ul id="3f9dd950-2e4e-80fc-b31c-e7d213fe23b7" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/boekpagina">*boekpagina</a> Public**Updated on Feb 27, 2025</li></ul><ul id="3f9dd950-2e4e-80ed-b2db-cba17b3eea62" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/CABR">*CABR</a> Public**</li></ul><p id="3f9dd950-2e4e-8043-9eb5-e0b7ccb6e8d0" class="" dir="auto">NIOD<br/>Updated on Sep 24, 2025</p><ul id="3f9dd950-2e4e-80df-84ff-f584962920b4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/canvas">*canvas</a> Public** HTML Updated on Sep 22, 2025</li></ul><ul id="3f9dd950-2e4e-8053-a7b5-dd00b9be884d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/carbage">*carbage</a> Public**Updated on Sep 28, 2025</li></ul><ul id="3f9dd950-2e4e-805f-ad95-f30d326b20ad" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/Cassiopeia">*Cassiopeia</a> Public**</li></ul><p id="3f9dd950-2e4e-8058-8704-c1db3dcb3004" class="" dir="auto">20 augustus 1731 HTML  <a href="https://github.com/goija/Cassiopeia/stargazers">1</a> Updated on Dec 15, 2024</p><ul id="3f9dd950-2e4e-802f-b7b1-ddf7e53abbf8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/CQL2-Model">*CQL2-Model</a> Public**</li></ul><p id="3f9dd950-2e4e-806c-b759-f1833038b1d1" class="" dir="auto">archelogie -make models HTML Updated on Sep 22, 2025</p><ul id="3f9dd950-2e4e-80ea-a8a4-dcec6b11a2e1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/dataGHOSTinTHEDARK">*dataGHOSTinTHEDARK</a> Public** Shell Updated on Sep 24, 2025</li></ul><ul id="3f9dd950-2e4e-8024-9e92-e8eeb61871a4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/dd-to-dms-">*dd-to-dms-</a> Public**</li></ul><p id="3f9dd950-2e4e-80b3-bb9e-c9eb7c1435f8" class="" dir="auto">converter + plot HTML Updated on Sep 22, 2025</p><ul id="3f9dd950-2e4e-80a1-a2ff-dccae210565f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/deBruijnsimulator">*deBruijnsimulator</a> Public**Forked from <a href="https://github.com/RAPosthumus/deBruijnsimulator">RAPosthumus/deBruijnsimulator</a> CSS Updated on Jun 2</li></ul><ul id="3f9dd950-2e4e-809b-807b-cfdbd34bc666" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/ECP-">*ECP-</a> Public**</li></ul><p id="3f9dd950-2e4e-80a5-87ac-c3f11616709f" class="" dir="auto">Bronnen<br/>Updated on Jul 4</p><ul id="3f9dd950-2e4e-8074-b12a-e99908d86f57" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/els-vortex-">*els-vortex-</a> Public** Jupyter Notebook Updated on Apr 8</li></ul><ul id="3f9dd950-2e4e-8014-a638-d4a36dfdccb4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/Emirp-Prime-Number-3D-Plotter">*Emirp-Prime-Number-3D-Plotter</a> Public**Forked from <a href="https://github.com/kvn13github/Emirp-Prime-Number-3D-Plotter">kvn13github/Emirp-Prime-Number-3D-Plotter</a></li></ul><p id="3f9dd950-2e4e-8093-bfcd-c4e1d9f42b4c" class="" dir="auto">Emirp prime numbers are primes that can are primes in both directions you read the digits, for example 13 and 31. This script asks a range between two numbers, and then depending on the versions pr… Jupyter Notebook Apache License 2.0 Updated on May 12, 2025</p><ul id="3f9dd950-2e4e-8070-b2fc-d2ab3d1b641b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/ETgoHOME">*ETgoHOME</a> Public**</li></ul><p id="3f9dd950-2e4e-80f6-9f25-de1060cf803d" class="" dir="auto">SMS-code to the future <a href="https://github.com/goija/ETgoHOME/forks">1</a> Updated on Sep 24, 2025</p><ul id="3f9dd950-2e4e-80bc-8914-f1a7647cd044" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/flask">*flask</a> Public**</li></ul><p id="3f9dd950-2e4e-80fd-96a8-eefcf5a1b607" class="" dir="auto">sms<br/>Updated on Sep 25, 2025</p><ul id="3f9dd950-2e4e-801c-a21a-ce3f3ac140f6" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/fotoalbum">*fotoalbum</a> Public** HTML Updated on May 30</li></ul><ul id="3f9dd950-2e4e-8022-af46-ea0ba855f0e2" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/fra1-2r2vg-1775727349013-9735a4537dc5">*fra1-2r2vg-1775727349013-9735a4537dc5</a> Public**</li></ul><p id="3f9dd950-2e4e-8030-b938-edddad6d2cfc" class="" dir="auto">MATRIX GATEWAY // STRATIGRAPHIC CORE HTML MIT License Updated on Apr 10</p><ul id="3f9dd950-2e4e-8016-a49d-d027c272d543" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/fs_stat">*fs_stat</a> Public**Forked from <a href="https://github.com/RAPosthumus/fs_stat">RAPosthumus/fs_stat</a></li></ul><p id="3f9dd950-2e4e-8088-8d65-dea28f61068f" class="" dir="auto">Father Son stature R GNU General Public License v3.0 Updated on Nov 16, 2019</p><ul id="3f9dd950-2e4e-8094-889f-c0c4ec87380a" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/G-PCC-Encoder">*G-PCC-Encoder</a> Public**Updated on Apr 2</li></ul><ul id="3f9dd950-2e4e-8036-bf9c-cd23766f610e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://github.com/goija/genelogie-export">*genelogie-export</a> Public**Updated on Mar 14, 2025 <strong>Footer</strong>© 2026 GitHub, Inc.<strong>Footer navigation</strong></li></ul><ul id="3f9dd950-2e4e-8020-9aab-f2f9b06eaade" class="bulleted-list" dir="auto"><li style="list-style-type:disc"></li></ul><h3 id="3f9dd950-2e4e-8079-8e0c-eb0336cc1a24" class="" dir="auto">Mathgeo-Seven Dashboard</h3><p id="3f9dd950-2e4e-807b-9244-c7a481cce69b" class="" dir="auto"><em>Complete index van alle live applicaties op mathgeo-seven.vercel.app</em></p><h2 id="3f9dd950-2e4e-80b7-afd2-c3962ec06603" class="" dir="auto">Hoofdnavigatie &amp; Algemeen</h2><ul id="3f9dd950-2e4e-8098-9582-f2c298a41bf8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/index.html">🏠index.html</a></li></ul><ul id="3f9dd950-2e4e-8030-b5e8-edbc6514da4c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/links.html">🔗links.html</a></li></ul><ul id="3f9dd950-2e4e-80f3-929d-d539209db987" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/mathgeo_seven_advanced_dashboard.html">📊mathgeo_seven_advanced_dashboard.html</a></li></ul><ul id="3f9dd950-2e4e-8028-b5ea-f63647c038ab" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/onderzoek.html">🔬onderzoek.html</a></li></ul><ul id="3f9dd950-2e4e-80cb-9e91-f905a3c2be95" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/wetenschap.html">🧪wetenschap.html</a></li></ul><h2 id="3f9dd950-2e4e-8080-9e2c-c17d4c29bb6f" class="" dir="auto">Integrale Synthese &amp; Matrix</h2><ul id="3f9dd950-2e4e-806b-8984-edbbf3258381" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/de_integrale_synthese.html">🧩de_integrale_synthese.html</a></li></ul><ul id="3f9dd950-2e4e-8000-a8fe-e144281d480b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/de_integrale_synthese_voronoi_grid.html">🕸️de_integrale_synthese_voronoi_grid.html</a></li></ul><ul id="3f9dd950-2e4e-8075-843f-cc8416d22148" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/de_integrale_synthese_voronoi_planimeter.html">📐de_integrale_synthese_voronoi_planimeter.html</a></li></ul><ul id="3f9dd950-2e4e-801a-a3fe-f44de57e5520" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/integrale_3d_matrix_dashboard.html">🧊integrale_3d_matrix_dashboard.html</a></li></ul><ul id="3f9dd950-2e4e-80db-be3a-e5b296ed0d5b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/integrale_3d_matrix_synthese.html">🧊integrale_3d_matrix_synthese.html</a></li></ul><ul id="3f9dd950-2e4e-80b3-b477-c8977a1c8bb7" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/integrale_3d_matrix_synthese(1).html">🧊integrale_3d_matrix_synthese(1).html</a></li></ul><ul id="3f9dd950-2e4e-8048-830d-f02b4798e337" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/integrale_3d_matrix_synthese(2).html">🧊integrale_3d_matrix_synthese(2).html</a></li></ul><ul id="3f9dd950-2e4e-800c-aa67-ec9d201b7b6b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/integrale_synthese_dashboard.html">🖥️integrale_synthese_dashboard.html</a></li></ul><ul id="3f9dd950-2e4e-80cd-8b74-c9bd7d9c3400" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/planimetrische_rekenmatrix.html">🧮planimetrische_rekenmatrix.html</a></li></ul><ul id="3f9dd950-2e4e-80bf-9b9d-e1692dd51451" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/synthes.html">🧬synthes.html</a></li></ul><h2 id="3f9dd950-2e4e-80b1-b1fa-f93ec4260d7f" class="" dir="auto">Geodesie, Cartografie &amp; Navigatie</h2><ul id="3f9dd950-2e4e-8077-a5da-e7a5712450c4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/atan2_geodetische_azimut_rekentool.html">🧭atan2_geodetische_azimut_rekentool.html</a></li></ul><ul id="3f9dd950-2e4e-805d-b488-c6a6e38f4830" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/geocommand.html">📍geocommand.html</a></li></ul><ul id="3f9dd950-2e4e-80b9-a882-d53d4ac41d3a" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/geocomandmobiel.html">📱geocomandmobiel.html</a></li></ul><ul id="3f9dd950-2e4e-80ff-b373-f85bd9b22d04" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/geodesic_matrix_dashboard.html">🌐geodesic_matrix_dashboard.html</a></li></ul><ul id="3f9dd950-2e4e-806c-a58c-cb5fdc56ff73" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/geodetisch_magritte_dashboard.html">🎨geodetisch_magritte_dashboard.html</a></li></ul><ul id="3f9dd950-2e4e-806b-b6bb-c625fcd8befe" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/geodetische_cartografische_matrix_dashboard.html">🗺️geodetische_cartografische_matrix_dashboard.html</a></li></ul><ul id="3f9dd950-2e4e-8002-917e-fe8da8be293c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/geotool.html">🛠️geotool.html</a></li></ul><ul id="3f9dd950-2e4e-808c-ae42-ce4c64ff2d5f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/mapplotter.html">🗺️mapplotter.html</a></li></ul><ul id="3f9dd950-2e4e-8028-80ef-dc388a6fe8f5" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/snijpunt.html">❌snijpunt.html</a></li></ul><h2 id="3f9dd950-2e4e-8014-9628-d84d17d3b0ec" class="" dir="auto">Astronomische Tools (Zon, Tijd &amp; Schaduw)</h2><ul id="3f9dd950-2e4e-80e3-a18b-f5ad6a41e8ac" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/bol.html">🌍bol.html</a></li></ul><ul id="3f9dd950-2e4e-8024-bab0-f7537f1ea681" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/klokstappen.html">⏱️klokstappen.html</a></li></ul><ul id="3f9dd950-2e4e-8070-afde-f02e78b73681" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/mzon.html">☀️mzon.html</a></li></ul><ul id="3f9dd950-2e4e-80c5-abba-cab6bcc18119" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/schaduw.html">🌘schaduw.html</a></li></ul><ul id="3f9dd950-2e4e-8086-a256-fee883eaab4b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/schaduwaaier.html">🌒schaduwaaier.html</a></li></ul><ul id="3f9dd950-2e4e-80ef-9f2e-cb5ad24500a4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/zonnebaar.html">🌞zonnebaar.html</a></li></ul><ul id="3f9dd950-2e4e-8043-8b72-fd22b94179b4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/zonnewijzer.html">🕰️zonnewijzer.html</a></li></ul><h2 id="3f9dd950-2e4e-8089-93d7-caf50bcaa316" class="" dir="auto">Voronoi &amp; Vortex Analyses</h2><ul id="3f9dd950-2e4e-80eb-9fa8-ead5f17a4642" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/voronoi.html">🕸️voronoi.html</a></li></ul><ul id="3f9dd950-2e4e-80c1-9b6f-f881cbdb1ab4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/voronoi_picasso_sloterplas.html">🖼️voronoi_picasso_sloterplas.html</a></li></ul><ul id="3f9dd950-2e4e-8033-8963-d236f5911bfc" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/vortex_heatmap.html">🔥vortex_heatmap.html</a></li></ul><ul id="3f9dd950-2e4e-801b-aa25-ed4d707145c9" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/vortex_kalibrator.html">⚙️vortex_kalibrator.html</a></li></ul><h2 id="3f9dd950-2e4e-800a-b43c-d201e2fed1b4" class="" dir="auto">Overige Tools &amp; Experimenten</h2><ul id="3f9dd950-2e4e-8078-a7a9-fa351661eaa2" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/18980.html">🔢18980.html</a></li></ul><ul id="3f9dd950-2e4e-8075-924d-d0f4a9161618" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/clientside.html">💻clientside.html</a></li></ul><ul id="3f9dd950-2e4e-80e3-88bc-c74c5ea8ec5b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/gemini-code-1790779583503.html">🤖gemini-code-1790779583503.html</a></li></ul><ul id="3f9dd950-2e4e-80ee-a0d0-e82dd2700cd4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/gemini-code-1790838575691.html">🤖gemini-code-1790838575691.html</a></li></ul><ul id="3f9dd950-2e4e-80be-811d-ec4b2cc1bafd" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/lowerman.html">👤lowerman.html</a></li></ul><ul id="3f9dd950-2e4e-806f-bd3d-c8a08a4c424c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/osint.html">🔍osint.html</a></li></ul><ul id="3f9dd950-2e4e-801b-9542-ce403032e2dd" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/pdf.html">📄pdf.html</a></li></ul><ul id="3f9dd950-2e4e-80b1-80f4-f1ad61021356" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/spiegel.html">🪞spiegel.html</a></li></ul><ul id="fc1d8182-6a31-4f14-949f-8cebf4f61cc1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/tuinieren.html">🌱tuinieren.html</a></li></ul><h2 id="3f9dd950-2e4e-80ed-a8e1-d2d3047f2ecf" class="" dir="auto">≡ 3D Terrain &amp; Toolbox</h2><h3 id="3f9dd950-2e4e-805e-80be-cb629bae287a" class="" dir="auto">📍 Navigatie &amp; Zoeken</h3><p id="f540f12c-570f-4d00-9c1e-d742ac4b4a8e" class="" dir="auto"><strong>Zoek</strong></p><ul id="b419c0b1-9aee-4dca-854b-d3da69f705d6" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Tafelberg</li></ul><ul id="75a553ef-06e5-45e1-a314-2a1688d0b393" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Vlierberg</li></ul><ul id="364aaa2f-fde8-4080-8ec6-cb6c43416084" class="bulleted-list" dir="auto"><li style="list-style-type:disc">St-Maartensdijk</li></ul><ul id="41dce419-5ca0-4997-9a3b-65d0cc3b4ec9" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Amsterdam</li></ul><ul id="d73612d9-2695-460f-8685-a78adeb7d626" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Rotterdam</li></ul><ul id="6fd47da8-84ed-4bba-a832-0fa1d04c6a1f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Utrecht</li></ul><h3 id="35915209-3ccf-4a9d-b41c-82f04309e2fb" class="" dir="auto">🛠 Vector Toolbox (Draggable)</h3><ul id="2c88012a-af33-496f-b448-b369511ec32e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">🖐 Navigatie (Map vrij)</li></ul><ul id="0ff1629b-5f2d-4668-933c-9b252c592837" class="bulleted-list" dir="auto"><li style="list-style-type:disc">🚩 Target Vlag (Vizier Meting)</li></ul><ul id="d3c2cd67-a9a1-408c-b9e4-245df7813337" class="bulleted-list" dir="auto"><li style="list-style-type:disc">☀️ Zonnemeter (Live Vector)</li></ul><ul id="959892d7-8d6a-41d0-9798-5dc6bca3a39c" class="bulleted-list" dir="auto"><li style="list-style-type:disc">🌙 Maanmeter (Live Vector)</li></ul><ul id="c16fe7ed-24e3-4ddc-a462-3eec176beb5a" class="bulleted-list" dir="auto"><li style="list-style-type:disc">🌑 Schaduwmeter (Live Vector)</li></ul><ul id="a7ca5a99-19bb-4aab-bb23-527260c11747" class="bulleted-list" dir="auto"><li style="list-style-type:disc">📍 Plano Pointer (50m Cirkel)</li></ul><ul id="6287d162-ade0-4d01-ae3b-043d3172adc1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">🔤 Tekstlabel Invoegen</li></ul><ul id="380c0175-ee97-4f18-9c75-666bfac86f39" class="bulleted-list" dir="auto"><li style="list-style-type:disc">──────────</li></ul><ul id="7ecf4fde-1455-4f59-bbf2-4d2bb6374f69" class="bulleted-list" dir="auto"><li style="list-style-type:disc">📏 Lijn Tekenen (Vast)</li></ul><ul id="1271f007-c4ff-49d7-87e8-074aed67bdb5" class="bulleted-list" dir="auto"><li style="list-style-type:disc">✂️ Stippellijn (Vast)</li></ul><ul id="37e3e814-e9d0-487f-8984-05115da533f1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">🛑 Vlak / Polygoon (Vast)</li></ul><ul id="3d840f28-0095-4f02-a5fc-2687fc35745a" class="bulleted-list" dir="auto"><li style="list-style-type:disc">〰️ Bézier Curve (Vast)</li></ul><ul id="cdd98555-2932-4c30-bc9d-7a471af6babb" class="bulleted-list" dir="auto"><li style="list-style-type:disc">✅ Voltooi Lijn/Vorm</li></ul><ul id="6f5e5dae-62bf-4a2a-baea-0b91a6341aba" class="bulleted-list" dir="auto"><li style="list-style-type:disc">🗑 Wis Alle Tools &amp; Data</li></ul><h3 id="db2b7c5e-f779-4582-b8eb-430430302d15" class="" dir="auto">🖥 Workstations</h3><h3 id="ed7e8bf4-4b3f-474a-a0ad-fed746a9e2a3" class="" dir="auto">🪟 Kaartlagen &amp; Overlays</h3><h3 id="68fa2c48-74bf-4f6f-89e8-37fedf17db4a" class="" dir="auto">🧭 3D Kompas Instrument</h3><h3 id="0ee98e92-ef2e-4c7c-badf-c94fc8e87e48" class="" dir="auto">🪟 VP4 Vector Mirror &amp; Tools</h3><h3 id="b7838141-8d3f-4353-93f0-cb4fe4a06aff" class="" dir="auto">📡 P2P Data Link &amp; Video</h3><p id="3954030b-8812-4bb8-8887-b562c336a2cd" class="" dir="auto"><strong>0 records in RAM</strong></p><p id="3b78dc1a-60dc-4a06-b577-5c092e3b1d68" class="" dir="auto">CSV · JSON · TXT · PDF</p><h2 id="6c5005e9-a281-4cad-9384-ed2054f79f21" class="" dir="auto">≡ Ruimte-Tijd &amp; Telemetrie</h2><h3 id="3cd78ba5-726c-4917-b62e-3830e6fdd8cc" class="" dir="auto">⏳ Tijdreis Module (Simulatie)</h3><ul id="67eca3d7-3fdf-44df-beda-bb707fc1a59a" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Projecteer</li></ul><ul id="9130f8df-2d96-44fa-972d-111ced600fd4" class="bulleted-list" dir="auto"><li style="list-style-type:disc">▶ Live Real-Time</li></ul><h3 id="e3fddb6d-f000-4816-9bda-d67f61dcae1a" class="" dir="auto">☀️ Target &amp; Terrein Instellingen</h3><ul id="17861b6b-af3b-4c01-a111-43ea85fd0b87" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Target IP:</li></ul><ul id="700598f1-3cc3-4fd3-b168-119b0c4b1ae2" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Gnomon H (m):</li></ul><ul id="fcb79203-1b94-4c63-94ae-02221e2a8ffc" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Terrein Helling (°):</li></ul><ul id="2b84ffa8-67cf-468e-94ab-6664c6537b0e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Wal Afstand (m Y):</li></ul><h3 id="795cfaa8-1fc7-4e4c-97ef-4d42a04a893a" class="" dir="auto">🧮 Live Geometrie Vizier (Kruis)</h3><ul id="266b4429-eec0-42fa-a8a9-387b794abb7d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Tijd/IP:</strong> -- | --</li></ul><ul id="e4bd73ea-65c0-4631-958a-7c9c1e7d0283" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zon Elev/Azi:</strong> 0.00° | 0.00°</li></ul><ul id="3e78305f-9ae9-4d46-94b8-7c6284555de1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Maan Elev/Azi:</strong> 0.00° | 0.00°</li></ul><ul id="c69b53df-bbba-41c5-8589-703f6acd971d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Schaduw L (Helling):</strong> <strong>0.00</strong> m</li></ul><h3 id="9c6f65e1-e55d-4900-a7c0-dcccfea0659a" class="" dir="auto">Wal-Pointer Intersectie</h3><ul id="d305f13b-f253-482f-9c3c-12b907899cb1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Hit op Wal?: Nee</li></ul><ul id="b6f1d061-9e9a-4c3d-84ec-c6c85a062c42" class="bulleted-list" dir="auto"><li style="list-style-type:disc">X-As Snijpunt: 0.00 m</li></ul><ul id="2e21126e-0b07-4fed-b0ad-92843d79bb74" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Geprojecteerde Schaduw H: 0.00 m</li></ul><h3 id="cc8c3980-cca9-4785-8fd2-8f18d6311cd3" class="" dir="auto">💻 Terminal (math.js)</h3><p id="ba4e8675-7d7e-4ac2-984a-e9a37b30c3ac" class="" dir="auto"><strong>Bereken Formule</strong></p><p id="e90b28a2-a87e-4148-bb7e-63d32972fbee" class="" dir="auto">Gereed voor invoer...</p><p id="3f9dd950-2e4e-80f9-8c0e-d2765100cdd9" class="" dir="auto"><strong>WebRTC P2P Status:</strong> Wachten op Lens...</p><h3 id="3f9dd950-2e4e-8072-9a56-ca7dd88711de" class="" dir="auto">≡ Master Navigatie &amp; Bakens ≡</h3><p id="3f9dd950-2e4e-8000-be73-c9202989c038" class="" dir="auto"><strong>🔄 Wissel Viewports Omdraaien</strong></p><h4 id="3f9dd950-2e4e-80ed-bded-e54ee9d1df54" class="" dir="auto">🔍 Locatie Zoeken</h4><p id="3f9dd950-2e4e-8041-b0a5-dd997375c1ab" class="" dir="auto"><strong>Zoek Coördinaten</strong></p><h4 id="3f9dd950-2e4e-802d-a737-eddc71343279" class="" dir="auto">💾 Geheugen (Bakens)</h4><p id="3f9dd950-2e4e-8097-8b72-ee32306e9dc1" class="" dir="auto"><strong>💾 OPSLAAN📂 LADEN</strong></p><ul id="3f9dd950-2e4e-802c-9a43-d6cac10deff4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>🖐 MODUS: HANDJE (UIT)</strong></li></ul><ul id="3f9dd950-2e4e-80a8-8d6a-d53155bbe3c8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>🚩 BAAKEN PLAATSEN (UIT)</strong></li></ul><h3 id="3f9dd950-2e4e-80c6-91ed-df4dd48819d3" class="" dir="auto">≡ Onderzoek Lens &amp; Camera ≡</h3><h4 id="3f9dd950-2e4e-8025-8cfa-dd97b8a0e58e" class="" dir="auto">🔍 Knooppunt Lens</h4><p id="3f9dd950-2e4e-8002-a241-f6681dfddb58" class="" dir="auto">Sleep de cartografische lens over de kaart. Je fysieke camera-feed wordt direct doorgestuurd naar Viewport 2.</p><p id="3f9dd950-2e4e-80ee-8968-d0364bdfeede" class="" dir="auto"><strong>Activeer Camera Lens</strong></p><h4 id="3f9dd950-2e4e-806c-a078-c094528423b7" class="" dir="auto">🌍 Basis Kaartlaag</h4><ul id="3f9dd950-2e4e-804e-bbc4-e455ed08336b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Carto Dark Matter</li></ul><ul id="3f9dd950-2e4e-8058-a35d-e8998adefedf" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Esri Satelliet</li></ul><ul id="3f9dd950-2e4e-805f-b96f-f2850ea11603" class="bulleted-list" dir="auto"><li style="list-style-type:disc">OpenStreetMap</li></ul><ul id="3f9dd950-2e4e-809d-981e-e40c2835f661" class="bulleted-list" dir="auto"><li style="list-style-type:disc">⚓ Zeekaart (OpenSeaMap)</li></ul><h3 id="3f9dd950-2e4e-8038-98c8-de6a63d8e242" class="" dir="auto">≡ Planimeter (Actief) ≡</h3><h4 id="3f9dd950-2e4e-8049-898a-c069788a9bfe" class="" dir="auto">Scroll om te besturen</h4><ul id="3f9dd950-2e4e-8055-801c-de2cbae18501" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Azimut↕ Scroll</li></ul><ul id="3f9dd950-2e4e-80e1-afd8-d96ddf578fdf" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Kanteling↕ Scroll</li></ul><ul id="b0a17498-fba9-4194-942d-fc033a7de001" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Zoom↕ Scroll</li></ul><h3 id="a559f72e-8aee-4625-9518-214f1b7a0f31" class="" dir="auto">≡ Telemetrie &amp; Astronomie ≡</h3><h4 id="a4c1ff7b-45f4-430c-9fbf-c28a3441f5fe" class="" dir="auto">Lokale Hemel</h4><p id="3f9dd950-2e4e-8070-ace7-e40d06c41292" class="" dir="auto">Data wordt berekend...</p><h4 id="3f9dd950-2e4e-801e-9252-c1f7f6545db4" class="" dir="auto">Planetaire Posities</h4><p id="3f9dd950-2e4e-80a1-ba96-d588fd17103b" class="" dir="auto">Laden...</p><h3 id="3f9dd950-2e4e-8093-b1c9-c75839c17bb1" class="" dir="auto">VIEWPORT 2</h3><p id="3f9dd950-2e4e-8033-8361-fd9ff076f5ed" class="" dir="auto"><strong>WebRTC P2P RECEIVER</strong></p><p id="3f9dd950-2e4e-8005-944c-eacccda859ef" class="" dir="auto"><strong>NO SIGNAL</strong></p><h2 id="3f9dd950-2e4e-80d2-80f7-c6af92d4d238" class="" dir="auto">🌍Locatie &amp; Geodesie Invoer</h2><p id="3f9dd950-2e4e-80b5-9cba-ca5a50a0ad06" class="" dir="auto">Plaatsnaam of Adres (Typ en druk op Enter)</p><p id="3f9dd950-2e4e-8036-91ff-cea31b07251c" class="" dir="auto">Latitude (Breedte)</p><p id="3f9dd950-2e4e-804f-9312-dfb04c462427" class="" dir="auto">Longitude (Lengte)</p><p id="3f9dd950-2e4e-8090-ab36-cbfcff4bf934" class="" dir="auto">RD New (EPSG:28992)<strong>X = 155000.0 m, Y = 463000.0 m</strong></p><p id="3f9dd950-2e4e-8055-a254-ea17bdcc1ab5" class="" dir="auto">UTM Zone 31U<strong>E = 663304.1 m, N = 5780984.5 m</strong></p><h2 id="3f9dd950-2e4e-80b5-95b4-c9facc172a7c" class="" dir="auto">⏱️Schaduw &amp; NASA Tijdsmodule</h2><p id="3f9dd950-2e4e-8070-81bb-cdbda3dd5b21" class="" dir="auto">Selecteer Datum</p><p id="3f9dd950-2e4e-8089-8cc5-d97f214abdda" class="" dir="auto">Objecthoogte (m)</p><ul id="3f9dd950-2e4e-807c-a1f2-fcbc0322a56e" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-on" disabled="" checked=""/> <span class="to-do-children-checked">Toon Daglicht Enveloppe</span><div class="indented"><ul id="3f9dd950-2e4e-801f-bb3f-d33b3cefb2bb" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-on" disabled="" checked=""/> <span class="to-do-children-checked">Toon Uurlijkse Vectoren</span><div class="indented"></div></li></ul></div></li></ul><p id="3f9dd950-2e4e-8037-a4ae-ed771c45a6a6" class="" dir="auto"><strong>Tijd &amp; Animatie Controle</strong></p><p id="3f9dd950-2e4e-8027-8965-c0485d4ce9c1" class="" dir="auto"><strong>▶ Speel af⏱ Nu (Live)</strong></p><p id="3f9dd950-2e4e-80a6-adc8-de862c4173b1" class="" dir="auto"><strong>Exporteer JSONExporteer CSV</strong></p><p id="3f9dd950-2e4e-80e1-a58b-edf36dfcdca2" class="" dir="auto">NASA atan2 Zonnestand &amp; SchaduwTheor. Schaduwlengte: <strong>75.2</strong> mZon Azimut (Kompas): <strong>186.6</strong>°Zon Elevatie (Hoogte): <strong>52.59</strong>°</p><p id="3f9dd950-2e4e-80e9-9709-ed350af2eb00" class="" dir="auto">Visuele Waarneming (Oog)</p><p id="3f9dd950-2e4e-8036-a079-e9b95ef68cb3" class="" dir="auto"><strong>Fotopisch Zicht (Kleur)</strong></p><h2 id="3f9dd950-2e4e-8064-b2d5-ec9b7ca7c701" class="" dir="auto">📊Dagoverzicht: Zonnestand &amp; Schaduwlengte per Dag</h2><p id="3f9dd950-2e4e-80cb-a4ba-faeb8a0ec5db" class="" dir="auto"><strong><a href="https://mathgeo-seven.vercel.app/schaduwwaaier.html#">+−</a></strong></p><p id="3f9dd950-2e4e-8066-bf66-f5d89739629d" class="" dir="auto"><a href="https://leafletjs.com/">Leaflet</a></p><p id="3f9dd950-2e4e-8032-a743-ed08add84756" class="" dir="auto">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

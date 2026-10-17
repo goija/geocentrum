@@ -1,0 +1,798 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>VORTEX OS &amp; Bitcoin FIBRE</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+	/* Paint a complete callout box on every PDF page fragment. */
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+}
+
+/* For default-background callouts, render the border outline. */
+.callout.block-color-default_background {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+/*
+ * Toggles and callouts hold arbitrary content, so they can easily be taller
+ * than a page. They must stay breakable: avoiding breaks inside them makes
+ * Chromium push the whole block onto the next page, which leaves the previous
+ * page mostly empty before every long toggle.
+ */
+details,
+aside {
+	margin: 1.25em 0;
+}
+
+/* Keep a toggle's title on the same page as the start of its content. */
+summary {
+	page-break-after: avoid;
+	break-after: avoid;
+}
+
+/*
+ * Toggle headings render as <h1/h2/h3 style="display:inline-block"> inside
+ * <summary>. Without this reset, the heading's margin-top pushes it below the
+ * ::marker (▼), so the triangle and the title appear on separate lines.
+ */
+summary h1,
+summary h2,
+summary h3,
+summary h4 {
+	margin-top: 0;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding-inline: 0.125rem;
+	padding-block: 0.375rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+/*
+ * Render emoji icons using a ::before pseudo-element to keep the glyph
+ * out of the DOM textContent traversal. This avoids double-rendering icons
+ * in callouts and page titles.
+ * NOTE(slim/html-export-pseudo-icons): I can't tagref this because it will
+ * flag as a duplicate tag after codegen.
+ */
+.icon[data-emoji]::before {
+	content: attr(data-emoji);
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	margin-right: 0.4em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.tab {
+	margin: 1.25em 0;
+	padding-inline: 1rem;
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style><style>@import url('https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex-swap.min.css')</style></head><body><article id="3f8dd950-2e4e-80c1-812f-f70c0a6a0454" class="page sans"><header><h1 class="page-title" dir="auto">VORTEX OS &amp; Bitcoin FIBRE</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><figure id="3f8dd950-2e4e-80b5-9509-ca5c29ca6101" dir="ltr"><div class="source"><a href="https://penrose-ten.vercel.app/links.html">https://penrose-ten.vercel.app/links.html</a></div></figure><figure id="3f8dd950-2e4e-803c-b810-c05fc8cb25d3" dir="ltr"><a href="https://penrose-ten.vercel.app/links.html" class="bookmark source"><div class="bookmark-info"><div class="bookmark-text"><div class="bookmark-title">VORTEX OS: Link Dashboard</div></div><div class="bookmark-href">https://penrose-ten.vercel.app/links.html</div></div></a></figure><aside class="block-color-blue_background callout" data-notion-callout="" data-notion-callout-icon="🧭" data-notion-callout-background="blue_background" style="white-space:pre-wrap;display:flex" id="3511b785-6347-458f-8204-3568d386aa12" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="🧭"></span></div><div style="width:100%"><p id="3f8dd950-2e4e-80f8-8a9f-f016e77ce290" class="" dir="auto">Deze pagina bundelt twee onderdelen uit de bestaande notities: de werking en propagatie van Bitcoin FIBRE, en het ontwerp van het VORTEX OS-linkdashboard.</p><ul id="d69c904c-cc57-40a1-9938-6ee7d11aa7a1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Deel A:</strong> TCP tegenover FIBRE (UDP/FEC)</li></ul><ul id="f40a3f38-2b8f-4973-b345-c7a4c457cd74" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Deel B:</strong> dashboarddoel, interface- en kleurensysteem, en bestaande projectlinks</li></ul></div></aside><figure id="3f8dd950-2e4e-8072-acf9-e708322d81f5" dir="ltr"><a href="https://grok.com/c/1dec985a-afa2-47f0-9a16-02563b0da4b2?rid=dd4872f8-1de6-41c0-b697-83f322018cec" class="bookmark source"><div class="bookmark-info"><div class="bookmark-text"><div class="bookmark-title">Grok</div><div class="bookmark-description">Grok is an AI assistant built by SpaceXSI. Chat, create images, write code, and get real-time answers from the web and X.</div></div><div class="bookmark-href"><img src="https://grok.com/images/android-chrome-512x512.png" class="icon bookmark-icon"/>https://grok.com/c/1dec985a-afa2-47f0-9a16-02563b0da4b2?rid=dd4872f8-1de6-41c0-b697-83f322018cec</div></div><img src="https://grok.com/icon-512x512.png" class="bookmark-image"/></a></figure><h2 id="3f8dd950-2e4e-8016-889e-fae8dcf3edbd" class="" dir="auto">A. Bitcoin-blokpropagatie: TCP en FIBRE</h2><h3 id="3f8dd950-2e4e-8029-ab61-e034631a5d91" class="" dir="auto">Kernidee</h3><p id="44b073c0-511e-44f5-84a3-f784452297f1" class="" dir="auto">De oorspronkelijke notitie vergelijkt de reguliere Bitcoin-peerverbindingen via TCP met FIBRE, een overlay die UDP en Forward Error Correction (FEC) gebruikt. Het beoogde voordeel van FIBRE is dat verloren datapakketten in geschikte omstandigheden kunnen worden hersteld uit redundante FEC-data, zonder eerst op een TCP-hertransmissie te wachten.</p><blockquote id="471ef196-d7e1-4b2f-80cd-62758928d855" class="" dir="auto">De latencycijfers hieronder zijn overgenomen uit de oorspronkelijke notitie en niet onafhankelijk geverifieerd. Werkelijke propagatietijd hangt onder meer af van netwerkroute, afstand, pakketverlies, nodeconfiguratie en beschikbare transactiedata.</blockquote><h3 id="c9721b04-1de6-44da-93be-5a867685284b" class="" dir="auto">Vergelijking</h3><table id="3f8dd950-2e4e-80b1-b2d3-f23517b762ac" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="aedf4f54-544b-41cf-885f-0ed5ff4f23cb" dir="ltr"><th id="_wr&gt;" class="simple-table-header-color simple-table-header">Kenmerk</th><th id="YQHN" class="simple-table-header-color simple-table-header">Regulier Bitcoin-peer-netwerk</th><th id="Exp~" class="simple-table-header-color simple-table-header">FIBRE-overlay</th></tr></thead><tbody><tr id="e0dc9710-7087-4d1d-be55-8e3e8469b5d3" dir="ltr"><td id="_wr&gt;" class="">Transport</td><td id="YQHN" class="">TCP; de oorspronkelijke notitie noemt poort 8333</td><td id="Exp~" class="">UDP via gespecialiseerde poorten</td></tr><tr id="ca0ddd14-a47f-4297-90a1-1f08ffb60eab" dir="ltr"><td id="_wr&gt;" class="">Effect van pakketverlies</td><td id="YQHN" class="">TCP levert een geordende stroom; verlies kan de aflevering van latere data ophouden totdat ontbrekende data is hersteld (head-of-line blocking)</td><td id="Exp~" class="">FEC-data kan ontbrekende gegevens herstellen zodra genoeg redundante data beschikbaar is</td></tr><tr id="8b6731b1-4046-49db-9f15-fa802604505a" dir="ltr"><td id="_wr&gt;" class="">Blokoverdracht</td><td id="YQHN" class="">Peercommunicatie en herstel van ontbrekende data kunnen extra rondreizen vragen</td><td id="Exp~" class="">Gericht op snelle, grotendeels eenrichtingsgerichte verspreiding van blokdata</td></tr><tr id="e55fedce-b101-4813-94de-77ddc0780018" dir="ltr"><td id="_wr&gt;" class="">Compacte blokken</td><td id="YQHN" class="">BIP 152; in de oorspronkelijke vergelijking de low-bandwidth-modus</td><td id="Exp~" class="">BIP 152; in de oorspronkelijke vergelijking de high-bandwidth-modus</td></tr><tr id="ebcbebbf-213d-42ee-acc9-bd22199d77b1" dir="ltr"><td id="_wr&gt;" class="">Latency-indicatie uit de notitie</td><td id="YQHN" class="">Vaak meerdere seconden</td><td id="Exp~" class="">100–300 ms wereldwijd</td></tr><tr id="0a5c81eb-4e2c-48cc-994f-76fdc0f37922" dir="ltr"><td id="_wr&gt;" class="">Beoogd doel</td><td id="YQHN" class="">Betrouwbare, brede peer-to-peer-connectiviteit</td><td id="Exp~" class="">Blokken sneller verspreiden en het risico op stale blocks beperken</td></tr></tbody></table><h3 id="552cce7b-ade5-4022-a3ce-e36acc4c1a99" class="" dir="auto">Hoe pakketverlies wordt opgevangen</h3><p id="3f8dd950-2e4e-80b7-886b-eefb8153da91" class="" dir="auto"><strong>Reguliere TCP-route</strong></p><ol type="1" id="3f8dd950-2e4e-8016-ab6c-ce6df99b9b5a" class="numbered-list" start="1" dir="auto"><li>De verzender stuurt blokdata.</li></ol><ol type="1" id="a8b962d0-ecc1-490e-808f-2f2f7af0ac5d" class="numbered-list" start="2" dir="auto"><li>Als data onderweg ontbreekt, kan de geordende TCP-stroom wachten op herstel van dat ontbrekende deel.</li></ol><ol type="1" id="3f8dd950-2e4e-80b4-9568-c7d5a923eb79" class="numbered-list" start="3" dir="auto"><li>De ontvanger kan de data pas volledig verwerken wanneer de ontbrekende bytes zijn aangekomen.</li></ol><ol type="1" id="3f8dd950-2e4e-8055-9f49-e96e3405b8ca" class="numbered-list" start="4" dir="auto"><li>De extra vertraging varieert met de route, round-trip time en het pakketverlies.</li></ol><p id="3f8dd950-2e4e-802b-a55a-f95b001f6315" class="" dir="auto"><strong>FIBRE-route met UDP en Wirehair FEC</strong></p><ol type="1" id="3f8dd950-2e4e-80c2-b522-e40aae93dcc0" class="numbered-list" start="1" dir="auto"><li>De verzender verspreidt compacte blokdata samen met redundante FEC-data.</li></ol><ol type="1" id="72f7b158-69ac-48c1-aa1b-491421545f50" class="numbered-list" start="2" dir="auto"><li>Sommige UDP-pakketten kunnen verloren gaan.</li></ol><ol type="1" id="e19e8250-148f-4b15-9c88-fdfea09b9a5d" class="numbered-list" start="3" dir="auto"><li>De ontvanger gebruikt de beschikbare redundantie om ontbrekende data te reconstrueren, als voldoende FEC-data is aangekomen.</li></ol><ol type="1" id="7666a5d1-14b7-46df-ac73-6a284e988fbe" class="numbered-list" start="4" dir="auto"><li>Daardoor kan herstel vaak plaatsvinden zonder eerst een aanvraag en hertransmissie af te wachten.</li></ol><h3 id="8658834c-4483-498f-b99e-e5d24ffae3c4" class="" dir="auto">Waarom BIP 152 high-bandwidth relevant is</h3><p id="796c1194-fad7-4a21-90f2-3218be17f526" class="" dir="auto">In de beschreven low-bandwidth-modus kondigt een node een blok eerst aan; peers kunnen daarna aangeven welke transacties zij nog nodig hebben. De high-bandwidth-modus verspreidt compacte blokken directer, zonder op diezelfde aanvraagronde te wachten.</p><p id="3f8dd950-2e4e-8008-8003-cdb413fe1a82" class="" dir="auto">De oorspronkelijke notitie beschrijft FIBRE als een combinatie van high-bandwidth compact blocks en Wirehair FEC. Compacte transactie-identificaties kunnen voldoende zijn wanneer peers de transacties al in hun mempool hebben. FEC helpt daarnaast om ontbrekende overdrachtsdata op te vangen. De precieze reconstructie hangt af van de data die de ontvangende node al heeft en de redundantie die is meegestuurd.</p><h3 id="d763f87f-dbe2-49dd-bf19-c589fddc14f4" class="" dir="auto">Doel en aandachtspunten</h3><ul id="3f8dd950-2e4e-8076-aae6-d320ea0ae451" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Beoogd voordeel:</strong> blokken sneller bij aangesloten nodes krijgen.</li></ul><ul id="3f8dd950-2e4e-80b5-9b13-f0fe18e32969" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Netwerkeffect:</strong> mogelijk minder stale blocks door propagatievertraging.</li></ul><ul id="f3578b2d-8926-481c-b714-c9f0c326cfa3" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Aandachtspunt:</strong> de genoemde 100–300 ms is geen gegarandeerde latency voor iedere node of verbinding.</li></ul><ul id="3f8dd950-2e4e-8070-b2ee-e34b62396259" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Context:</strong> FIBRE is een overlay; het vervangt niet het bredere Bitcoin-peer-netwerk.</li></ul><h3 id="3f8dd950-2e4e-80a1-a66d-f3d921fb25c1" class="" dir="auto">Onderwerpen voor verdere uitwerking</h3><ul id="3f8dd950-2e4e-80f4-98cf-ee31a000e123" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De wiskundige werking en herstelgrenzen van Wirehair FEC.</li></ul><ul id="3f8dd950-2e4e-804e-a17a-c3251538cafd" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De geografische spreiding en netwerkverbindingen van FIBRE-nodes.</li></ul><h2 id="963cae32-5b59-4401-b5f8-d3d17dae0204" class="" dir="auto">B. VORTEX OS-linkdashboard</h2><h3 id="fca42933-4c95-4cf6-9582-6b52e47f63cc" class="" dir="auto">Doel en inhoud</h3><p id="78173c75-8bf3-41e8-9b23-419ed114425d" class="" dir="auto">Het zichtbare fragment noemt <strong>“VORTEX OS: Link Dashboard”</strong> en beschrijft het als een geïntegreerd systeem voor OSINT, geodesie en een historisch archief. De oorspronkelijke HTML breekt af tijdens de dashboardheader; de ontbrekende kaartinhoud en onderliggende categorielinks zijn daarom niet uit het fragment af te leiden.</p><h3 id="dec7e5f5-4ab7-4d4b-b702-5757033a93dc" class="" dir="auto">Interface-opbouw</h3><ul id="cd5054fa-e85d-4097-9822-531cbce17ad9" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Pagina:</strong> gecentreerd dashboard met een maximale breedte van ongeveer 1.000 px.</li></ul><ul id="c6b388e2-f505-4082-9839-721a4bd9da4d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Indeling:</strong> responsief kaartrooster; de CSS-fragmenten noemen een minimale kaartbreedte van 400 px.</li></ul><ul id="b071fb1d-af49-4542-9a9d-42e4f0491a47" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Header:</strong> dashboardnaam, korte toelichting en een scheidingslijn.</li></ul><ul id="3792a8a4-0f9d-46b9-ae63-8c69665d23ed" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Kaarten:</strong> afgeronde donkere panelen met een gekleurde bovenrand.</li></ul><ul id="5e2a31b4-7647-468c-adc1-d9303822130f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Kaartinhoud:</strong> badge, titel en lijst met links.</li></ul><ul id="5ec18d12-f4e5-4bfa-94a5-6f409e2fadfc" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Linkrijen:</strong> pictogram plus tekst, met een accentkleurige hoverstijl.</li></ul><ul id="99db6be2-002d-48fe-9f60-af363d1529c8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Statische waarden:</strong> aparte gestippelde rij met label en waarde.</li></ul><h3 id="70ed8fc9-9f76-4077-a114-915452114ced" class="" dir="auto">Visueel systeem</h3><table id="d7717903-700d-4bc3-b2a2-c9361163dc9b" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="024d827f-2066-4d9d-9dbb-b2599f09fced" dir="ltr"><th id=";]?;" class="simple-table-header-color simple-table-header">Onderdeel</th><th id="E^mi" class="simple-table-header-color simple-table-header">Waarde</th></tr></thead><tbody><tr id="60e9be0a-1f1b-4fa8-a02a-8c71b69de437" dir="ltr"><td id=";]?;" class="">Achtergrond</td><td id="E^mi" class=""><code>#0f172a</code></td></tr><tr id="6ad7e5f7-39b4-4e42-96e8-2565ee67e724" dir="ltr"><td id=";]?;" class="">Kaartachtergrond</td><td id="E^mi" class=""><code>#1e293b</code></td></tr><tr id="c363c660-9f9f-4362-a0f2-338fcd2f1ce4" dir="ltr"><td id=";]?;" class="">Primaire tekst</td><td id="E^mi" class=""><code>#f8fafc</code></td></tr><tr id="5dc036c6-1ffe-4f5b-a518-aa0bc7d7c70b" dir="ltr"><td id=";]?;" class="">Gedempte tekst</td><td id="E^mi" class=""><code>#94a3b8</code></td></tr><tr id="2cee1556-058a-4a78-990f-a854b9762c1a" dir="ltr"><td id=";]?;" class="">Lettertype</td><td id="E^mi" class="">Courier New / monospace</td></tr></tbody></table><table id="f22a9af9-0d28-4ad3-b47e-8a7384f598f7" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="436b0bbe-5a72-4489-879a-ac8317052690" dir="ltr"><th id="&gt;?j\" class="simple-table-header-color simple-table-header">Accent</th><th id="aTY;" class="simple-table-header-color simple-table-header">Kleurcode</th></tr></thead><tbody><tr id="fc3f8467-d960-4e50-9dd6-1e66fa004887" dir="ltr"><td id="&gt;?j\" class="">Paars</td><td id="aTY;" class=""><code>#8b5cf6</code></td></tr><tr id="7b5bcf8b-e9dc-4f22-a788-a2781d7d601a" dir="ltr"><td id="&gt;?j\" class="">Roze</td><td id="aTY;" class=""><code>#ec4899</code></td></tr><tr id="039f6f98-4fdf-4eba-9122-c82238a52e6f" dir="ltr"><td id="&gt;?j\" class="">Groen</td><td id="aTY;" class=""><code>#10b981</code></td></tr><tr id="60cba508-56b3-4e2d-9baa-c4ebf32b7816" dir="ltr"><td id="&gt;?j\" class="">Cyaan</td><td id="aTY;" class=""><code>#06b6d4</code></td></tr><tr id="2e817e10-5758-4d79-860c-b4593d0e94fa" dir="ltr"><td id="&gt;?j\" class="">Rood</td><td id="aTY;" class=""><code>#ef4444</code></td></tr><tr id="a4025f29-e896-435b-8e09-fba94d08eb70" dir="ltr"><td id="&gt;?j\" class="">Blauw</td><td id="aTY;" class=""><code>#3b82f6</code></td></tr></tbody></table><p id="fc3e3a47-8a1d-46b2-b51c-01ece2268506" class="" dir="auto">De accentkleuren komen in het fragment terug op kaartborders, badges, glows en hoverstijlen. Er is geen betrouwbare koppeling tussen een specifieke kleur en een inhoudscategorie zichtbaar; die indeling is dus nog open.</p><h3 id="ec1171f3-634d-4bbf-9288-ed2073bb4bd3" class="" dir="auto">Bestaande project- en prototypeverwijzingen</h3><ul id="36b9ccb8-ae47-40ba-8052-0961e2f20cbc" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://mathgeo-seven.vercel.app/cryptpad.html">CryptPad-prototype</a></li></ul><ul id="701073f3-026d-4f83-a7c2-a70a1c10745a" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://codepen.io/editor/rhianna/pen/01a13599-3e65-7dbc-907f-0231961f8ded">CodePen-editor/prototype</a></li></ul><ul id="66940936-9a5b-4f4d-9fe4-0787e1eb236d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://penrose-ten.vercel.app/">Vercel-project — hoofdbestemming</a></li></ul><p id="de5b0436-4365-4f40-92e0-b4636a6f064f" class="" dir="auto"><strong>Linkcontrole:</strong> de oorspronkelijke notitie toonde ook de tekst <code>https://penrose-ten.vercel.app/links.html</code>, maar die link wees feitelijk naar de hoofdbestemming hierboven. De specifieke <code>/links.html</code>-bestemming is daarom niet als werkende link aangenomen. Dubbele vermeldingen van dezelfde CryptPad- en CodePen-URL zijn samengevoegd.</p><h3 id="2f37392e-5baa-41cb-8cf8-0da3012b6dfc" class="" dir="auto">Nog aan te vullen voor het dashboard</h3><ul id="cb10fec0-b2d3-4ca1-b249-3312f78ae950" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De volledige, werkende HTML/CSS-bron terugvinden of opnieuw opbouwen.</li></ul><ul id="3d94fba4-8ac4-4338-a905-039f3d63ccb4" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De definitieve dashboardcategorieën vastleggen.</li></ul><ul id="83eaf785-5219-424a-8d84-e595d6103e86" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De bijbehorende OSINT-, geodesie- en archieflinks per kaart toevoegen.</li></ul><ul id="5fb3bf68-e80d-4d92-8ec7-c216dbdfd311" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Bepalen of de Vercel-pagina een aparte <code>/links.html</code>-route heeft.</li></ul><h2 id="41d15728-216a-4090-b688-c02998fc68e2" class="" dir="auto">C. Digitale OSINT &amp; geodetische telemetrie</h2><h3 id="a0af7c90-99ce-4ec4-81d5-498438f88187" class="" dir="auto">Managementsamenvatting</h3><p id="c40d529f-2a0e-4277-a5d1-81b29895337d" class="" dir="auto">Dit onderdeel brengt twee analytische kaders samen:</p><ul id="d46063f8-b371-4a45-9f90-352aeaa12e78" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>OSINT Framework:</strong> het verifiëren en in kaart brengen van online pseudoniemen, aliassen en mogelijk hergebruik van accounts.</li></ul><ul id="766d5ad8-47ad-47ba-ab6d-0e9a4b852396" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Geodetische en netwerktelemetrie:</strong> de analyse van het VORTEX Omni-Bridge-netwerk, gecentreerd rond het Laren Global Anchor (52,257° N, 5,225° E).</li></ul><p id="2db3c06f-a77f-40c7-a6cf-22799ca67483" class="" dir="auto">Het rapport beschrijft een OSINT-onderzoeksprotocol en rapporteert berekeningen over atmosferische refractie, zichtlijnen en netwerkfideliteit. De cijfers en conclusies hieronder zijn overgenomen uit de brontekst en niet onafhankelijk gevalideerd.</p><h3 id="be7fe060-1e79-4f4a-828f-7e18db4fa38e" class="" dir="auto">C1. OSINT-framework voor gebruikersnamen</h3><p id="18337dfd-a2a9-4c9d-806b-102feb0965cf" class="" dir="auto">Onderzoek naar pseudoniemen en aliassen is een gestructureerde praktijk binnen cybersecurity en inlichtingenonderzoek. Het doel is vast te stellen of dezelfde alias actief is op meerdere platforms, fora of openbare registers.</p><h4 id="a8dd2b95-cd8d-47ea-b2ad-b0326bcc3e1e" class="" dir="auto">Identificatiebronnen en technieken</h4><ul id="16febac5-1963-466e-9dc6-5060597fdfff" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Geautomatiseerde scanners:</strong> opensource-tools die een alias op veel platforms controleren, onder meer aan de hand van HTTP-statuscodes.</li></ul><ul id="1d2d6c67-4382-4fba-9f53-dc7593a3c182" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zoekplatforms:</strong> webgebaseerde aggregators voor het doorzoeken van profielen en domeinregistraties.</li></ul><ul id="35d6078b-e8a4-4225-8c33-36fa1d7337f3" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Register-indexering:</strong> gespecialiseerde databases voor het vinden van koppelingen tussen aliassen en openbare entiteiten.</li></ul><ul id="944a3f31-97c7-4972-8e36-c9819d622876" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zoekoperatoren:</strong> gerichte zoekopdrachten, zoals exacte woordgroepen tussen aanhalingstekens, domeinspecifieke zoekopdrachten en filters op bestandsformaat.</li></ul><ul id="5f153ea3-30e5-4dc0-bbc6-059635c21b01" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Historische archieven:</strong> onder meer het Internet Archive om eerdere versies van webpagina’s en fora te bekijken waar aliassen mogelijk nog voorkwamen.</li></ul><h4 id="cae02960-191e-48c0-a171-d2820a9248ab" class="" dir="auto">Onderzoeksprotocol</h4><table id="b0162be8-0c27-4d05-91e0-81e49fac83f7" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="3d9c2ffe-24c8-408d-a98a-1634b5996ea5" dir="ltr"><th id="^lQC" class="simple-table-header-color simple-table-header">Fase</th><th id="v\`W" class="simple-table-header-color simple-table-header">Methodiek / tooling</th><th id="^^Zv" class="simple-table-header-color simple-table-header">Doel</th><th id="}vDu" class="simple-table-header-color simple-table-header">Verwachte output</th></tr></thead><tbody><tr id="cdaf738c-d75c-433b-aedb-eeb2c595dc44" dir="ltr"><td id="^lQC" class="">1. Discovery</td><td id="v\`W" class="">Geautomatiseerde scanners</td><td id="^^Zv" class="">Actieve profielen identificeren</td><td id="}vDu" class="">Lijst met geverifieerde URL’s</td></tr><tr id="94efe632-6b3a-4983-af41-3375ace982b4" dir="ltr"><td id="^lQC" class="">2. Contextualisatie</td><td id="v\`W" class="">Geavanceerde zoekoperatoren</td><td id="^^Zv" class="">Openbare uitspraken en activiteit vinden</td><td id="}vDu" class="">Inhoudelijke sporen en tijdlijn</td></tr><tr id="82fc626c-35f1-490d-9d27-90b898c9b09e" dir="ltr"><td id="^lQC" class="">3. Corroboratie</td><td id="v\`W" class="">Domein- en registeranalyse</td><td id="^^Zv" class="">Identiteitskoppelingen verifiëren</td><td id="}vDu" class="">Kruisverbanden en patronen</td></tr><tr id="f9ba16ec-ac09-4cff-8c70-980b73f7a99d" dir="ltr"><td id="^lQC" class="">4. Archivering</td><td id="v\`W" class="">Wayback Machine en hash-logging</td><td id="^^Zv" class="">Bewijsmateriaal en status vastleggen</td><td id="}vDu" class="">Gevalideerd dossier/rapport</td></tr></tbody></table><h3 id="1f172201-67ff-41a8-92b8-a05fb17ce59b" class="" dir="auto">C2. Geodetische telemetrie en atmosferische refractie</h3><p id="fa6dd579-d9e5-4c74-8773-4d4b397ad327" class="" dir="auto">Het VORTEX Omni-Bridge-netwerk gebruikt het Laren Global Anchor (52,257° N, 5,225° E) als primair geodetisch ijkpunt.</p><h4 id="5e26b461-7425-4402-953a-4827adabb978" class="" dir="auto">Refractie en schaduwberekeningen</h4><p id="24407863-2191-4133-a7b7-d0825f631e72" class="" dir="auto">Volgens de brontekst veroorzaakt atmosferische refractie bij lage zonnestanden (onder 10°) een optische opbuiging. Bij een zonnestand van 1,00° wordt een refractie van 21,74 boogminuten genoemd. Op een noordelijke helling van 3° zou de berekende schaduw van de Tafelberg (25 m hoog) daardoor verkorten van 357,5 m naar 327,7 m: een verschil van 29,8 m. Over een rastervector van 24 km rapporteert de tekst een zijdelingse grid-dislocatie van 151,8 m.</p><table id="f36e4daa-673b-4336-95b3-6227fd4517ac" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="bd7ce536-2ff7-4ef5-a981-eeea598535ad" dir="ltr"><th id="wcG\" class="simple-table-header-color simple-table-header">Zonnestand</th><th id="\=eq" class="simple-table-header-color simple-table-header">Refractie</th><th id="mMR\" class="simple-table-header-color simple-table-header">Geometrische schatting</th><th id=":QUm" class="simple-table-header-color simple-table-header">Optische schatting</th><th id="@eEy" class="simple-table-header-color simple-table-header">Schaduwdelta</th><th id=";aM:" class="simple-table-header-color simple-table-header">Macro-dislocatie (24 km)</th></tr></thead><tbody><tr id="2d68e1b0-c674-45a0-951a-f6770beb5113" dir="ltr"><td id="wcG\" class="">0,10° (horizon)</td><td id="\=eq" class="">33,72′</td><td id="mMR\" class="">461,8 m</td><td id=":QUm" class="">401,4 m</td><td id="@eEy" class="">60,4 m</td><td id=";aM:" class="">235,4 m</td></tr><tr id="36b1a099-8ef9-41c6-9299-55e4952e7d29" dir="ltr"><td id="wcG\" class="">0,50° (rand)</td><td id="\=eq" class="">25,00′</td><td id="mMR\" class="">408,8 m</td><td id=":QUm" class="">365,1 m</td><td id="@eEy" class="">43,6 m</td><td id=";aM:" class="">174,5 m</td></tr><tr id="30cb341c-2c61-4c7a-8f97-ab9224564bb9" dir="ltr"><td id="wcG\" class="">1,00° (zonsondergang)</td><td id="\=eq" class="">21,74′</td><td id="mMR\" class="">357,5 m</td><td id=":QUm" class="">327,7 m</td><td id="@eEy" class="">29,8 m</td><td id=";aM:" class="">151,8 m</td></tr><tr id="a290111a-5a7a-4e5b-b965-e5f259ac5f49" dir="ltr"><td id="wcG\" class="">2,00°</td><td id="\=eq" class="">16,93′</td><td id="mMR\" class="">285,8 m</td><td id=":QUm" class="">270,4 m</td><td id="@eEy" class="">15,3 m</td><td id=";aM:" class="">118,2 m</td></tr><tr id="74288ac3-1311-4464-8244-3d2ef7e3cbec" dir="ltr"><td id="wcG\" class="">5,00°</td><td id="\=eq" class="">9,67′</td><td id="mMR\" class="">177,9 m</td><td id=":QUm" class="">174,3 m</td><td id="@eEy" class="">3,6 m</td><td id=";aM:" class="">67,5 m</td></tr><tr id="3bf3f960-c266-4a97-b0c8-de457bfb7e1f" dir="ltr"><td id="wcG\" class="">10,00° (drempel)</td><td id="\=eq" class="">5,41′</td><td id="mMR\" class="">108,3 m</td><td id=":QUm" class="">107,5 m</td><td id="@eEy" class="">0,8 m</td><td id=";aM:" class="">37,8 m</td></tr></tbody></table><h4 id="a2b22f41-f16a-435c-b9bc-a4e9013f408d" class="" dir="auto">Trans-Atlantische zichtlijn</h4><p id="d7382900-d791-410d-902b-c4f385eea549" class="" dir="auto">De brontekst beschrijft een grootcirkelvector tussen Laren en het WTC in New York van 5.877 km, met een initiële vertrekazimut van 287,5°. Een atmosferische refractiefactor van (k = 0,14) zou de optische lichtstraal op het diepste punt van de oceaan 378 km boven de aardkromming tillen.</p><h3 id="64eb7940-2a39-4423-be72-499a3a4da679" class="" dir="auto">C3. Phase-Shift 002: netwerktransitie en netwerkfideliteit</h3><p id="da5676f7-5722-4d82-bf59-eed9cd328579" class="" dir="auto">De tekst beschrijft een transitie van Hexagram 63 (101010) naar Hexagram 64 (010101) via een binaire NOT-inversie over een metronoom van 103 stappen. Tijdens die overgang zouden de volgende waarden zijn gemeten:</p><ul id="b1dbe7c5-46e4-46cb-ab62-1cd68cd096a9" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Minimale netwerkfideliteit:</strong> 98,6%, boven de genoemde veiligheidsdrempel van 98,5%.</li></ul><ul id="0b1390d3-823f-4b3a-8cec-b7361cba2c7f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>UDP-pacing:</strong> 25,0 ± 1,2 ms.</li></ul><p id="b86a728f-01a4-4b0a-83ec-2c562364480f" class="" dir="auto">De bron concludeert dat zowel het OSINT Username Intelligence-protocol als de VORTEX-geodetische parameters in gecontroleerde operationele staat verkeren. Als vervolgstappen noemt de bron het integreren van zoekmachinetechnieken in geautomatiseerde monitoring en het periodiek herkalibreren van KML-vectoren aan de hand van de meest recente satelliet-efemeriden.</p><figure id="741dd950-2e4e-8304-b726-81f0aa86a036" class="link-to-page"><a href="VORTEX%20OS%20&amp;%20Bitcoin%20FIBRE/Digitale%20OSINT%20&amp;%20Geodetische%20Telemetrie%20741dd9502e4e8304b72681f0aa86a036.html" data-notion-page-id="741dd950-2e4e-8304-b726-81f0aa86a036" data-notion-space-id="5d3dd950-2e4e-81fa-b398-000324ec8ddf">Digitale OSINT &amp; Geodetische Telemetrie</a></figure><p id="3f8dd950-2e4e-8084-b493-dcafa43910a1" class="" dir="auto">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

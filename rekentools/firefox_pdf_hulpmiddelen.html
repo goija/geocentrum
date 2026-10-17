@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geocentrum PDF-Hulpmiddelen & VORTEX Cockpit Hub</title>
+  <style>
+    :root {
+      --bg: #f8f7fc;
+      --card: #ffffff;
+      --dark-panel: #0b111e;
+      --dark-card: #131f35;
+      --accent: #7542e5;
+      --accent-soft: #ede6ff;
+      --cyan: #00e5ff;
+      --gold: #ffcc33;
+      --magenta: #ff3385;
+      --text: #1c1b22;
+      --muted: #5b5b66;
+      --border: #e2e0ec;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 20px;
+    }
+    .container { max-width: 1420px; margin: 0 auto; }
+
+    /* Topbar */
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 18px;
+      border: 2px solid var(--accent);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .btn-back:hover { background: var(--accent-soft); }
+    .ext-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .ext-link {
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: var(--dark-panel);
+      color: #fff;
+      text-decoration: none;
+      border: 1px solid #2b4c7e;
+    }
+    .ext-link:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    .hero { margin-bottom: 16px; }
+    .hero h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .hero p { color: var(--muted); font-size: 0.94rem; }
+
+    /* Firefox 8 PDF Hulpmiddelen */
+    .features-shell {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(28, 27, 34, 0.06);
+      border: 1px solid var(--border);
+      margin-bottom: 22px;
+    }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .filter-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px 24px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .feature-item:hover { background: #f4f0ff; border-color: #d3c4fc; transform: translateY(-1px); }
+    .icon-circle {
+      width: 50px;
+      height: 50px;
+      min-width: 50px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    .feature-item h3 { font-size: 0.98rem; margin-bottom: 2px; }
+    .feature-item p { font-size: 0.85rem; color: var(--muted); }
+
+    /* Workspace Layout */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 370px 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 1050px) { .workspace-grid { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 18px;
+      border: 1px solid var(--border);
+    }
+    .panel h2 { font-size: 1.02rem; margin-bottom: 12px; }
+    .file-drop {
+      border: 2px dashed #b9a6f8;
+      background: #f6f3ff;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.82rem;
+      margin-bottom: 14px;
+    }
+    .dossier-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .dossier-item {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: #f9f8fd;
+      border: 1px solid var(--border);
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .dossier-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 0.76rem;
+      border-radius: 6px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .btn-sm.outline { background: transparent; color: var(--accent); }
+
+    /* Viewer + Status Banner */
+    .viewer-shell { display: flex; flex-direction: column; min-height: 620px; }
+    .pdf-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 14px;
+      background: #1b1b24;
+      color: #fff;
+      border-radius: 12px 12px 0 0;
+      align-items: center;
+    }
+    .tool-btn {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid #3f3d4d;
+      background: #2b2a37;
+      color: #fff;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+    .tool-btn:hover { background: var(--accent); }
+    .status-banner {
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      background: #132238;
+      color: #bae6fd;
+      border-bottom: 1px solid #1e3a5f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-banner.warn { background: #451a03; color: #fde68a; }
+    .viewer-stage {
+      position: relative;
+      flex: 1;
+      background: #323237;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+      display: flex;
+    }
+    .sidebar-drawer {
+      width: 245px;
+      background: #232329;
+      color: #e2e8f0;
+      padding: 14px;
+      font-size: 0.8rem;
+      border-right: 1px solid #3f3f46;
+      overflow-y: auto;
+    }
+    .sidebar-drawer.hidden { display: none; }
+    .sidebar-drawer h4 {
+      color: var(--gold);
+      margin: 10px 0 6px;
+      font-size: 0.82rem;
+      border-bottom: 1px solid #3f3f46;
+      padding-bottom: 4px;
+    }
+    .contour-link {
+      display: block;
+      padding: 5px 6px;
+      color: #cbd5e1;
+      text-decoration: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .contour-link:hover { background: #3b3b46; color: #fff; }
+    .pdf-canvas-wrap {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      overflow: auto;
+    }
+    .pdf-frame {
+      width: 100%;
+      height: 540px;
+      border: none;
+      background: #fff;
+      border-radius: 6px;
+    }
+    .overlay-layer { position: absolute; inset: 14px; pointer-events: none; }
+    .sticky-note {
+      position: absolute;
+      width: 190px;
+      background: #fef08a;
+      color: #1c1917;
+      padding: 8px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+      font-size: 0.78rem;
+      pointer-events: auto;
+      border-top: 6px solid #eab308;
+    }
+    .sig-badge {
+      position: absolute;
+      padding: 6px 14px;
+      border: 2px solid #1d4ed8;
+      background: rgba(219, 234, 254, 0.92);
+      color: #1e3a8a;
+      font-family: cursive, serif;
+      font-size: 1.05rem;
+      border-radius: 6px;
+      pointer-events: auto;
+    }
+    .alt-badge {
+      position: absolute;
+      padding: 8px 12px;
+      background: rgba(11, 17, 30, 0.92);
+      color: #fff;
+      border: 1px solid var(--cyan);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      pointer-events: auto;
+    }
+
+    /* VORTEX Cockpit Modules */
+    .geo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(390px, 1fr));
+      gap: 20px;
+    }
+    .dark-panel {
+      background: var(--dark-panel);
+      color: #e0f2fe;
+      border-radius: 16px;
+      padding: 18px;
+      border: 1px solid #1e3a5f;
+    }
+    .dark-panel h3 { color: var(--gold); font-size: 0.98rem; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .dark-panel .sub { font-size: 0.76rem; color: #94a3b8; margin-bottom: 12px; }
+    .stat-pill {
+      display: flex;
+      justify-content: space-between;
+      background: var(--dark-card);
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+      border-left: 3px solid var(--cyan);
+    }
+    .stat-pill strong { color: var(--cyan); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .form-row label { display: block; font-size: 0.74rem; color: #cbd5e1; margin-bottom: 3px; }
+    .form-row input {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #2b4c7e;
+      background: var(--dark-card);
+      color: #fff;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Topbar -->
+  <div class="topbar">
+    <a href="https://geocentrum.vercel.app/" class="btn-back">&lt; Terug naar Geocentrum (Root)</a>
+    <div class="ext-links">
+      <a class="ext-link" href="https://geocentrum.vercel.app/" target="_blank">geocentrum.vercel.app</a>
+      <a class="ext-link" href="https://mathgeo-seven.vercel.app/" target="_blank">Mathgeo-Seven Dashboard</a>
+      <a class="ext-link" href="https://verdronkenstad.nl/tholen-de-erfgenamen/" target="_blank">Verdronkenstad.nl (Tholen)</a>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>🦊 Firefox-PDF-hulpmiddelen — Geocentrum `/pdf` & VORTEX OS v154.4</h1>
+    <p>Lees, markeer en onderteken PDF's waar u navigeert. Met automatische Vercel `/pdf` route-resolver en Ott Nr. 573 / Shao Yong / Laser-telemetrie.</p>
+  </div>
+
+  <!-- 8 Firefox PDF Hulpmiddelen -->
+  <section class="features-shell">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterFeatures('all', this)">Alle 8 hulpmiddelen</button>
+      <button class="filter-btn" onclick="filterFeatures('edit', this)">Bewerken, opmaken en ordenen (5)</button>
+      <button class="filter-btn" onclick="filterFeatures('view', this)">Weergave, presentatie en navigatie (3)</button>
+    </div>
+    <div class="features-grid">
+      <div class="feature-item" data-cat="edit" onclick="activateTool('order')">
+        <div class="icon-circle">📄</div>
+        <div><h3>Pagina's ordenen</h3><p>Pagina's herschikken, verwijderen, samenvoegen en exporteren.</p></div>
+      </div>
+      <div class="feature-item" data-cat="edit" onclick="activateTool('signature')">
+        <div class="icon-circle">✍️</div>
+        <div><h3>Handtekeningen opslaan</h3><p>Maak meerdere handtekeningen aan en voeg deze aan formulieren toe.</p></div>
+      </div>
+      <div class="feature-item" data-cat="edit" onclick="activateTool('note')">
+        <div class="icon-circle">💬</div>
+        <div><h3>Notities toevoegen</h3><p>Laat opmerkingen en herinneringen achter tijdens het lezen.</p></div>
+      </div>
+      <div class="feature-item" data-cat="edit" onclick="activateTool('markup')">
+        <div class="icon-circle">🖍️</div>
+        <div><h3>PDF's opmaken</h3><p>Voeg tekst, markeringen en tekeningen toe.</p></div>
+      </div>
+      <div class="feature-item" data-cat="edit" onclick="activateTool('alt')">
+        <div class="icon-circle">🖼️</div>
+        <div><h3>Toegankelijke afbeeldingen uploaden</h3><p>Voeg alternatieve tekst toe, zodat afbeeldingen voor meer mensen werken.</p></div>
+      </div>
+      <div class="feature-item" data-cat="view" onclick="activateTool('layout')">
+        <div class="icon-circle">📖</div>
+        <div><h3>Kies uw weergave</h3><p>Scrol verticaal of horizontaal, of wissel pagina-indelingen.</p></div>
+      </div>
+      <div class="feature-item" data-cat="view" onclick="activateTool('fullscreen')">
+        <div class="icon-circle">🖥️</div>
+        <div><h3>PDF's in volledig scherm presenteren</h3><p>Deel een schoon beeld in presentatiemodus.</p></div>
+      </div>
+      <div class="feature-item" data-cat="view" onclick="activateTool('details')">
+        <div class="icon-circle">🔍</div>
+        <div><h3>Vind details sneller</h3><p>Gebruik contouren, bijlagen en eigenschappen om door PDF's te bladeren.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Werkruimte -->
+  <div class="workspace-grid">
+    <aside class="panel">
+      <h2>📂 Geocentrum `/pdf` Dossiers</h2>
+      <div class="file-drop">
+        <label for="pdfFileInput" style="cursor:pointer; font-weight:600; color:var(--accent);">
+          + Open lokale PDF (bypass 404 direct vanuit /geocentrum/pdf/)
+        </label>
+        <input type="file" id="pdfFileInput" accept=".pdf" multiple style="margin-top:8px; width:100%; font-size:0.76rem;">
+      </div>
+
+      <ul class="dossier-list" id="dossierList">
+        <li class="dossier-item">
+          <strong>1. Planitaire Data (Ott Nr. 573 & atan2)</strong>
+          <span>1c66d21e-6829-4aca-9cc7-b29b0b1d5b07_Planitaire_data.pdf</span>
+          <div class="dossier-actions">
+            <button class="btn-sm" onclick="smartLoadPdf(['1c66d21e-6829-4aca-9cc7-b29b0b1d5b07_Planitaire_data.pdf', '/pdf/1c66d21e-6829-4aca-9cc7-b29b0b1d5b07_Planitaire_data.pdf'], 'Planitaire Data')">Laad in Viewer</button>
+          </div>
+        </li>
+        <li class="dossier-item">
+          <strong>2. Metingen Petrus Schenk</strong>
+          <span>7a74d769-2330-4e19-a1ca-d141a17feb71_metingen_petrus_schenk.pdf</span>
+          <div class="dossier-actions">
+            <button class="btn-sm" onclick="smartLoadPdf(['7a74d769-2330-4e19-a1ca-d141a17feb71_metingen_petrus_schenk.pdf', '/pdf/7a74d769-2330-4e19-a1ca-d141a17feb71_metingen_petrus_schenk.pdf'], 'Metingen Petrus Schenk')">Laad in Viewer</button>
+          </div>
+        </li>
+        <li class="dossier-item">
+          <strong>3. Historisch-archeologisch onderzoeksdossier</strong>
+          <span>West-Brabant, Zeeland en de Vlaamse kust</span>
+          <div class="dossier-actions">
+            <button class="btn-sm" onclick="smartLoadPdf(['7808126e-544c-4512-b8fc-2fbd6e860183_Historisch-archeologisch_onderzoeksdossier__West-Brabant_Zeeland_en_de_Vlaamse_kust.pdf', '/pdf/7808126e-544c-4512-b8fc-2fbd6e860183_Historisch-archeologisch_onderzoeksdossier__West-Brabant_Zeeland_en_de_Vlaamse_kust.pdf'], 'Onderzoeksdossier West-Brabant & Zeeland')">Laad in Viewer</button>
+          </div>
+        </li>
+        <li class="dossier-item">
+          <strong>4. Anonymous Dossier (Met 404 Auto-Fallback)</strong>
+          <span>anonymous_dossier.pdf ↔ (anonymous) - ACFrOgC8...pdf</span>
+          <div class="dossier-actions">
+            <button class="btn-sm" onclick="smartLoadPdf(['anonymous_dossier.pdf', '/pdf/anonymous_dossier.pdf', '(anonymous) - ACFrOgC8Vl3oBHPb8SzTE27--EWCPhbLgFEjMzrNQzaqvqR0_lfmiV_wRE57xiOcuZA8wXe4RANGm_Xs91U5TGKW3iTFiA2qAr_0OG0NIuI2LZwOTmaGjWuXR-9Yb7dBN4YGXjLaeG6jG-lBFnXn.pdf', '/pdf/(anonymous)%20-%20ACFrOgC8Vl3oBHPb8SzTE27--EWCPhbLgFEjMzrNQzaqvqR0_lfmiV_wRE57xiOcuZA8wXe4RANGm_Xs91U5TGKW3iTFiA2qAr_0OG0NIuI2LZwOTmaGjWuXR-9Yb7dBN4YGXjLaeG6jG-lBFnXn.pdf'], 'Anonymous Dossier')">Smart Load (Geen 404)</button>
+          </div>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Viewer -->
+    <section class="panel viewer-shell" id="viewerShell">
+      <div class="pdf-toolbar">
+        <strong id="activeDocTitle" style="margin-right:auto; font-size:0.86rem; color:var(--cyan);">
+          Actief Dossier: Planitaire Data
+        </strong>
+        <button class="tool-btn" onclick="activateTool('details')">🔍 Contouren</button>
+        <button class="tool-btn" onclick="activateTool('note')">💬 + Notitie</button>
+        <button class="tool-btn" onclick="activateTool('signature')">✍️ + Handtekening</button>
+        <button class="tool-btn" onclick="activateTool('alt')">🖼️ + Alt-tekst</button>
+        <button class="tool-btn" onclick="activateTool('fullscreen')">🖥️ Volledig Scherm</button>
+        <button class="tool-btn" onclick="clearOverlays()">🗑️ Wis</button>
+      </div>
+      <div class="status-banner" id="statusBanner">
+        <span id="statusText">Route-controle actief voor https://geocentrum.vercel.app/pdf/...</span>
+        <span style="font-family:monospace; font-size:0.75rem;">VORTEX v154.4</span>
+      </div>
+      <div class="viewer-stage">
+        <div class="sidebar-drawer" id="sidebarDrawer">
+          <h4>Contouren & VORTEX Modules</h4>
+          <a class="contour-link" onclick="jumpTo('ottBox')">1. Ott Nr. 573 & Shao Yong (64)</a>
+          <a class="contour-link" onclick="jumpTo('cockpitBox')">2. VORTEX v154.4 Multi-As & M1-M4</a>
+          <a class="contour-link" onclick="jumpTo('laserBox')">3. Laser & Spectrale Hulpmiddelen</a>
+          <h4>Dossier Eigenschappen</h4>
+          <p><strong>Cirkel A:</strong> 363,00 cm² (3630 nonius)</p>
+          <p><strong>Straal r:</strong> 10,749 cm (21,5 vakjes)</p>
+          <p><strong>Poolarm / Rijarm:</strong> 15,00 / 16,67 cm</p>
+          <p><strong>N² Kern:</strong> r = 2,687 cm (22,69 cm²)</p>
+        </div>
+        <div class="pdf-canvas-wrap">
+          <iframe id="pdfFrame" class="pdf-frame" src="1c66d21e-6829-4aca-9cc7-b29b0b1d5b07_Planitaire_data.pdf"></iframe>
+          <div class="overlay-layer" id="overlayLayer"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Onderste VORTEX Cockpit Modules -->
+  <div class="geo-grid">
+    <!-- Module 1: Ott Nr. 573 + Shao Yong (64) & Jiazi (60) -->
+    <div class="dark-panel" id="ottBox">
+      <h3>1. A. Ott Nr. 573 Planimeter & Shao Yong (64) / Jiazi (60)</h3>
+      <div class="sub">Meetcirkel A = 363,00 cm² | 1452 vakjes (0,25 cm²) | Poolarm 15,00 cm | Rijarm 16,67 cm</div>
+      <div class="stat-pill"><span>Totale Cirkel (64 Hexagrammen):</span><strong>363,00 cm² | 3630 nonius | r = 10,749 cm</strong></div>
+      <div class="stat-pill"><span>Shao Yong Sector (1/64 | Δθ = 5,625°):</span><strong>5,672 cm² | 56,72 nonius | 22,69 vakjes</strong></div>
+      <div class="stat-pill"><span>Jiazi Tijd-Sector (1/60 | Δθ = 6,000°):</span><strong>6,050 cm² | 60,50 nonius | 24,20 vakjes</strong></div>
+      <div class="stat-pill"><span>1 Seizoens-Kwadrant (16/64 per N²):</span><strong>90,75 cm² | 907,5 nonius | 363 vakjes</strong></div>
+      <div class="stat-pill"><span>Centrale N²-Kern (00, 10, 01, 11 | 4/64):</span><strong>22,6875 cm² | r_kern = 2,687 cm</strong></div>
+      <div class="stat-pill"><span>60 Jiazi Buitenring (zonder 4 N²-polen):</span><strong>340,3125 cm² (60 × 5,671875 cm²)</strong></div>
+    </div>
+
+    <!-- Module 2: VORTEX Cockpit v154.4 Telemetrie & Magnesium Meetpunten -->
+    <div class="dark-panel" id="cockpitBox">
+      <h3>2. VORTEX Cockpit v154.4 — Oorsprong-Inversie & Meetpunten</h3>
+      <div class="sub">Multi-As Wielen | det J = -1.00 (Negatief door Oorsprong) | G(+1.05, +0.07) cm</div>
+      <div class="stat-pill"><span>Arm-Hoeken (α | β | γ):</span><strong>α = 171.9° | β = 185.6° | γ = 166.4°</strong></div>
+      <div class="stat-pill"><span>I Ching (#32 → Spiegel #0) & Jiazi (#31):</span><strong>000000 ↔ 111111 | Jia-Wu @ Δθ=180.0°</strong></div>
+      <div class="stat-pill"><span>M1 T(-1.19, -1.05) cm | Draai 228.77°:</span><strong>σ = +1.00 | Nonius +50 | #40 (001000)</strong></div>
+      <div class="stat-pill"><span>M2 T(10.22, -3.32) cm | Draai 108.00°:</span><strong>σ = +1.00 | Nonius +1089 | #19 (101100)</strong></div>
+      <div class="stat-pill"><span>M3 & M4 T(0.00, -10.75) cm | Draai 0.00°:</span><strong>σ = -1.00 | Nonius -3630 | #32 (000000)</strong></div>
+      <div class="stat-pill"><span>Planit Pro GIS (15 okt 2026 | h=45,61 m):</span><strong>Zon 135,0°/+19,2° | Camera 290,1°/-25,1°</strong></div>
+    </div>
+
+    <!-- Module 3: Spectrale & Laser Hulpmiddelen op Planimeterarm -->
+    <div class="dark-panel" id="laserBox">
+      <h3>3. VORTEX Laser & Spectrale Hulpmiddelen (Omnibridge)</h3>
+      <div class="sub">Golflengte (λ) naar RGB, Foton-energie (E = hc/λ) & Optische Padlengte langs Rijarm (16,67 cm)</div>
+      <div class="form-row">
+        <div>
+          <label>Laser Golflengte λ (nm) [380 - 750]</label>
+          <input type="number" id="inpWavelength" value="532" min="380" max="750" oninput="updateLaser()">
+        </div>
+        <div>
+          <label>Brekingsindex Medium (n)</label>
+          <input type="number" id="inpRefraction" value="1.0003" step="0.0001" oninput="updateLaser()">
+        </div>
+      </div>
+      <div class="stat-pill" id="laserColorBar"><span>Spectrale Kleur & Frequentie (f):</span><strong id="outFreq">563.52 THz</strong></div>
+      <div class="stat-pill"><span>Foton-energie (E = h·f):</span><strong id="outEnergy">2.331 eV</strong></div>
+      <div class="stat-pill"><span>Optische Padlengte Rijarm (OPL = n × 16,67 cm):</span><strong id="outOpl">16,675 cm</strong></div>
+      <div class="stat-pill"><span>Fraunhofer Referentielijnen:</span><strong>C (656nm) | D (589nm) | E (527nm) | F (486nm)</strong></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterFeatures(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.feature-item').forEach(el => {
+      el.style.display = (cat === 'all' || el.dataset.cat === cat) ? 'flex' : 'none';
+    });
+  }
+
+  // Controleert via fetch HEAD welke kandidaat-URL bestaat op Vercel/lokaal om 404 NOT_FOUND te voorkomen
+  async function smartLoadPdf(candidates, title) {
+    const banner = document.getElementById('statusBanner');
+    const statusText = document.getElementById('statusText');
+    document.getElementById('activeDocTitle').textContent = 'Actief Dossier: ' + title;
+
+    for (const url of candidates) {
+      try {
+        const res = await fetch(url, { method: 'HEAD' });
+        if (res.ok) {
+          document.getElementById('pdfFrame').src = url;
+          banner.className = 'status-banner';
+          statusText.textContent = '✓ Geladen zonder 404: ' + url;
+          return;
+        }
+      } catch (e) {
+        // Bij lokaal file:// protocol direct proberen
+        if (window.location.protocol === 'file:') {
+          document.getElementById('pdfFrame').src = candidates[0];
+          statusText.textContent = 'Lokaal bestandspad geladen: ' + candidates[0];
+          return;
+        }
+      }
+    }
+
+    banner.className = 'status-banner warn';
+    statusText.textContent = '⚠️ Bestand nog niet gepusht naar /pdf op Vercel. Gebruik de "+ Open lokale PDF" knop linksboven of voer het git push script uit.';
+  }
+
+  // Lokale bestandskiezer als directe 404-bypass
+  document.getElementById('pdfFileInput').addEventListener('change', function(e) {
+    Array.from(e.target.files).forEach(file => {
+      const blobUrl = URL.createObjectURL(file);
+      document.getElementById('pdfFrame').src = blobUrl;
+      document.getElementById('activeDocTitle').textContent = 'Lokaal Dossier: ' + file.name;
+      document.getElementById('statusBanner').className = 'status-banner';
+      document.getElementById('statusText').textContent = '✓ Direct geladen vanuit lokale map: ' + file.name;
+    });
+  });
+
+  function activateTool(tool) {
+    const layer = document.getElementById('overlayLayer');
+    const drawer = document.getElementById('sidebarDrawer');
+    const shell = document.getElementById('viewerShell');
+
+    if (tool === 'details') {
+      drawer.classList.toggle('hidden');
+    } else if (tool === 'note') {
+      const note = document.createElement('div');
+      note.className = 'sticky-note';
+      note.style.top = (35 + Math.random() * 140) + 'px';
+      note.style.left = (35 + Math.random() * 200) + 'px';
+      note.contentEditable = true;
+      note.innerHTML = '<strong>VORTEX Notitie:</strong><br>Ott Nr. 573 (3630 nonius) | det J = -1.00 gecontroleerd.';
+      layer.appendChild(note);
+    } else if (tool === 'signature') {
+      const sig = document.createElement('div');
+      sig.className = 'sig-badge';
+      sig.style.bottom = '40px';
+      sig.style.right = '40px';
+      sig.textContent = 'Geocentrum // VORTEX OS v154.4';
+      layer.appendChild(sig);
+    } else if (tool === 'alt') {
+      const alt = document.createElement('div');
+      alt.className = 'alt-badge';
+      alt.style.top = '25px';
+      alt.style.right = '25px';
+      alt.innerHTML = '🖼️ <strong>ALT-tekst actief:</strong> A. Ott Nr. 573 Planimeter & Shao Yong 64-ring toegankelijk beschreven.';
+      layer.appendChild(alt);
+    } else if (tool === 'fullscreen') {
+      if (!document.fullscreenElement) shell.requestFullscreen().catch(() => {});
+      else document.exitFullscreen();
+    } else {
+      const info = document.createElement('div');
+      info.className = 'alt-badge';
+      info.style.bottom = '25px';
+      info.style.left = '25px';
+      info.innerHTML = '🔧 <strong>Firefox PDF-modus actief:</strong> Gebruik de werkbalk in het PDF-venster om pagina\'s te ordenen of te markeren.';
+      layer.appendChild(info);
+    }
+  }
+
+  function clearOverlays() { document.getElementById('overlayLayer').innerHTML = ''; }
+  function jumpTo(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+
+  // Spectrale berekening (Dan Bruton benadering + fotonfysica)
+  function wavelengthToRgb(nm) {
+    let r = 0, g = 0, b = 0;
+    if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
+    else if (nm >= 440 && nm < 490) { g = (nm - 440) / 50; b = 1; }
+    else if (nm >= 490 && nm < 510) { g = 1; b = -(nm - 510) / 20; }
+    else if (nm >= 510 && nm < 580) { r = (nm - 510) / 70; g = 1; }
+    else if (nm >= 580 && nm < 645) { r = 1; g = -(nm - 645) / 65; }
+    else if (nm >= 645 && nm <= 750) { r = 1; }
+    return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+  }
+
+  function updateLaser() {
+    const nm = parseFloat(document.getElementById('inpWavelength').value) || 532;
+    const n = parseFloat(document.getElementById('inpRefraction').value) || 1.0003;
+    const freqTHz = (299792.458 / nm).toFixed(2);
+    const energyEv = (1239.84193 / nm).toFixed(3);
+    const oplCm = (16.67 * n).toFixed(3);
+    const rgb = wavelengthToRgb(nm);
+
+    document.getElementById('outFreq').textContent = `${freqTHz} THz (${nm} nm)`;
+    document.getElementById('outEnergy').textContent = `${energyEv} eV`;
+    document.getElementById('outOpl').textContent = `${oplCm} cm`;
+    document.getElementById('laserColorBar').style.borderLeftColor = rgb;
+  }
+
+  updateLaser();
+</script>
+</body>
+</html>

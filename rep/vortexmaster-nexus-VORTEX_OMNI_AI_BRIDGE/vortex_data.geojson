@@ -1,0 +1,37 @@
+import geojson
+import random
+
+# Het nulpunt (bijv. Westerheide)
+basis_lat = 52.257
+basis_lon = 5.214
+
+features = []
+
+# Genereer 5 willekeurige probes in een radius rond het nulpunt
+for i in range(1, 6):
+    rand_lat = basis_lat + random.uniform(-0.02, 0.02)
+    rand_lon = basis_lon + random.uniform(-0.02, 0.02)
+    
+    # LET OP: De GeoJSON specificatie vereist altijd (Longitude, Latitude)!
+    punt = geojson.Point((rand_lon, rand_lat))
+    
+    # Metadata toevoegen (deze worden in je HTML-interface als pop-up getoond)
+    eigenschappen = {
+        "Naam": f"VORTEX_AutoNode_{i}",
+        "Status": "ACTIEF",
+        "Diepte_Z_As": f"{random.randint(50, 300)} cm",
+        "Frequentie": f"{random.uniform(100.0, 600.0):.1f} kHz"
+    }
+    
+    # Maak een Feature object aan
+    feature = geojson.Feature(geometry=punt, properties=eigenschappen)
+    features.append(feature)
+
+# Bundel alle features in één FeatureCollection
+matrix_netwerk = geojson.FeatureCollection(features)
+
+# Gebruik de geojson.dump functie om het veilig naar een bestand te schrijven
+with open("vortex_data.geojson", "w") as f:
+    geojson.dump(matrix_netwerk, f, indent=4)
+
+print("[SUCCES] vortex_data.geojson gegenereerd. Klaar voor uplink.")

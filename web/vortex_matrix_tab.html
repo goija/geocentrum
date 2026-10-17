@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>VORTEX OS v157.0 — 64x64 Hinge Duogram & Live Telemetrie</title>
+    <style>
+        body { background: #0b1116; color: #00ffcc; font-family: monospace; margin: 20px; }
+        .hud-box { border: 1px solid #00ffcc; padding: 14px; background: rgba(0,255,204,0.05); margin-bottom: 16px; }
+        .grid-wrap { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+        canvas { border: 1px solid #00ffcc; background: #070b0e; }
+        .sliders label { display: block; margin-top: 10px; color: #ffbf00; }
+        input[type=range] { width: 320px; }
+    </style>
+</head>
+<body>
+    <div class="hud-box">
+        <div>ACTIEVE LAAG: <strong>60/360 SECTOR-ZONNEWIJZER & 64×64 HINGE DUOGRAM</strong></div>
+        <div>OTT NR. 573 NONIUS: <span id="valNonius">-264 (-26.4 cm²)</span></div>
+        <div>VOLGSTIFT T(θ, ρ): <span id="valTheta">45.00° | ρ = -8.20 cm</span></div>
+        <div>KING WEN / HINGE: <span id="valHinge">(110111) → N²=010101 [Hinge t=01]</span></div>
+        <div>KLOKSTAP / GIS: <span id="lblAnker">Laren P (52.250°N, 5.220°E)</span> | <span id="valGeo"></span></div>
+    </div>
+    <div class="grid-wrap">
+        <canvas id="matrixCanvas" width="512" height="512"></canvas>
+        <div class="sliders">
+            <label>ARM DRAAI (θ): <input type="range" id="sliderTheta" min="0" max="360" step="0.05" value="45" oninput="sendTelemetryUpdate()"></label>
+            <label>STRAAL DOOR (0,0) (ρ cm): <input type="range" id="sliderRho" min="-12" max="12" step="0.05" value="-8.20" oninput="sendTelemetryUpdate()"></label>
+            <label>WIEL PLAT → NEG (σ): <input type="range" id="sliderSigma" min="-1" max="1" step="0.05" value="-1.00" oninput="sendTelemetryUpdate()"></label>
+            <label>OTT NONIUS: <input type="number" id="inputNonius" value="-264" oninput="sendTelemetryUpdate()"></label>
+            <p><a href="/data/csv/vortex_matrix_export.csv" style="color:#00ffcc;">[Download CSV Export]</a> |
+               <a href="/data/geojson/vortex_ankers_plat.geojson" style="color:#00ffcc;">[GeoJSON PLAT]</a> |
+               <a href="/data/geojson/vortex_ankers_neg.geojson" style="color:#00ffcc;">[GeoJSON NEG]</a></p>
+        </div>
+    </div>
+    <script src="/js/vortex_ws_stream.js"></script>
+</body>
+</html>

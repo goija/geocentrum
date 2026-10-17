@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VORTEX OS v156.0 — OpenLayers + KDE Marble & KStars Hemel-Onderlaag</title>
+
+  <!-- OpenLayers & Proj4js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.5.2/ol.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ol@v7.5.2/dist/ol.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.2/proj4.js"></script>
+
+  <style>
+    :root {
+      --bg: #04070e;
+      --panel: rgba(8, 14, 26, 0.92);
+      --border: #1e2d4a;
+      --cyan: #00e5ff;
+      --gold: #ffcc33;
+      --magenta: #ff3385;
+      --green: #2dd4bf;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+    header {
+      background: #0a1120;
+      border-bottom: 1px solid var(--border);
+      padding: 7px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: bold; color: var(--cyan); }
+    .badge { padding: 2px 6px; border-radius: 3px; font-size: 0.68rem; border: 1px solid var(--cyan); background: rgba(0,229,255,0.12); }
+    .badge-gold { border-color: var(--gold); color: var(--gold); background: rgba(255,204,51,0.12); }
+
+    .toolbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    button, select {
+      background: #111c33; color: var(--text); border: 1px solid var(--border);
+      padding: 4px 9px; font-family: var(--mono); font-size: 0.7rem; border-radius: 4px; cursor: pointer;
+    }
+    button:hover, select:hover { border-color: var(--cyan); color: var(--cyan); }
+    button.active { background: rgba(0,229,255,0.2); border-color: var(--cyan); color: var(--cyan); font-weight: bold; }
+
+    #workspace { flex: 1; position: relative; display: flex; }
+    #ol-map { flex: 1; height: 100%; background: #020409; }
+
+    .hud-sidebar {
+      position: absolute; top: 12px; left: 12px; width: 390px; max-height: calc(100vh - 70px);
+      overflow-y: auto; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 6px; padding: 11px; z-index: 15; backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; gap: 9px; font-size: 0.7rem;
+    }
+    .hud-right { left: auto; right: 12px; width: 350px; }
+    .card-title { color: var(--gold); font-weight: bold; font-size: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 3px; margin-bottom: 5px; display: flex; justify-content: space-between; }
+    .kv { display: flex; justify-content: space-between; padding: 2px 0; }
+    .kv span { color: var(--muted); }
+    .slider-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+    input[type="range"] { flex: 1; accent-color: var(--cyan); cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span>🌐 VORTEX OS v156.0</span>
+    <span class="badge">OpenLayers + KDE Marble & KStars</span>
+    <span class="badge badge-gold" id="lock-badge">BIPOLAR LOCK: Δ = 0.48°</span>
+  </div>
+  <div class="toolbar">
+    <label style="font-size:0.7rem; color:var(--muted);">KDE Marble Kaartthema:</label>
+    <select id="marble-theme" onchange="switchMarbleTheme(this.value)">
+      <option value="dark">Marble Night / Carto Dark (Standaard)</option>
+      <option value="atlas">Marble Atlas / OpenTopoMap (Fysisch Reliëf)</option>
+      <option value="osm">Marble Plain / OpenStreetMap Vector</option>
+      <option value="local_marble">Lokale KDE Marble Map (~/.local/share/marble/maps)</option>
+    </select>
+    <button id="btn-3857" class="active" onclick="setMapProjection('EPSG:3857')">EPSG:3857 (Mercator)</button>
+    <button id="btn-28992" onclick="setMapProjection('EPSG:28992')">EPSG:28992 (RD New NL)</button>
+    <button class="active" id="btn-kstars" onclick="toggleKStarsOverlay()">✨ KStars Hemellaag: AAN</button>
+  </div>
+</header>
+
+<div id="workspace">
+  <div id="ol-map"></div>
+
+  <!-- LINKER HUD: BIPOLAIRE TELEMETRIE (vortex_precision_tool_v156.js) -->
+  <aside class="hud-sidebar">
+    <div>
+      <div class="card-title"><span>1. BIPOLAIRE POLARITEITSAS (TAURUS ↔ LIBRA)</span><span style="color:var(--cyan)">v156.0</span></div>
+      <div class="kv"><span>Poolanker P (Laren NL):</span><strong>52.2500° N, 5.2200° E</strong></div>
+      <div class="kv"><span>KStars Anker 1 (Aldebaran / α Tau):</span><strong style="color:var(--cyan)">Az 51.40° NO | Alt -3.7°</strong></div>
+      <div class="kv"><span>KStars Anker 2 (Mercurius / Libra):</span><strong style="color:var(--gold)">Az 245.91° WZW | Alt -4.2°</strong></div>
+      <div class="kv"><span>Bipolaire Hoekseparatie:</span><strong>194.51° (180° + 14.51°)</strong></div>
+      <div class="kv"><span>Ott Nr. 573 Mechanische Opening:</span><strong>180° - 165.01° = 14.99°</strong></div>
+      <div class="kv"><span>Resonantie-Delta (|14.51° - 14.99°|):</span><strong style="color:var(--green)">0.48° (RESONANT_LOCK)</strong></div>
+    </div>
+
+    <div>
+      <div class="card-title"><span>2. BIPOLAIRE VIZIER LERP & ROOSCURVE (r = a·cos(kθ))</span><span>SLIDER</span></div>
+      <div class="slider-row">
+        <span>LERP (Taurus 0 → Merc 1):</span>
+        <input type="range" id="lerp-slider" min="0" max="1" step="0.01" value="1.0" oninput="updateBipolarLerp(this.value)" />
+        <strong id="lbl-lerp" style="color:var(--gold)">1.00</strong>
+      </div>
+      <div class="slider-row">
+        <span>Rooscurve Bladfactor (k):</span>
+        <input type="range" id="rose-k" min="1" max="13" step="1" value="7" oninput="updateRoseCurve(this.value)" />
+        <strong id="lbl-rose-k" style="color:var(--magenta)">k = 7</strong>
+      </div>
+      <div class="kv"><span>Geïntegreerd Vizier-Azimut:</span><strong id="hud-lerp-az" style="color:var(--cyan)">245.91°</strong></div>
+      <div class="kv"><span>Saemundsson Atmosf. Refractie:</span><strong id="hud-saemundsson">11.45' (+0.1908°)</strong></div>
+      <div class="kv"><span>Snellius Biskaje (θ₁=15° → θ₂):</span><strong style="color:var(--green)">11.20° (Δ = -3.80°)</strong></div>
+      <div class="kv"><span>Ott 573 Nonius & Oppervlakte:</span><strong id="hud-ott-area" style="color:var(--gold)">2476 / 3630 (247.62 cm²)</strong></div>
+      <div class="kv"><span>Shao Yong (64) & Jiazi (60):</span><strong id="hud-sy-jz">#44 | #41 | 010101 (01)</strong></div>
+    </div>
+
+    <div>
+      <div class="card-title"><span>3. LIVE CURSOR PROJECTIE (WGS84 & RD NEW)</span><span>PROJ4</span></div>
+      <div class="kv"><span>WGS84 Coördinaat:</span><strong id="cur-wgs">52.2500° N, 5.2200° E</strong></div>
+      <div class="kv"><span>Rijksdriehoek (EPSG:28992):</span><strong id="cur-rd" style="color:var(--gold)">X: 143652 m | Y: 473575 m</strong></div>
+    </div>
+  </aside>
+
+  <!-- RECHTER HUD: KSTARS & KDE MARBLE CATALOGUS -->
+  <aside class="hud-sidebar hud-right">
+    <div>
+      <div class="card-title"><span>KSTARS HEMEL-ONDERLAAG (15-10-2026 20:15)</span><span style="color:var(--magenta)">EPHEMERIS</span></div>
+      <div class="kv"><span>α Tauri (Aldebaran) + Pleiaden (M45):</span><strong style="color:var(--cyan)">51.40° NO (Stier)</strong></div>
+      <div class="kv"><span>Uranus (in Taurus):</span><strong>51.40° NO | -3.7°</strong></div>
+      <div class="kv"><span>Mercurius (BepiColombo Lock):</span><strong style="color:var(--gold)">245.91° WZW | -4.2°</strong></div>
+      <div class="kv"><span>Sagittarius k=7 Snijpunt (RA 17h):</span><strong style="color:var(--magenta)">246.76° WZW | Dec -15°</strong></div>
+      <div class="kv"><span>Saturnus (in Cetus):</span><strong style="color:var(--green)">102.50° OZO | +13.8°</strong></div>
+      <div class="kv"><span>Ecliptica & Hemelequator:</span><strong>Geprojecteerd rond Pool P</strong></div>
+    </div>
+    <div>
+      <div class="card-title"><span>KDE MARBLE LOKALE TILE-KOPPELING</span><span>DGML</span></div>
+      <p style="color:var(--muted); line-height:1.4;">
+        Koppel rechtstreeks je lokale KDE Marble tegelmap of KStars GeoJSON export via het keuzemenu bovenin:
+        <br/><code style="color:var(--cyan)">~/.local/share/marble/maps/earth/</code>
+      </p>
+    </div>
+  </aside>
+</div>
+
+<script>
+  // ===========================================================================
+  // 1. VORTEX_BIPOLAR_HUD KERNLOGICA (v156.0)
+  // ===========================================================================
+  const VORTEX_BIPOLAR_HUD = {
+    anchors: {
+      poolanker_p: { name: 'Poolanker P (Laren NL)', lat: 52.2500, lng: 5.2200 },
+      taurus_aldebaran: { name: 'Aldebaran / Pleiaden (Taurus)', azimuth: 51.40, elevation: -3.7 },
+      mercurius_eclips: { name: 'Mercurius / Eclips (Libra)', azimuth: 245.91, elevation: -4.2 },
+      n2_core: { name: 'N² Kern (Dept. 41/18 Bourges)', lat: 47.2500, lng: 1.8500 },
+      exit_biskaje: { name: 'Uittreedknoop Dept. 17/85 (Biskaje)', lat: 46.2500, lng: -1.2500 },
+      eclips_landfall: { name: 'Eclips Landfall 12-08-2026 (Asturië)', lat: 43.5500, lng: -6.5000 }
+    },
+    calculateSaemundssonRefraction(elevationDeg) {
+      const h = Math.abs(elevationDeg);
+      const R_arcmin = 1.02 / Math.tan((h + 10.3 / (h + 5.11)) * (Math.PI / 180));
+      return { arcmin: R_arcmin.toFixed(2), deg: (R_arcmin / 60).toFixed(4) };
+    },
+    calculateOttKinematics(alphaDeg) {
+      const normAlpha = ((alphaDeg % 360) + 360) % 360;
+      const nonius = Math.round((normAlpha / 360.0) * 3630);
+      const area = (nonius * 0.1).toFixed(2);
+      const sy = (Math.floor((normAlpha / 360.0) * 64) % 64) + 1;
+      const jz = (Math.floor((normAlpha / 360.0) * 60) % 60) + 1;
+      return { nonius, area, sy, jz };
+    }
+  };
+
+  // ===========================================================================
+  // 2. PROJ4JS & EPSG:28992 (RIJKSDRIEHOEKSSTELSEL) REGISTRATIE
+  // ===========================================================================
+  proj4.defs(
+    'EPSG:28992',
+    '+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 ' +
+    '+x_0=155000 +y_0=463000 +ellps=bessel ' +
+    '+towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs'
+  );
+  ol.proj.proj4.register(proj4);
+  const rdProj = ol.proj.get('EPSG:28992');
+  rdProj.setExtent([-700000, -900000, 1200000, 1100000]);
+
+  let activeProj = 'EPSG:3857';
+  let currentRoseK = 7;
+  let currentLerp = 1.0;
+  let kstarsVisible = true;
+
+  // ===========================================================================
+  // 3. KDE MARBLE ONDERLAAG & KSTARS HEMELPROJECTIE LAGEN
+  // ===========================================================================
+  const marbleTileSource = new ol.source.XYZ({
+    url: 'https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+    attributions: 'KDE Marble Virtual Globe / © CARTO / © OpenStreetMap'
+  });
+
+  const marbleBaseLayer = new ol.layer.Tile({ source: marbleTileSource });
+
+  const kstarsVectorSource = new ol.source.Vector();
+  const vortexVectorSource = new ol.source.Vector();
+
+  // Bouw KStars Hemel-onderlaag (Sterrenbeelden Taurus, Pleiaden, Libra, Sagittarius, Ecliptica)
+  function buildKStarsAndVortexFeatures(projCode) {
+    kstarsVectorSource.clear();
+    vortexVectorSource.clear();
+
+    const pLon = 5.2200, pLat = 52.2500; // Poolanker P (Laren NL)
+    const cLon = 1.8500, cLat = 47.2500; // N² Kern Bourges
+
+    // Hulpfunctie: punt op azimut & straal (in graden) vanaf Poolanker P
+    function projectAzimuthPoint(originLon, originLat, azDeg, distDeg) {
+      const rad = ((90 - azDeg) * Math.PI) / 180;
+      const lon = originLon + distDeg * Math.cos(rad) * 1.45;
+      const lat = originLat + distDeg * Math.sin(rad);
+      return ol.proj.fromLonLat([lon, lat], projCode);
+    }
+
+    const pCoord = ol.proj.fromLonLat([pLon, pLat], projCode);
+
+    // 1. KStars Aldebaran / Taurus Vector (51.40° NO) + V-vorm Hyaden & Pleiaden (M45)
+    const taurusEnd = projectAzimuthPoint(pLon, pLat, 51.40, 9.5);
+    const fTaurus = new ol.Feature({
+      geometry: new ol.geom.LineString([pCoord, taurusEnd]),
+      layerType: 'taurus_vector',
+      label: 'KStars: Aldebaran / Taurus (51.40° NO | -3.7°)'
+    });
+    kstarsVectorSource.addFeature(fTaurus);
+
+    // Pleiaden (M45) Sterrencluster in het NO-kwadrant langs de Taurus-vector
+    const pleiadesOffsets = [
+      [0, 0, 'Alcyone (η Tau)'], [-0.25, 0.18, 'Atlas'], [0.22, 0.15, 'Electra'],
+      [-0.15, -0.2, 'Maia'], [0.3, -0.1, 'Merope'], [0.1, 0.28, 'Taygeta']
+    ];
+    pleiadesOffsets.forEach(([dlon, dlat, sName], idx) => {
+      const starPt = ol.proj.fromLonLat([pLon + 6.2 + dlon, pLat + 3.6 + dlat], projCode);
+      kstarsVectorSource.addFeature(new ol.Feature({
+        geometry: new ol.geom.Point(starPt),
+        layerType: 'kstars_star',
+        label: idx === 0 ? '★ M45 Pleiaden (Alcyone)' : ''
+      }));
+    });
+
+    // 2. KStars Mercurius / Libra Eclips-vector (245.91° WZW)
+    const mercCoords = [
+      [5.2200, 52.2500], [1.8500, 47.2500], [-1.2500, 46.2500], [-6.5000, 43.5500]
+    ].map(c => ol.proj.fromLonLat(c, projCode));
+    kstarsVectorSource.addFeature(new ol.Feature({
+      geometry: new ol.geom.LineString(mercCoords),
+      layerType: 'mercurius_vector',
+      label: 'Mercurius / Eclips 12-08-2026 (245.91° WZW | -4.2°)'
+    }));
+
+    // 3. Geïnterpoleerde LERP Vizier-vector tussen Taurus (51.40°) en Mercurius (245.91°)
+    const lerpAz = 51.40 + currentLerp * (245.91 - 51.40);
+    const lerpEnd = projectAzimuthPoint(pLon, pLat, lerpAz, 10.5);
+    vortexVectorSource.addFeature(new ol.Feature({
+      geometry: new ol.geom.LineString([pCoord, lerpEnd]),
+      layerType: 'lerp_visor',
+      label: `Vizier LERP: ${lerpAz.toFixed(2)}°`
+    }));
+
+    // 4. Polaire Rooscurve r(θ) = a * cos(k * θ) rondom N² Kern (Bourges)
+    const rosePts = [];
+    const aRadius = 5.2; // graden
+    const steps = 720;
+    for (let i = 0; i <= steps; i++) {
+      const theta = (2 * Math.PI * i) / steps;
+      const r = aRadius * Math.cos(currentRoseK * theta);
+      const xLon = cLon + r * Math.cos(theta) * 1.45;
+      const yLat = cLat + r * Math.sin(theta);
+      rosePts.push(ol.proj.fromLonLat([xLon, yLat], projCode));
+    }
+    vortexVectorSource.addFeature(new ol.Feature({
+      geometry: new ol.geom.LineString(rosePts),
+      layerType: 'rose_curve',
+      label: `Rooscurve r = a·cos(${currentRoseK}θ)`
+    }));
+
+    // 5. 6-Bladerige Epicycloïde (Modulaire Envelope f(x) = 7x mod 260)
+    const epiPts = [];
+    const m = 7;
+    for (let i = 0; i <= 360; i++) {
+      const t = (2 * Math.PI * i) / 360;
+      const r0 = aRadius / (m + 1);
+      const ex = cLon + r0 * (m * Math.cos(t) + Math.cos(m * t)) * 1.45;
+      const ey = cLat + r0 * (m * Math.sin(t) - Math.sin(m * t));
+      epiPts.push(ol.proj.fromLonLat([ex, ey], projCode));
+    }
+    vortexVectorSource.addFeature(new ol.Feature({
+      geometry: new ol.geom.LineString(epiPts),
+      layerType: 'epicycloid'
+    }));
+
+    // 6. Knooppunt Markers
+    Object.values(VORTEX_BIPOLAR_HUD.anchors).forEach(a => {
+      if (a.lat !== undefined) {
+        vortexVectorSource.addFeature(new ol.Feature({
+          geometry: new ol.geom.Point(ol.proj.fromLonLat([a.lng, a.lat], projCode)),
+          layerType: 'anchor_node',
+          label: a.name
+        }));
+      }
+    });
+  }
+
+  const kstarsLayer = new ol.layer.Vector({
+    source: kstarsVectorSource,
+    style: function(f) {
+      const t = f.get('layerType');
+      if (t === 'taurus_vector') {
+        return new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: '#00e5ff', width: 2.8, lineDash: [6, 4] }),
+          text: new ol.style.Text({ text: f.get('label'), font: 'bold 11px monospace', fill: new ol.style.Fill({ color: '#00e5ff' }), offsetY: -12 })
+        });
+      }
+      if (t === 'mercurius_vector') {
+        return new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: '#ffcc33', width: 3.0 }),
+          text: new ol.style.Text({ text: f.get('label'), font: 'bold 11px monospace', fill: new ol.style.Fill({ color: '#ffcc33' }), offsetY: 14 })
+        });
+      }
+      if (t === 'kstars_star') {
+        return new ol.style.Style({
+          image: new ol.style.Circle({ radius: 4, fill: new ol.style.Fill({ color: '#ffffff' }), stroke: new ol.style.Stroke({ color: '#00e5ff', width: 1.5 }) }),
+          text: new ol.style.Text({ text: f.get('label'), font: '10px monospace', fill: new ol.style.Fill({ color: '#00e5ff' }), offsetY: -10 })
+        });
+      }
+    }
+  });
+
+  const vortexLayer = new ol.layer.Vector({
+    source: vortexVectorSource,
+    style: function(f) {
+      const t = f.get('layerType');
+      if (t === 'rose_curve') {
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color: 'rgba(0, 229, 255, 0.55)', width: 1.5 }) });
+      }
+      if (t === 'epicycloid') {
+        return new ol.style.Style({ stroke: new ol.style.Stroke({ color: '#ff3385', width: 2.4 }) });
+      }
+      if (t === 'lerp_visor') {
+        return new ol.style.Style({
+          stroke: new ol.style.Stroke({ color: '#2dd4bf', width: 2.2, lineDash: [3, 3] }),
+          text: new ol.style.Text({ text: f.get('label'), font: 'bold 11px monospace', fill: new ol.style.Fill({ color: '#2dd4bf' }) })
+        });
+      }
+      if (t === 'anchor_node') {
+        return new ol.style.Style({
+          image: new ol.style.Circle({ radius: 5.5, fill: new ol.style.Fill({ color: '#ffcc33' }), stroke: new ol.style.Stroke({ color: '#04070e', width: 1.5 }) }),
+          text: new ol.style.Text({ text: f.get('label'), font: 'bold 10px monospace', fill: new ol.style.Fill({ color: '#e2e8f0' }), offsetY: -12, stroke: new ol.style.Stroke({ color: '#04070e', width: 3 }) })
+        });
+      }
+    }
+  });
+
+  const graticule = new ol.layer.Graticule({
+    strokeStyle: new ol.style.Stroke({ color: 'rgba(45, 212, 191, 0.2)', width: 1, lineDash: [3, 3] }),
+    showLabels: true
+  });
+
+  const map = new ol.Map({
+    target: 'ol-map',
+    layers: [marbleBaseLayer, graticule, kstarsLayer, vortexLayer],
+    view: new ol.View({
+      projection: 'EPSG:3857',
+      center: ol.proj.fromLonLat([2.5, 48.5], 'EPSG:3857'),
+      zoom: 5.3
+    })
+  });
+
+  buildKStarsAndVortexFeatures('EPSG:3857');
+
+  // ===========================================================================
+  // 4. INTERACTIEVE CONTROLS (KDE MARBLE THEMA'S, LERP & ROOSCURVES)
+  // ===========================================================================
+  function switchMarbleTheme(theme) {
+    const urls = {
+      dark: 'https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+      atlas: 'https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      osm: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      local_marble: 'file:///home/ontwerp/.local/share/marble/maps/earth/openstreetmap/{z}/{x}/{y}.png'
+    };
+    marbleTileSource.setUrl(urls[theme] || urls.dark);
+  }
+
+  function setMapProjection(projCode) {
+    if (projCode === activeProj) return;
+    const centerLonLat = ol.proj.toLonLat(map.getView().getCenter(), activeProj);
+    activeProj = projCode;
+    buildKStarsAndVortexFeatures(projCode);
+    map.setView(new ol.View({
+      projection: projCode,
+      center: ol.proj.fromLonLat(centerLonLat, projCode),
+      zoom: projCode === 'EPSG:28992' ? 3.8 : 5.3
+    }));
+    document.getElementById('btn-3857').classList.toggle('active', projCode === 'EPSG:3857');
+    document.getElementById('btn-28992').classList.toggle('active', projCode === 'EPSG:28992');
+  }
+
+  function toggleKStarsOverlay() {
+    kstarsVisible = !kstarsVisible;
+    kstarsLayer.setVisible(kstarsVisible);
+    const btn = document.getElementById('btn-kstars');
+    btn.classList.toggle('active', kstarsVisible);
+    btn.textContent = `✨ KStars Hemellaag: ${kstarsVisible ? 'AAN' : 'UIT'}`;
+  }
+
+  function updateBipolarLerp(val) {
+    currentLerp = parseFloat(val);
+    document.getElementById('lbl-lerp').textContent = currentLerp.toFixed(2);
+    const az = 51.40 + currentLerp * (245.91 - 51.40);
+    const elev = -3.7 + currentLerp * (-4.2 - (-3.7));
+    const saem = VORTEX_BIPOLAR_HUD.calculateSaemundssonRefraction(elev);
+    const ott = VORTEX_BIPOLAR_HUD.calculateOttKinematics(az);
+
+    document.getElementById('hud-lerp-az').textContent = `${az.toFixed(2)}°`;
+    document.getElementById('hud-saemundsson').textContent = `${saem.arcmin}' (+${saem.deg}°)`;
+    document.getElementById('hud-ott-area').textContent = `${ott.nonius} / 3630 (${ott.area} cm²)`;
+    document.getElementById('hud-sy-jz').textContent = `#${ott.sy} | #${ott.jz} | 010101 (01)`;
+    buildKStarsAndVortexFeatures(activeProj);
+  }
+
+  function updateRoseCurve(kVal) {
+    currentRoseK = parseInt(kVal, 10);
+    document.getElementById('lbl-rose-k').textContent = `k = ${currentRoseK}`;
+    buildKStarsAndVortexFeatures(activeProj);
+  }
+
+  map.on('pointermove', function(evt) {
+    if (evt.dragging) return;
+    const [lon, lat] = ol.proj.toLonLat(evt.coordinate, activeProj);
+    const rd = proj4('EPSG:4326', 'EPSG:28992', [lon, lat]);
+    document.getElementById('cur-wgs').textContent = `${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E`;
+    document.getElementById('cur-rd').textContent = `X: ${Math.round(rd[0])} m | Y: ${Math.round(rd[1])} m`;
+  });
+</script>
+</body>
+</html>

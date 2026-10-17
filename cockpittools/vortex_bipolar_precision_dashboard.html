@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS v156.0 — Bipolaire Geodetische & Optische Precisie Dashboard</title>
+  <style>
+    :root {
+      --bg-dark: #050811;
+      --panel-bg: rgba(10, 17, 32, 0.88);
+      --border-col: #1e293b;
+      --cyan: #00e5ff;
+      --gold: #ffcc33;
+      --magenta: #ff3385;
+      --green: #2dd4bf;
+      --text: #e2e8f0;
+      --font-mono: 'Fira Code', 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text);
+      font-family: var(--font-mono);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid var(--border-col);
+      padding: 0.6rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .title-box { display: flex; align-items: center; gap: 0.75rem; }
+    .title-box h1 { font-size: 1.05rem; color: var(--cyan); letter-spacing: 1px; }
+    .badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 350px 1fr 370px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border-col);
+      padding: 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+    }
+    .sidebar.right {
+      border-right: none;
+      border-left: 1px solid var(--border-col);
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid var(--border-col);
+      border-radius: 6px;
+      padding: 0.75rem;
+    }
+    .card-title {
+      font-size: 0.73rem;
+      color: var(--gold);
+      margin-bottom: 0.55rem;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 204, 51, 0.2);
+      padding-bottom: 0.3rem;
+    }
+
+    .kv-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      margin-bottom: 0.32rem;
+    }
+    .kv-row label { color: #94a3b8; }
+    .kv-row val { font-weight: bold; color: var(--cyan); }
+    .kv-row val.gold { color: var(--gold); }
+    .kv-row val.magenta { color: var(--magenta); }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+    button {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-col);
+      color: var(--text);
+      padding: 0.42rem;
+      font-family: var(--font-mono);
+      font-size: 0.67rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 229, 255, 0.1);
+    }
+    button.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(255, 204, 51, 0.18);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 0.3rem 0;
+      accent-color: var(--cyan);
+    }
+
+    .viewport {
+      position: relative;
+      background: #02040a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    svg {
+      width: 100%;
+      height: 100%;
+      max-width: 850px;
+      max-height: 850px;
+    }
+
+    .overlay-info {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(5, 8, 17, 0.88);
+      border: 1px solid var(--border-col);
+      padding: 0.65rem;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="title-box">
+    <h1>🧭 VORTEX OS v156.0</h1>
+    <span class="badge">BIPOLAR PRECISION DASHBOARD</span>
+  </div>
+  <div style="font-size: 0.7rem; color: #64748b;">
+    Poolanker P: <span style="color: var(--cyan);">52.25°N, 5.22°E</span> | Padlengte (OPL): <span style="color: var(--gold);">16.675 cm</span>
+  </div>
+</header>
+
+<main>
+  <!-- LINKER KOLOM: BIPOLAIR VIZIER & SNELLIUS BEREKENING -->
+  <section class="sidebar">
+    <div class="card">
+      <div class="card-title"><span>🎯 BIPOLAIRE VIZIER-SCHAKELAAR</span><span>AZIMUT-LOCK</span></div>
+      <div class="btn-group">
+        <button id="btn-aldebaran" class="active" onclick="selectVisor('aldebaran')">🐂 Aldebaran (51.40° NO)</button>
+        <button id="btn-mercurius" onclick="selectVisor('mercurius')">☿ Mercurius (245.91° WZW)</button>
+      </div>
+      <button style="width:100%; margin-top:0.4rem;" onclick="selectVisor('eclips')">🌑 Eclips Landfall Spanje (12 Aug 2026)</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🎛️ BIPOLAIRE INTERPOLATOR (LERP)</span><span id="lbl-lerp-val">0.00</span></div>
+      <input type="range" id="slider-bipolar" min="0" max="1" value="0" step="0.01" oninput="updateBipolarLerp()">
+      <div class="kv-row"><label>Systeemscheiding (Δθ):</label><val class="gold">194.51°</val></div>
+      <div class="kv-row"><label>Deviatie t.o.v. Oppositiemidden:</label><val class="magenta">+14.51°</val></div>
+      <div class="kv-row"><label>Mechanische Resonantie (γ'):</label><val class="cyan">14.99° (Ott L-arm)</val></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🌊 SNELLIUS REFRACTIE (BISKAJE)</span><span>589 nm</span></div>
+      <div class="kv-row"><label>Medium 1 (Lucht):</label><val>n₁ = 1.0003</val></div>
+      <div class="kv-row"><label>Medium 2 (Zeewater):</label><val>n₂ = 1.3330</val></div>
+      <div class="kv-row"><label>Invalshoek (θ₁):</label><val id="val-theta1">15.00°</val></div>
+      <input type="range" id="slider-theta1" min="0" max="60" value="15" step="0.5" oninput="updateRefraction()">
+      <div class="kv-row"><label>Brekingshoek (θ₂):</label><val class="gold" id="val-theta2">11.20°</val></div>
+      <div class="kv-row"><label>Zeewaardige Afbuiging (Δθ):</label><val class="magenta" id="val-deflection">-3.80°</val></div>
+    </div>
+  </section>
+
+  <!-- MIDDELSTE KOLOM: SVG VIEWPORT WITH DUAL LASER & PLANIMETER -->
+  <section class="viewport">
+    <div class="overlay-info">
+      <div style="color:var(--gold); font-weight:bold;">A. OTT NR. 573 TELEMETRIE</div>
+      <div>Actieve Azimut (α): <span id="vp-alpha" style="color:var(--cyan);">51.40</span>°</div>
+      <div>Nonius: <span id="vp-nonius" style="color:var(--cyan);">519</span> / 3630</div>
+      <div>Oppervlakte: <span id="vp-area" style="color:var(--cyan);">51.86</span> cm²</div>
+      <div>Hoeken: β=<span id="vp-beta">66.39</span>° | γ=<span id="vp-gamma">165.01</span>°</div>
+      <div>Attractor N²: <span style="color:var(--magenta);">010101 (01)</span></div>
+    </div>
+
+    <svg id="vortex-svg" viewBox="-300 -300 600 600">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Achtergrond Kompas & Raster -->
+      <circle cx="0" cy="0" r="215" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+      <circle cx="0" cy="0" r="150" fill="none" stroke="#0f172a" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="-280" y1="0" x2="280" y2="0" stroke="#0f172a" stroke-width="1"/>
+      <line x1="0" y1="-280" x2="0" y2="280" stroke="#0f172a" stroke-width="1"/>
+
+      <!-- Aldebaran Vector (51.40° NO - Cyaan) -->
+      <line x1="0" y1="0" x2="168" y2="-135" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="5,3" filter="url(#glow)"/>
+      
+      <!-- Mercurius Vector (245.91° WZW - Goud) -->
+      <line x1="0" y1="0" x2="-196" y2="88" stroke="#ffcc33" stroke-width="1.5" stroke-dasharray="5,3" filter="url(#glow)"/>
+
+      <!-- Dynamische Laser & Refractie -->
+      <g id="laser-layer"></g>
+
+      <!-- Planimeter Arm (P -> G -> T) -->
+      <g id="planimeter-arm"></g>
+    </svg>
+  </section>
+
+  <!-- RECHTER KOLOM: PLANIMETER BEREKENING & SHAO YONG REGISTER -->
+  <section class="sidebar right">
+    <div class="card">
+      <div class="card-title"><span>📐 OTT NR. 573 PARAMETERS</span><span>PHYSICAL</span></div>
+      <div class="kv-row"><label>Poolarm (R):</label><val>15.00 cm</val></div>
+      <div class="kv-row"><label>Rijarm (L):</label><val>16.67 cm</val></div>
+      <div class="kv-row"><label>Optisch Pad (OPL 589nm):</label><val class="cyan">16.675 cm</val></div>
+      <div class="kv-row"><label>Meetcirkel (A₀):</label><val>363.00 cm²</val></div>
+      <div class="kv-row"><label>Jacobiaan (det J):</label><val class="magenta">-1.00 (Inversie)</val></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🎛️ MAPLIBRE ROTATIESCHAKELAAR</span><span id="lbl-orient">0° Noord</span></div>
+      <div class="btn-group">
+        <button id="btn-rot0" class="active" onclick="setOrientation(0, this)">0° Noord-Boven</button>
+        <button id="btn-rot155" onclick="setOrientation(155, this)">155° MapLibre Inversie</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>☯️ SHAO YONG & JIAZI REGISTER</span><span>N² ATTRACTOR</span></div>
+      <div class="kv-row"><label>Shao Yong Sector (1/64):</label><val class="cyan" id="sy-sector">#10 (001001)</val></div>
+      <div class="kv-row"><label>Jiazi Tijd-Sector (1/60):</label><val class="gold" id="jiazi-sector">#9 (Taurus-vak)</val></div>
+      <div class="kv-row"><label>Nucleaire Staat (N²):</label><val class="magenta">010101 (01)</val></div>
+    </div>
+
+    <button style="margin-top:auto;" onclick="copyReport()">📋 Kopieer Bipolair Telemetrisch Rapport</button>
+  </section>
+</main>
+
+<script>
+  const R_POOL = 150;  // 15.00 cm geschaald
+  const L_RIJ = 166.7; // 16.67 cm geschaald
+  const n1 = 1.0003, n2 = 1.3330;
+
+  const ALDEBARAN_AZ = 51.40;
+  const MERCURIUS_AZ = 245.91;
+
+  let currentAlpha = ALDEBARAN_AZ;
+  let orientationRot = 0;
+
+  function updateBipolarLerp() {
+    const lerpVal = parseFloat(document.getElementById('slider-bipolar').value);
+    document.getElementById('lbl-lerp-val').textContent = lerpVal.toFixed(2);
+
+    // Interpolatie tussen 51.40° en 245.91°
+    const interpolatedAlpha = ALDEBARAN_AZ + lerpVal * (MERCURIUS_AZ - ALDEBARAN_AZ);
+    updatePlanimeter(interpolatedAlpha);
+  }
+
+  function updateRefraction() {
+    const theta1 = parseFloat(document.getElementById('slider-theta1').value);
+    document.getElementById('val-theta1').textContent = theta1.toFixed(2) + '°';
+
+    const radInc = (theta1 * Math.PI) / 180;
+    const sinRef = (n1 / n2) * Math.sin(radInc);
+    const theta2 = (Math.asin(sinRef) * 180) / Math.PI;
+    const deflection = theta1 - theta2;
+
+    document.getElementById('val-theta2').textContent = theta2.toFixed(2) + '°';
+    document.getElementById('val-deflection').textContent = '-' + deflection.toFixed(2) + '°';
+
+    renderLaser(theta1, theta2);
+  }
+
+  function updatePlanimeter(alphaDeg) {
+    currentAlpha = alphaDeg;
+    document.getElementById('vp-alpha').textContent = alphaDeg.toFixed(2);
+
+    // Bereken Scharnier G en Volgstift T
+    const alphaRad = (alphaDeg * Math.PI) / 180;
+    const gx = R_POOL * Math.sin(alphaRad);
+    const gy = -R_POOL * Math.cos(alphaRad);
+
+    const gammaDeg = 165.01;
+    const betaDeg = alphaDeg + (180.0 - gammaDeg);
+    const betaRad = (betaDeg * Math.PI) / 180;
+
+    const tx = gx + L_RIJ * Math.sin(betaRad);
+    const ty = gy - L_RIJ * Math.cos(betaRad);
+
+    document.getElementById('vp-beta').textContent = betaDeg.toFixed(2);
+
+    // Nonius berekening
+    const nonius = Math.round((alphaDeg / 360.0) * 3630);
+    const area = (nonius * 0.1).toFixed(2);
+    document.getElementById('vp-nonius').textContent = nonius;
+    document.getElementById('vp-area').textContent = area;
+
+    // Shao Yong & Jiazi
+    const syIdx = Math.floor((alphaDeg / 360.0) * 64) % 64 + 1;
+    const jiaziIdx = Math.floor((alphaDeg / 360.0) * 60) % 60 + 1;
+    document.getElementById('sy-sector').textContent = `#${syIdx}`;
+    document.getElementById('jiazi-sector').textContent = `#${jiaziIdx}`;
+
+    // Render Arm
+    const armGroup = document.getElementById('planimeter-arm');
+    armGroup.innerHTML = `
+      <line x1="0" y1="0" x2="${gx}" y2="${gy}" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+      <line x1="${gx}" y1="${gy}" x2="${tx}" y2="${ty}" stroke="#fbbf24" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="5" fill="#00e5ff"/>
+      <circle cx="${gx}" cy="${gy}" r="4.5" fill="#0f172a" stroke="#fde047" stroke-width="2"/>
+      <circle cx="${tx}" cy="${ty}" r="6" fill="rgba(0, 229, 255, 0.3)" stroke="#00e5ff" stroke-width="2"/>
+    `;
+
+    updateRefraction();
+  }
+
+  function renderLaser(theta1, theta2) {
+    const laserGroup = document.getElementById('laser-layer');
+    const radAlpha = (currentAlpha * Math.PI) / 180;
+
+    const exitX = 160 * Math.sin(radAlpha);
+    const exitY = -160 * Math.cos(radAlpha);
+
+    const baseAngle = Math.atan2(exitY, exitX);
+    const deflectionRad = ((theta1 - theta2) * Math.PI) / 180;
+    const refractedAngle = baseAngle + deflectionRad;
+    const beamLength = 120;
+
+    const targetX = exitX + beamLength * Math.cos(refractedAngle);
+    const targetY = exitY + beamLength * Math.sin(refractedAngle);
+
+    const isTaurus = currentAlpha < 150;
+    const strokeColor = isTaurus ? '#00e5ff' : '#fbbf24';
+
+    laserGroup.innerHTML = `
+      <!-- Normaal op kustlijn Biskaje -->
+      <line x1="${exitX - 25}" y1="${exitY - 35}" x2="${exitX + 25}" y2="${exitY + 35}" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
+      <!-- Primair Laser spoor -->
+      <line x1="0" y1="0" x2="${exitX}" y2="${exitY}" stroke="${strokeColor}" stroke-width="2" stroke-dasharray="5,3" filter="url(#glow)"/>
+      <!-- Refractiepunt -->
+      <circle cx="${exitX}" cy="${exitY}" r="5" fill="#00e5ff" stroke="#ffffff" stroke-width="1"/>
+      <!-- Gebroken Laser in Zeewater -->
+      <line x1="${exitX}" y1="${exitY}" x2="${targetX.toFixed(1)}" y2="${targetY.toFixed(1)}" stroke="#2dd4bf" stroke-width="2" stroke-dasharray="4,2" filter="url(#glow)"/>
+      <circle cx="${targetX.toFixed(1)}" cy="${targetY.toFixed(1)}" r="4" fill="#ff3385"/>
+    `;
+  }
+
+  function selectVisor(type) {
+    if (type === 'aldebaran') {
+      document.getElementById('slider-bipolar').value = 0;
+    } else if (type === 'mercurius' || type === 'eclips') {
+      document.getElementById('slider-bipolar').value = 1;
+    }
+    document.querySelectorAll('.sidebar .btn-group button').forEach(b => b.classList.remove('active'));
+    if (type === 'aldebaran') document.getElementById('btn-aldebaran').classList.add('active');
+    if (type === 'mercurius') document.getElementById('btn-mercurius').classList.add('active');
+
+    updateBipolarLerp();
+  }
+
+  function setOrientation(deg, btnElement) {
+    orientationRot = deg;
+    const svg = document.getElementById('vortex-svg');
+    svg.style.transform = `rotate(${deg}deg)`;
+    svg.style.transition = 'transform 0.5s ease';
+    document.getElementById('lbl-orient').textContent = `${deg}° Oriëntatie`;
+
+    if (btnElement) {
+      btnElement.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+    }
+  }
+
+  function copyReport() {
+    const report = `=== VORTEX OS v156.0 BIPOLAIR TELEMETRISCH RAPPORT ===
+Datum/Tijd: 15-10-2026 20:15 CEST
+Poolanker P: 52.2500° N, 5.2200° E
+Actieve Azimut (α): ${currentAlpha.toFixed(2)}°
+Aldebaran (Stier / Taurus): 51.40° NO (Elevatie -3.7°, Nonius 519)
+Mercurius (Weegschaal / Libra): 245.91° WZW (Elevatie -4.2°, Nonius 2476)
+Systeemscheiding Δθ: 194.51° (Deviatie +14.51° t.o.v. 180° opposition)
+Mechanische Resonantie: γ' = 14.99° (Ott L-arm)
+Fraunhofer D Laser: 589 nm (OPL: 16.675 cm, n=1.0003)
+Snellius Refractie (Biskaje): θ1=15.00°, θ2=11.20°, Δθ=-3.80°
+Attractor N²: 010101 (01)`;
+
+    navigator.clipboard.writeText(report);
+    alert('Bipolair telemetrisch rapport gekopieerd naar klembord!');
+  }
+
+  // Initialisatie
+  updateBipolarLerp();
+</script>
+</body>
+</html>

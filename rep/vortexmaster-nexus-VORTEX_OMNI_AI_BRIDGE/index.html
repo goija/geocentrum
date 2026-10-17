@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>VORTEX OMNI-CORE v6.1 // NEURAL-SYNC</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --fc-100-black: #050508; --laser-cyan: #00e5ff; --lithos-amber: #ffb000;                     
+            --matrix-green: #00ff41; --alert-red: #d92534; --sirius-blue: #0044ff;
+            --droste-purple: #ff00ff; --panel-bg: rgba(5, 10, 15, 0.95); --border-dim: #1a2a3a;
+        }
+        * { box-sizing: border-box; cursor: crosshair; touch-action: manipulation; }
+        body, html { background-color: var(--fc-100-black); color: #e0e0e0; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; display: flex; flex-direction: column; overscroll-behavior: none; }
+        
+        header { flex: 0 0 50px; background: #000; border-bottom: 2px solid var(--laser-cyan); padding: 0 15px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); transition: 0.3s; }
+        .title { color: var(--laser-cyan); font-size: 1.2em; font-weight: bold; letter-spacing: 2px; }
+        
+        /* LAYOUT: 25% | 50% | 25% */
+        .main-grid { display: grid; grid-template-columns: 25% 50% 25%; grid-template-rows: 1fr 220px; width: 100%; height: calc(100vh - 50px); transition: all 0.4s ease; }
+        
+        .panel { background: var(--panel-bg); border-bottom: 1px solid var(--border-dim); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; z-index: 10; -webkit-overflow-scrolling: touch; }
+        .panel-header { color: var(--lithos-amber); font-size: 0.85em; font-weight: bold; border-bottom: 1px solid var(--lithos-amber); padding-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        #panelLeft { grid-column: 1 / 2; grid-row: 1 / 2; border-right: 2px solid var(--laser-cyan); }
+        .maps-container { display: flex; flex-direction: column; grid-column: 2 / 3; grid-row: 1 / 2; position: relative; background: transparent; }
+        #panelRight { grid-column: 3 / 4; grid-row: 1 / 2; border-left: 2px solid var(--laser-cyan); }
+
+        /* Kiosk / Viewport Resize Buttons */
+        .vp-resize-btns { position: absolute; top: 10px; right: 10px; z-index: 1000; display: flex; gap: 5px; }
+        .btn-vp { background: rgba(0,0,0,0.8); border: 1px solid var(--laser-cyan); color: var(--laser-cyan); width: 35px; height: 35px; cursor: pointer; font-weight: bold; font-size: 1.2em; display: flex; align-items: center; justify-content: center; transition: 0.2s; border-radius: 4px; }
+        .btn-vp:hover { background: var(--laser-cyan); color: #000; box-shadow: 0 0 10px var(--laser-cyan); }
+
+        #sensorCam { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: grayscale(0.2) sepia(0.8) hue-rotate(130deg) contrast(1.3) brightness(0.7); }
+        .cam-scanlines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 1; display: none; opacity: 0.8; }
+
+        #ar-hud { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 450; }
+        .hud-horizon { position: absolute; top: 50%; left: 10%; right: 10%; height: 1px; background: rgba(0, 255, 65, 0.3); border-top: 1px dashed var(--matrix-green); transition: transform 0.05s linear; }
+        .hud-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 2px solid var(--alert-red); border-radius: 50%; box-shadow: 0 0 15px var(--alert-red); transition: transform 0.1s linear; }
+        .hud-center::before { content: ''; position: absolute; top: 50%; left: -15px; right: -15px; height: 1px; background: var(--alert-red); }
+        .hud-center::after { content: ''; position: absolute; left: 50%; top: -15px; bottom: -15px; width: 1px; background: var(--alert-red); }
+        .hud-compass { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); color: var(--matrix-green); font-size: 12px; font-weight: bold; }
+        .sync-active #ar-hud { display: block; }
+
+        #trackerMap { flex: 1.3; background: transparent; border-bottom: 1px solid var(--laser-cyan); position: relative; z-index: 2; transition: opacity 0.5s ease; }
+        .leaflet-container { background: transparent !important; }
+        
+        /* Leaflet Controls Custom UI (V6.1) */
+        .leaflet-top.leaflet-left { padding-top: 35px; } /* Pushes layers control below the label */
+        .leaflet-control-layers { background: rgba(5, 10, 15, 0.9) !important; color: var(--matrix-green) !important; border: 1px solid var(--laser-cyan) !important; font-family: var(--font-mono); font-size: 0.8em; }
+        .leaflet-control-layers-toggle { filter: invert(1) hue-rotate(180deg); }
+        .leaflet-control-zoom a { background: rgba(5, 10, 15, 0.9) !important; color: var(--matrix-green) !important; border: 1px solid var(--laser-cyan) !important; font-weight: bold; }
+        .leaflet-control-zoom a:hover { background: var(--laser-cyan) !important; color: #000 !important; box-shadow: 0 0 10px var(--laser-cyan); }
+        
+        #stratiMap { flex: 1; background: transparent; position: relative; overflow: hidden; z-index: 2; }
+        canvas { width: 100%; height: 100%; display: block; filter: contrast(1.2) brightness(1.1); position: absolute; top: 0; left: 0; z-index: 3; mix-blend-mode: screen; opacity: 0.9; }
+
+        .map-label { position: absolute; top: 10px; left: 10px; z-index: 400; background: rgba(0,0,0,0.8); padding: 4px 8px; border: 1px solid var(--laser-cyan); font-size: 0.65em; color: var(--laser-cyan); pointer-events: none; }
+        .sync-label { position: absolute; top: 10px; right: 95px; z-index: 400; background: rgba(217,37,52,0.8); padding: 4px 8px; border: 1px solid var(--alert-red); font-size: 0.65em; color: #fff; pointer-events: none; display: none; font-weight: bold; letter-spacing: 1px; animation: blink 1.5s infinite; }
+
+        .sirius-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 500; mix-blend-mode: screen; opacity: 0.15; background: repeating-linear-gradient(0deg, var(--laser-cyan) 0px, transparent 1px, transparent 3px); }
+
+        .terminal-container { grid-column: 1 / 4; grid-row: 2 / 3; background: #000; border-top: 2px solid var(--laser-cyan); display: flex; flex-direction: column; z-index: 10; transition: 0.3s; }
+        .terminal-output { flex-grow: 1; padding: 12px; overflow-y: auto; font-size: 0.75em; line-height: 1.3; color: #8af; }
+        .terminal-input-wrapper { display: flex; padding: 8px 15px; background: #050508; border-top: 1px solid #1a2a3a; align-items: center; }
+        .cli-prompt { color: var(--laser-cyan); margin-right: 10px; font-weight: bold; }
+        #cliInput { flex-grow: 1; background: transparent; border: none; color: var(--matrix-green); font-family: inherit; font-size: 1em; outline: none; }
+
+        .btn-action { background: #111; color: var(--laser-cyan); border: 1px solid var(--laser-cyan); padding: 12px 8px; font-family: inherit; font-size: 0.75em; cursor: pointer; transition: 0.2s; width: 100%; font-weight: bold; margin-top: 5px; border-radius: 4px; }
+        .btn-action:active { background: var(--laser-cyan); color: #000; box-shadow: 0 0 15px var(--laser-cyan); transform: scale(0.98); }
+        @media (hover: hover) { .btn-action:hover { background: var(--laser-cyan); color: #000; box-shadow: 0 0 12px var(--laser-cyan); } }
+        .btn-copy { background: #000; border: 1px solid var(--matrix-green); color: var(--matrix-green); padding: 4px; font-size: 0.6em; cursor: pointer; margin-top: 4px; }
+
+        .data-box { background: rgba(0, 255, 65, 0.05); border: 1px solid #1a2a3a; padding: 8px; font-size: 0.7em; display: flex; flex-direction: column; gap: 4px; }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; }
+        .sensor-data { color: var(--matrix-green); font-family: monospace; font-size: 0.9em; }
+        .progress-container { height: 4px; background: #111; width: 100%; border-radius: 2px; overflow: hidden; margin-top: 4px; }
+        .progress-bar { height: 100%; width: 0%; background: var(--matrix-green); transition: width 0.4s; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* TRUE FULLSCREEN KIOSK MODE */
+        body.viewport-maximized header { display: none !important; }
+        body.viewport-maximized .terminal-container { display: none !important; }
+        body.viewport-maximized .main-grid { height: 100vh !important; grid-template-rows: 1fr !important; grid-template-columns: 100% !important; }
+        body.viewport-maximized #panelLeft, body.viewport-maximized #panelRight { display: none !important; }
+        body.viewport-maximized .maps-container { grid-column: 1 / -1 !important; grid-row: 1 / -1 !important; border: none !important; }
+
+        /* P2P Rol: VIEWPORT (Linker Scherm) */
+        body.role-viewport #panelLeft, body.role-viewport #panelRight { display: none !important; }
+        body.role-viewport .main-grid { grid-template-columns: 1fr !important; }
+        body.role-viewport .maps-container { grid-column: 1 / 2 !important; }
+
+        /* P2P Rol: CONTROLS (Rechter Scherm) */
+        body.role-controls .maps-container { display: none !important; }
+        body.role-controls .main-grid { grid-template-columns: 1fr 1fr !important; }
+        body.role-controls #panelLeft { grid-column: 1 / 2 !important; border-right: 1px solid var(--laser-cyan); }
+        body.role-controls #panelRight { grid-column: 2 / 3 !important; border-left: none; }
+
+        @media screen and (max-width: 950px) {
+            body, html { overflow-y: auto; height: 100vh; display: block; }
+            .main-grid { display: flex; flex-direction: column; height: auto; min-height: 100vh; }
+            .maps-container { height: 50vh; min-height: 400px; width: 100%; order: 1; border-bottom: 2px solid var(--laser-cyan); }
+            #panelLeft { order: 2; border-right: none; border-bottom: 1px solid var(--border-dim); }
+            #panelRight { order: 3; border-left: none; border-bottom: 1px solid var(--border-dim); }
+            .terminal-container { height: 30vh; min-height: 200px; width: 100%; order: 4; border-top: 2px solid var(--laser-cyan); }
+            body.role-controls .main-grid, body.role-viewport .main-grid { display: flex !important; flex-direction: column; }
+        }
+    </style>
+</head>
+<body class="role-single">
+
+<header>
+    <div class="title">VORTEX v6.1 // NEURAL-SYNC</div>
+    <div id="sysID" style="color:var(--matrix-green); font-size:0.7em; font-weight:bold;">UI-MODE: SINGLE (25/50/25)</div>
+</header>
+
+<div class="main-grid">
+    
+    <div class="panel" id="panelLeft">
+        <div class="panel-header">VERCEL DEPLOYMENT ENGINE</div>
+        <div class="data-box">
+            <div style="color:var(--laser-cyan); font-weight:bold; margin-bottom:5px;">TARGET: VORTEXMASTER</div>
+            <div class="stat-row" style="color:#888;"><span>URL:</span><span style="font-size:0.8em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;" id="targetUrl">home-ontwerp...vercel.app</span></div>
+            <button class="btn-copy" onclick="processCommand('copy url')">[ KOPIEER URL ]</button>
+            <div class="stat-row" style="margin-top:5px;"><span>STATUS:</span><span id="st-vercel" style="color:var(--lithos-amber);">STANDBY</span></div>
+            <div class="progress-container"><div id="pb-vercel" class="progress-bar"></div></div>
+            <button class="btn-action" onclick="processCommand('deploy')">PUSH TO VERCEL</button>
+            <button class="btn-action" style="border-color:var(--matrix-green); color:var(--matrix-green);" onclick="processCommand('qr sync')">MOBILE SYNC (QR)</button>
+            <div id="qrContainer" style="text-align:center; display:none; margin-top:10px;"><img id="qrImg" style="border: 2px solid var(--matrix-green); border-radius: 4px; padding: 4px; background: #000; max-width: 120px;"></div>
+        </div>
+
+        <div class="panel-header" style="margin-top:15px;">WEBRTC DATACHANNELS</div>
+        <div class="data-box" id="p2pBox">
+            <div class="stat-row"><span>SIGNALING:</span><span style="color:#666;">OFFLINE</span></div>
+            <div class="stat-row"><span>UPLINK:</span><span style="color:#666;">DISCONNECTED</span></div>
+        </div>
+        <button class="btn-action" style="border-color:var(--lithos-amber); color:var(--lithos-amber);" onclick="processCommand('connect p2p')">INITIATE P2P HANDSHAKE</button>
+        <button class="btn-action" style="border-color:#555; color:#aaa; margin-top:5px;" onclick="processCommand('reset ui')">RESET TO SINGLE-SCREEN</button>
+
+        <div class="panel-header" style="margin-top:15px;">TRANSFORM MATRIX</div>
+        <div class="data-box" id="transformBox">
+            <div class="stat-row"><span>MIRROR X:</span><span id="st-mir" style="color:#666;">OFF</span></div>
+            <div class="stat-row"><span>POLAR FLIP:</span><span id="st-pol" style="color:#666;">OFF</span></div>
+        </div>
+        <button class="btn-action" style="border-color:var(--droste-purple); color:var(--droste-purple);" onclick="processCommand('mirror all')">SYNC MIRROR (ALL)</button>
+        <button class="btn-action" style="border-color:var(--droste-purple); color:var(--droste-purple);" onclick="processCommand('polarflip all')">SYNC POLARFLIP (ALL)</button>
+        
+        <div class="panel-header" style="margin-top:15px;">DOPPLER & TELEMETRY</div>
+        <div class="data-box">
+            <div class="stat-row" style="color:var(--alert-red);"><span>REDSHIFT:</span><span id="val-red">0%</span></div>
+            <div class="stat-row" style="color:var(--sirius-blue);"><span>BLUESHIFT:</span><span id="val-blue">0%</span></div>
+        </div>
+        <button class="btn-action" onclick="processCommand('shift doppler')">TOGGLE DOPPLER PHASE</button>
+    </div>
+
+    <div class="maps-container" id="mapsWrapper">
+        <div class="vp-resize-btns">
+            <button class="btn-vp" onclick="processCommand('fullscreen on')" title="Schermvullend maken (Kiosk)">⛶</button>
+            <button class="btn-vp" onclick="processCommand('fullscreen off')" title="Herstel weergave (Split)">✕</button>
+        </div>
+
+        <video id="sensorCam" autoplay playsinline></video>
+        <div class="cam-scanlines" id="camScanlines"></div>
+
+        <div id="trackerMap">
+            <div class="map-label">XY-DOMAIN (AR-PLOTTER)</div>
+            <div class="sync-label" id="syncStatusLabel">SENSOR FUSION LOCK</div>
+            
+            <div id="ar-hud">
+                <div class="hud-horizon" id="hudHorizon"></div>
+                <div class="hud-center" id="hudReticle">
+                    <div class="hud-compass" id="hudCompass">N</div>
+                </div>
+            </div>
+            <div class="sirius-overlay"></div>
+            <div class="doppler-red"></div>
+            <div class="doppler-blue"></div>
+        </div>
+        
+        <div id="stratiMap">
+            <div class="map-label" style="border-color:var(--lithos-amber); color:var(--lithos-amber); z-index:400;"><span id="z-label">Z-DOMAIN: STRATIGRAFIE</span></div>
+            <canvas id="glCanvas"></canvas>
+        </div>
+    </div>
+
+    <div class="panel" id="panelRight">
+        <div class="panel-header">OMNI-SHADER CONTROLS</div>
+        <button class="btn-action" onclick="processCommand('view lidar')">VIEW LIDAR POINTCLOUD</button>
+        <button class="btn-action" onclick="processCommand('view cyclone')" style="border-color:var(--sirius-blue); color:var(--sirius-blue);">VIEW 6 CYCLONES</button>
+        <button class="btn-action" onclick="processCommand('view droste')" style="border-color:var(--droste-purple); color:var(--droste-purple);">VIEW DROSTE RASTER</button>
+        <button class="btn-action" onclick="processCommand('view resonantie')" style="border-color:#ffb000; color:#ffb000;">VIEW CYMATIC RESONANCE</button>
+        
+        <div class="panel-header" style="margin-top:15px;">AR SENSOR FUSION</div>
+        <button class="btn-action" onclick="processCommand('enable sensors')" style="background:var(--matrix-green); color:#000;">1. INIT SENSOR-FUSION</button>
+        <button class="btn-action" onclick="processCommand('calibrate sensor')" style="border-color:var(--laser-cyan); color:var(--laser-cyan);">2. CALIBRATE ZERO-POINT</button>
+        <button class="btn-action" onclick="processCommand('sync camera')" style="border-color:var(--alert-red); color:var(--alert-red);">3. TOGGLE AR HUD-SYNC</button>
+
+        <div class="panel-header" style="margin-top:15px;">MATHEMATICAL & AI NEXUS</div>
+        <button class="btn-action" onclick="processCommand('init ai')" style="border-color:#ff00ff; color:#ff00ff;">ACTIVATE NEURAL BRIDGE</button>
+        <button class="btn-action" onclick="processCommand('ai scan')" style="border-color:#ff00ff; color:#ff00ff;">AI PATTERN RECOGNITION</button>
+        <button class="btn-action" onclick="processCommand('plot mersenne')" style="margin-top:15px;">PLOT MERSENNE HEXAGON</button>
+        <button class="btn-action" onclick="processCommand('import kaartproviders')" style="background:var(--laser-cyan); color:#000;">LOAD MAP PROVIDERS</button>
+        <button class="btn-action" onclick="processCommand('bodemkaart scan')" style="border-color:var(--laser-cyan); color:var(--laser-cyan);">TOGGLE BODEMKAART WMS</button>
+        <button class="btn-action" onclick="processCommand('plot target')" style="border-color:#ffb000; color:#ffb000;">PLOT AT RETICLE TARGET</button>
+        <button class="btn-action" onclick="processCommand('clear')" style="border-color:var(--alert-red); color:var(--alert-red);">CLEAR ALL PLOTS</button>
+
+        <div class="data-box" style="margin-top:15px;">
+            <div class="stat-row"><span>COMPASS (α):</span><span class="sensor-data" id="tel-alpha">0.00°</span></div>
+            <div class="stat-row"><span>PITCH (β):</span><span class="sensor-data" id="tel-beta">0.00°</span></div>
+            <div class="stat-row"><span>ROLL (γ):</span><span class="sensor-data" id="tel-gamma">0.00°</span></div>
+            <div class="stat-row"><span>ACCEL (G):</span><span class="sensor-data" id="tel-accel">0.00</span></div>
+        </div>
+    </div>
+
+    <div class="terminal-container">
+        <div class="terminal-output" id="termOut"></div>
+        <div class="terminal-input-wrapper">
+            <span class="cli-prompt">vortex@omni:~#</span>
+            <input type="text" id="cliInput" autofocus autocomplete="off" spellcheck="false" placeholder="Typ 'help' voor opties...">
+        </div>
+    </div>
+</div>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec2 position; varying vec2 vUv;
+    void main() { vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }
+</script>
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+    varying vec2 vUv; uniform float u_time; uniform int u_mode; uniform vec2 u_mouse; uniform vec2 u_mapOffset;
+    uniform vec2 u_gyro; uniform vec3 u_accel; uniform float u_mirrorState[6]; uniform float u_polarState[6];
+
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); vec2 u = f*f*(3.0-2.0*f); return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x), mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y); }
+
+    void main() {
+        float shake = length(u_accel) * 0.02 * sin(u_time * 50.0);
+        vec2 uv = vUv; vec2 mapSyncUv = vUv + u_mapOffset * 0.1 + u_gyro * 0.1 + vec2(shake); 
+        vec3 color = vec3(0.0); 
+        vec2 cuv = uv - 0.5 - (u_mapOffset * 0.5) - (u_gyro * 0.3); 
+        float dist = length(cuv); float angle = atan(cuv.y, cuv.x);
+
+        if(u_mode == 0) { 
+            float layers = noise(mapSyncUv * vec2(2.0, 15.0) + u_time * 0.05);
+            vec3 soil = mix(vec3(0.2, 0.1, 0.05), vec3(0.1, 0.15, 0.2), step(0.5, (1.0-uv.y) + layers * 0.1));
+            color = mix(vec3(0.02, 0.04, 0.08), soil, 0.7);
+        } else if(u_mode == 1) { 
+            float pts = step(0.98, fract((mapSyncUv.y) * 60.0 + sin((mapSyncUv.x) * 20.0 + u_time*2.0)));
+            color += vec3(0.0, 1.0, 0.5) * pts * 0.6;
+            color += vec3(0.0, 0.3, 0.1) * smoothstep(0.05, 0.0, abs(cuv.x)) * sin(u_time*10.0);
+        } else if(u_mode == 2) { 
+            float spiral = sin(angle * 3.0 + dist * 12.0 - u_time * 3.0);
+            float intensity = smoothstep(0.5, 0.0, dist) * abs(spiral);
+            vec3 redP = vec3(1.0, 0.1, 0.1) * smoothstep(0.5, 0.0, length(cuv - vec2(-0.2, 0.0)));
+            vec3 blueP = vec3(0.0, 0.4, 1.0) * smoothstep(0.5, 0.0, length(cuv - vec2(0.2, 0.0)));
+            color += (redP + blueP) * intensity * 1.5;
+            color += vec3(0.0, 1.0, 0.8) * (0.01 / dist); 
+        } else if(u_mode == 3) { 
+            for(int i=0; i<6; i++) {
+                float theta = float(i) * (6.28318 / 6.0) + u_time * 0.5;
+                vec2 center = vec2(cos(theta), sin(theta)) * 0.25;
+                vec2 delta = cuv - center; float dDist = length(delta); float dAngle = atan(delta.y, delta.x);
+                float spiral = sin(dAngle * 4.0 + dDist * 20.0 - u_time * 5.0);
+                float intensity = smoothstep(0.15, 0.0, dDist) * abs(spiral);
+                color += vec3(0.1 + float(i)*0.1, 0.5, 1.0 - float(i)*0.1) * intensity;
+            }
+            color += vec3(1.0, 1.0, 1.0) * (0.005 / dist);
+        } else if(u_mode == 5) { 
+            vec2 gUv = vUv * vec2(3.0, 2.0); vec2 id = floor(gUv); vec2 fUv = fract(gUv) - 0.5; 
+            fUv -= u_mapOffset * 0.5 + u_gyro * 0.2; 
+            int panelIndex = int(id.x + id.y * 3.0); float iteration = float(panelIndex) + 1.0; 
+
+            float mirrorX = 1.0; float polarR = 1.0;
+            for(int i=0; i<6; i++) {
+                if(i == panelIndex) { if(u_mirrorState[i] > 0.5) mirrorX = -1.0; if(u_polarState[i] > 0.5) polarR = -1.0; }
+            }
+            fUv.x *= mirrorX; 
+            float fDist = length(fUv); float fAngle = atan(fUv.y, fUv.x);
+            if(polarR < 0.0) { fDist = 0.5 - fDist; }
+
+            float logR = log(fDist + 0.01);
+            float pulse = length(u_accel) * 0.5;
+            float spiral = sin(fAngle * iteration + logR * 10.0 - u_time * (2.0 + iteration * 0.5) + pulse);
+            float intensity = smoothstep(0.5, 0.0, fDist) * abs(spiral);
+            color += vec3(0.15 * iteration, 0.3, 1.0 - 0.1 * iteration) * intensity * 2.0;
+
+            vec2 normalizedMouse = u_mouse - 0.5; vec2 ghostPos = normalizedMouse * (40.4 / (iteration * 15.0)); 
+            ghostPos.x *= mirrorX; 
+            color += vec3(0.0, 1.0, 0.8) * smoothstep(0.04, 0.01, length(fUv - ghostPos)) * (1.0 / (iteration * 0.5));
+
+            vec2 borders = step(0.02, fract(gUv)) * step(fract(gUv), vec2(0.98));
+            color *= borders.x * borders.y;
+            if(borders.x * borders.y == 0.0) color = vec3(1.0, 0.0, 1.0) * 0.5; 
+        } else if(u_mode == 6) {
+            float wave1 = sin(dist * 60.0 - u_time * 6.0);
+            float wave2 = sin(dist * 35.0 + u_time * 4.0 + angle * 4.0);
+            float wave3 = cos(cuv.x * 50.0 + u_accel.x*10.0) * sin(cuv.y * 50.0 + u_time * 2.0 + u_accel.y*10.0);
+            float resonance = smoothstep(0.1, 0.9, abs((wave1 + wave2 + wave3) / 3.0)); 
+            color += mix(vec3(1.0, 0.7, 0.0), vec3(1.0, 0.0, 1.0), dist * 2.0) * resonance * (1.0 - dist);
+            color += vec3(0.0, 1.0, 0.4) * (0.01 / (abs(dist - 0.25) + 0.01)); 
+        }
+        
+        color -= vec3(0.1) * sin(uv.y * 200.0 - u_time * 10.0); 
+        gl_FragColor = vec4(color, u_mode == 0 ? 1.0 : 0.8); 
+    }
+</script>
+
+<script>
+    // --- SYSTEM INIT ---
+    const local_id = "VTX-" + Math.random().toString(36).substr(2, 4).toUpperCase();
+    const targetUrl = "https://home-ontwerp-downloads-vortexmaster.vercel.app/";
+    const term = document.getElementById('termOut');
+    const sysIdEl = document.getElementById('sysID');
+    
+    let aiActive = false;
+
+    const log = (msg, type = 'sys') => {
+        const c = { sys: '#8af', ok: '#0f4', err: '#f44', cmd: '#0ff', data: '#ffb000', math: '#ff00ff' }[type] || '#fff';
+        term.innerHTML += `<div><span style="color:#555;">[${new Date().toLocaleTimeString()}]</span> <span style="color:${c}">${msg}</span></div>`;
+        term.scrollTop = term.scrollHeight;
+    };
+
+    // --- FULLSCREEN VIEWPORT TOGGLE ---
+    function toggleViewportMax(maximize) {
+        if(maximize) {
+            document.body.classList.add('viewport-maximized');
+            log("Viewport geëxpandeerd naar FULL KIOSK MODE.", "sys");
+        } else {
+            document.body.classList.remove('viewport-maximized');
+            log("Viewport hersteld naar weergave (25/50/25).", "sys");
+        }
+        setTimeout(() => { map.invalidateSize(); }, 300);
+        setTimeout(() => { map.invalidateSize(); }, 600);
+    }
+
+    // --- DUAL-SCREEN ROLE MANAGEMENT ---
+    let currentRole = 'single';
+    function setRole(role) {
+        currentRole = role;
+        document.body.className = `role-${role}`;
+        if(role === 'viewport') {
+            log("UI Config: VIEWPORT (Linker Scherm). Knoppen verborgen.", "ok");
+            sysIdEl.innerText = "UI-MODE: VIEWPORT (LEFT)";
+            setTimeout(() => { map.invalidateSize(); }, 400);
+        } else if(role === 'controls') {
+            log("UI Config: CONTROLS (Rechter Scherm). Camera verborgen.", "ok");
+            sysIdEl.innerText = "UI-MODE: CONTROLS (RIGHT)";
+        } else {
+            log("UI Config: SINGLE SCREEN (25/50/25 Layout).", "ok");
+            sysIdEl.innerText = "UI-MODE: SINGLE (50% VIEWPORT)";
+            setTimeout(() => { map.invalidateSize(); }, 400);
+        }
+    }
+
+    // --- P2P DATACHANNEL SYNC ---
+    const p2pChannel = new BroadcastChannel('vortex_matrix_p2p');
+    let isP2PConnected = false;
+
+    p2pChannel.onmessage = (event) => {
+        const data = event.data;
+        if(data.type === 'SYN') {
+            setRole('viewport');
+            p2pChannel.postMessage({type: 'ACK', id: local_id});
+            establishConnection(data.id);
+        } else if (data.type === 'ACK') {
+            establishConnection(data.id);
+        } else if (data.type === 'CMD' && isP2PConnected) {
+            executeCoreCommand(data.cmd, true); 
+        } else if (data.type === 'DOPPLER' && isP2PConnected) {
+            applyDoppler(data.r, data.b);
+        } else if (data.type === 'MAP' && isP2PConnected) {
+            isRemoteMapSync = true;
+            map.setView([data.lat, data.lng], data.zoom, {animate: false});
+            setTimeout(() => { isRemoteMapSync = false; }, 50);
+        } else if (data.type === 'SENSOR' && isP2PConnected) {
+            gyroOffset = data.gyro; accelData = data.accel;
+            document.getElementById('tel-alpha').innerText = data.alpha.toFixed(1) + '°'; 
+            document.getElementById('tel-beta').innerText = data.beta.toFixed(1) + '°'; 
+            document.getElementById('tel-gamma').innerText = data.gamma.toFixed(1) + '°';
+            if(isCameraSyncing) applyHudRotation(gyroOffset[1], data.gamma, data.alpha);
+        }
+    };
+
+    function establishConnection(peerId) {
+        if(!isP2PConnected) {
+            isP2PConnected = true;
+            document.getElementById('p2pBox').innerHTML = `<div class="stat-row"><span>SIGNALING:</span><span style="color:var(--matrix-green);">CONNECTED (${peerId})</span></div><div class="stat-row"><span>UPLINK:</span><span style="color:var(--laser-cyan);">FULL SYNC</span></div>`;
+            log(`[P2P] Dual-Screen Setup gelocked met node ${peerId}.`, "ok");
+        }
+    }
+
+    // --- MAP & DATA SYNC ---
+    const map = L.map('trackerMap', { zoomControl: false, scrollWheelZoom: true }).setView([52.25, 5.21], 11);
+    const baseTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    
+    // V6.1: Voeg echte Leaflet Zoom Controls toe aan rechter onderkant
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    let layerControl = null; 
+    const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+    const topoMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+
+    let mersenneLayerGroup = L.layerGroup().addTo(map); 
+    let targetLayerGroup = L.layerGroup().addTo(map);
+    let ahnLayer = null; let mapOffset = [0.0, 0.0]; let baseCenter = map.getCenter();
+    let isRemoteMapSync = false;
+
+    map.on('move', () => {
+        if(!isCameraSyncing) baseCenter = map.getCenter(); 
+        const current = map.getCenter();
+        mapOffset = [(current.lng - baseCenter.lng) * 5.0, (current.lat - baseCenter.lat) * -5.0];
+        
+        if(isP2PConnected && !isRemoteMapSync) {
+            p2pChannel.postMessage({type: 'MAP', lat: current.lat, lng: current.lng, zoom: map.getZoom()});
+        }
+    });
+
+    function plotMersenneHexagon() {
+        mersenneLayerGroup.clearLayers(); 
+        const center = map.getCenter();
+        const r_step = 0.006; const latCorr = Math.cos(center.lat * Math.PI / 180); 
+        L.circleMarker(center, {radius: 5, color: '#ffb000', fillOpacity: 1}).addTo(mersenneLayerGroup);
+        for (let ring = 1; ring <= 6; ring++) {
+            for (let i = 0; i < 6 * ring; i++) {
+                const seg = i / ring; const c = Math.floor(seg); const t = seg - c; 
+                const a1 = c * (Math.PI / 3); const a2 = ((c + 1) % 6) * (Math.PI / 3);
+                const dx = r_step * ring * ((1-t)*Math.cos(a1) + t*Math.cos(a2)) / latCorr;
+                const dy = r_step * ring * ((1-t)*Math.sin(a1) + t*Math.sin(a2));
+                const col = ring === 6 ? '#ff00ff' : '#00e5ff'; 
+                L.circleMarker([center.lat + dy, center.lng + dx], {radius: 4, color: col, weight: 2, fillOpacity: 0.8}).addTo(mersenneLayerGroup);
+            }
+        }
+    }
+
+    // --- FULL SENSOR FUSION ENGINE ---
+    let gyroOffset = [0.0, 0.0]; let accelData = [0.0, 0.0, 0.0];
+    let lastGyro = { alpha: 0, beta: 0, gamma: 0 }; let gyroCalibration = { beta: null, gamma: null };
+    let isCameraSyncing = false; let targetPan = [0, 0]; let currentPan = [0, 0];
+    let lastSensorSyncTime = 0;
+
+    function calibrateGyro() {
+        gyroCalibration.beta = lastGyro.beta; gyroCalibration.gamma = lastGyro.gamma;
+        targetPan = [0, 0]; currentPan = [0, 0];
+        log("Sensoren gekalibreerd. Nulpunt vastgezet.", "ok");
+    }
+
+    function applyHudRotation(betaOffset, gamma, alpha) {
+        const hudHorizon = document.getElementById('hudHorizon');
+        const hudReticle = document.getElementById('hudReticle');
+        const hudCompass = document.getElementById('hudCompass');
+        if(hudHorizon) hudHorizon.style.transform = `translateY(${betaOffset * -150}px) rotate(${-gamma}deg)`;
+        if(hudReticle) {
+            hudReticle.style.transform = `translate(-50%, -50%) rotate(${alpha}deg)`;
+            let dir = "N";
+            if(alpha > 45 && alpha <= 135) dir = "E";
+            else if(alpha > 135 && alpha <= 225) dir = "S";
+            else if(alpha > 225 && alpha <= 315) dir = "W";
+            if(hudCompass) hudCompass.innerText = dir;
+        }
+    }
+
+    function handleOrientation(event) {
+        if(!event.beta || !event.gamma) return;
+        lastGyro = { alpha: event.alpha || 0, beta: event.beta, gamma: event.gamma };
+        let refBeta = gyroCalibration.beta !== null ? gyroCalibration.beta : 45.0;
+        let refGamma = gyroCalibration.gamma !== null ? gyroCalibration.gamma : 0.0;
+
+        document.getElementById('tel-alpha').innerText = lastGyro.alpha.toFixed(1) + '°';
+        document.getElementById('tel-beta').innerText = lastGyro.beta.toFixed(1) + '°';
+        document.getElementById('tel-gamma').innerText = lastGyro.gamma.toFixed(1) + '°';
+
+        let x = Math.max(-1.0, Math.min(1.0, (event.gamma - refGamma) / 45.0)); 
+        let y = Math.max(-1.0, Math.min(1.0, (event.beta - refBeta) / 45.0)); 
+        gyroOffset = [x, y];
+
+        if(isCameraSyncing) {
+            targetPan[0] = x * 12.0; targetPan[1] = -y * 12.0; 
+            applyHudRotation(y, event.gamma, lastGyro.alpha);
+        }
+
+        if(isP2PConnected) {
+            let now = performance.now();
+            if(now - lastSensorSyncTime > 33) {
+                p2pChannel.postMessage({type: 'SENSOR', gyro: gyroOffset, accel: accelData, alpha: lastGyro.alpha, beta: lastGyro.beta, gamma: lastGyro.gamma});
+                lastSensorSyncTime = now;
+            }
+        }
+    }
+
+    function handleMotion(event) {
+        if(event.accelerationIncludingGravity) {
+            const acc = event.accelerationIncludingGravity;
+            accelData = [acc.x || 0, acc.y || 0, acc.z || 0];
+            const totalG = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z) / 9.81;
+            document.getElementById('tel-accel').innerText = totalG.toFixed(2) + 'G';
+        }
+    }
+
+    function smoothPanLoop() {
+        if(isCameraSyncing && !isRemoteMapSync) {
+            currentPan[0] += (targetPan[0] - currentPan[0]) * 0.1;
+            currentPan[1] += (targetPan[1] - currentPan[1]) * 0.1;
+            if(Math.abs(currentPan[0]) > 0.05 || Math.abs(currentPan[1]) > 0.05) { map.panBy([currentPan[0], currentPan[1]], {animate: false}); }
+        }
+        requestAnimationFrame(smoothPanLoop);
+    }
+    smoothPanLoop(); 
+
+    async function requestSensors() {
+        let gGranted = false; let mGranted = false;
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try { const perm = await DeviceOrientationEvent.requestPermission(); if(perm === 'granted') gGranted = true; } catch(e) {}
+        } else { gGranted = true; }
+        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+            try { const perm = await DeviceMotionEvent.requestPermission(); if(perm === 'granted') mGranted = true; } catch(e) {}
+        } else { mGranted = true; }
+
+        if(gGranted) window.addEventListener('deviceorientation', handleOrientation);
+        if(mGranted) window.addEventListener('devicemotion', handleMotion);
+        if(gGranted || mGranted) log("Hardware sensoren actief.", "ok");
+    }
+
+    // --- OMNI-SHADER (WebGL) ---
+    const glCanvas = document.getElementById('glCanvas');
+    const gl = glCanvas.getContext('webgl');
+    const compile = (t, s) => { let sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); return sh; };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, document.getElementById('vertexShader').textContent));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, document.getElementById('fragmentShader').textContent));
+    gl.linkProgram(prog); gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
+    const pLoc = gl.getAttribLocation(prog, "position"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, 0, 0, 0);
+    
+    let shaderMode = 0; let mousePos = [0.5, 0.5]; 
+    let mirrorState = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; let polarState = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+
+    const mLoc = gl.getUniformLocation(prog, "u_mode");
+    const tLoc = gl.getUniformLocation(prog, "u_time");
+    const pMouse = gl.getUniformLocation(prog, "u_mouse");
+    const pMapOffset = gl.getUniformLocation(prog, "u_mapOffset"); 
+    const pGyro = gl.getUniformLocation(prog, "u_gyro");
+    const pAccel = gl.getUniformLocation(prog, "u_accel");
+    const pMirror = gl.getUniformLocation(prog, "u_mirrorState");
+    const pPolar = gl.getUniformLocation(prog, "u_polarState");
+    const zLabel = document.getElementById('z-label');
+
+    glCanvas.addEventListener('touchmove', (e) => {
+        if(e.touches.length > 0) {
+            const rect = glCanvas.getBoundingClientRect();
+            mousePos = [(e.touches[0].clientX - rect.left) / rect.width, 1.0 - ((e.touches[0].clientY - rect.top) / rect.height)];
+        }
+    }, {passive: true});
+    glCanvas.addEventListener('mousemove', (e) => {
+        const rect = glCanvas.getBoundingClientRect();
+        mousePos = [(e.clientX - rect.left) / rect.width, 1.0 - ((e.clientY - rect.top) / rect.height)];
+    });
+
+    function renderGL() {
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.uniform1f(tLoc, performance.now() / 1000);
+        gl.uniform1i(mLoc, shaderMode);
+        gl.uniform2f(pMouse, mousePos[0], mousePos[1]);
+        gl.uniform2f(pMapOffset, mapOffset[0], mapOffset[1]);
+        gl.uniform2f(pGyro, gyroOffset[0], gyroOffset[1]); 
+        gl.uniform3f(pAccel, accelData[0], accelData[1], accelData[2]); 
+        gl.uniform1fv(pMirror, mirrorState);
+        gl.uniform1fv(pPolar, polarState);
+        gl.drawArrays(gl.TRIANGLES, 0, 6); requestAnimationFrame(renderGL);
+    }
+    renderGL();
+
+    // --- DEPLOY & WEBRTC CAMERA ---
+    function copyUrl() { navigator.clipboard.writeText(targetUrl).then(() => log("URL gekopieerd.", "ok")); }
+    function runDeploy() {
+        log("Initiating Vercel Deployment...", "sys");
+        const bar = document.getElementById('pb-vercel'); const st = document.getElementById('st-vercel'); st.style.color = "var(--lithos-amber)";
+        let p = 0; const int = setInterval(() => { p += Math.random() * 25; if(p >= 100) { p = 100; clearInterval(int); st.innerText = "DEPLOYED"; st.style.color = "var(--matrix-green)"; log("Deploy Complete.", "ok"); } bar.style.width = p + "%"; }, 500);
+    }
+    function generateMobileQR() {
+        document.getElementById('qrContainer').style.display = "block"; 
+        document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(targetUrl)}&color=00ff41&bgcolor=050508`;
+        log("QR-Code Gegenereerd.", "ok");
+    }
+
+    function applyDoppler(r, b) {
+        document.querySelector('.doppler-red').style.opacity = r;
+        document.querySelector('.doppler-blue').style.opacity = b;
+        document.getElementById('val-red').innerText = Math.round(r*100) + "%";
+        document.getElementById('val-blue').innerText = Math.round(b*100) + "%";
+    }
+
+    let streamActive = false;
+    async function toggleSensorCam() {
+        const vid = document.getElementById('sensorCam'); const lines = document.getElementById('camScanlines');
+        if (!streamActive) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                vid.srcObject = stream; vid.style.display = 'block'; lines.style.display = 'block';
+                baseTileLayer.setOpacity(0.2); streamActive = true; 
+            } catch (err) { log(`WebRTC Fout: Camera toegang geweigerd.`, "err"); }
+        } else {
+            vid.srcObject?.getTracks().forEach(t => t.stop());
+            vid.style.display = 'none'; lines.style.display = 'none';
+            baseTileLayer.setOpacity(1.0); streamActive = false; isCameraSyncing = false; 
+            document.getElementById('mapsWrapper').classList.remove('sync-active');
+        }
+    }
+
+    function toggleCameraSync() {
+        isCameraSyncing = !isCameraSyncing;
+        const wrapper = document.getElementById('mapsWrapper');
+        if(isCameraSyncing) {
+            wrapper.classList.add('sync-active'); baseCenter = map.getCenter(); log("SENSOR FUSION LOCK AAN.", "sys");
+        } else {
+            wrapper.classList.remove('sync-active'); targetPan = [0, 0]; currentPan = [0, 0]; log("SENSOR FUSION LOCK UIT.", "sys");
+        }
+    }
+
+    // --- CLI PROCESSOR (AUTO-CORRECT & AI) ---
+    function executeCoreCommand(cmdRaw, fromPeer = false) {
+        let cmd = cmdRaw.toLowerCase().trim();
+        if(cmd.startsWith('vieuw ')) cmd = cmd.replace('vieuw ', 'view ');
+        if(cmd === 'import bodemkaart scan' || cmd === 'import bodemkaart') cmd = 'bodemkaart scan';
+        if(cmd === 'herken patroon' || cmd === 'scan patroon' || cmd === 'analyze') cmd = 'ai scan';
+
+        if(!fromPeer && isP2PConnected && cmd !== 'shift doppler' && cmd !== 'connect p2p') {
+            p2pChannel.postMessage({type: 'CMD', cmd: cmd});
+        }
+
+        if(cmd === 'ai bridge' || cmd === 'init ai') {
+            log("[AI] Neurale brug initialiseren...", "sys");
+            setTimeout(() => { log("[AI] Quantum-processors gesynchroniseerd.", "math"); }, 800);
+            setTimeout(() => { 
+                aiActive = true; log("[AI] Patroonherkenning Actief. Klaar voor input.", "ok"); 
+                document.getElementById('sysID').innerText += " | AI LINKED"; document.getElementById('sysID').style.color = "#ff00ff";
+            }, 1600);
+            return;
+        }
+        else if(cmd === 'ai scan') {
+            if(!aiActive) { log("FOUT: Neurale brug offline. Typ 'init ai' eerst.", "err"); return; }
+            log("[AI] Raster wordt geanalyseerd...", "sys");
+            setTimeout(() => log("[AI] Spectrale anomalie gedetecteerd in sub-laag 4.", "data"), 1000);
+            setTimeout(() => {
+                log("[AI] Mersenne-patroon match: 99.8%. Doel gemarkeerd.", "ok");
+                const c = map.getCenter(); 
+                L.circle(c, {radius: 400, color: '#ff00ff', fillOpacity: 0.2, weight: 2, dashArray: '5, 5'}).addTo(targetLayerGroup).bindPopup("AI Target Locked");
+            }, 2000);
+            return;
+        }
+        else if(cmd === 'help') {
+            log("--- AVAILABLE COMMANDS ---", "sys");
+            log("> import kaartproviders / bodemkaart scan", "cmd");
+            log("> plot mersenne / plot target / clear plotter", "cmd");
+            log("> view lidar / scan nebula / view cyclone / view droste / view resonantie", "cmd");
+            log("> enable sensors / calibrate sensor / sync camera", "cmd");
+            log("> mirror all / polarflip all / reset transforms", "cmd");
+            log("> connect p2p / reset ui / fullscreen on / fullscreen off", "cmd");
+            log("> init ai / ai scan", "cmd");
+            return;
+        }
+        
+        if(cmd === 'fullscreen on' || cmd === 'maximize') { toggleViewportMax(true); }
+        else if(cmd === 'fullscreen off' || cmd === 'minimize') { toggleViewportMax(false); }
+        else if(cmd === 'reset ui' || cmd === 'set single') { setRole('single'); return; }
+        else if(cmd === 'connect p2p') { log("P2P Handshake gestart...", "sys"); setRole('controls'); p2pChannel.postMessage({type: 'SYN', id: local_id}); }
+        else if(cmd === 'import kaartproviders') {
+            if(!layerControl) {
+                const baseMapProviders = { "VORTEX Dark": baseTileLayer, "Satelliet (Esri)": satellite, "Topografisch (Esri)": topoMap, "Standaard (OSM)": osm };
+                // V6.1: Map providers UI on the top-left
+                layerControl = L.control.layers(baseMapProviders, null, { position: 'topleft', collapsed: true }).addTo(map);
+                log("Kaartproviders geïmporteerd. UI-element (Links) toegevoegd.", "ok");
+            } else { log("Kaartproviders zijn al geladen.", "sys"); }
+        }
+        else if(cmd === 'deploy') { runDeploy(); }
+        else if(cmd === 'qr sync') { generateMobileQR(); }
+        else if(cmd === 'copy url') { copyUrl(); }
+        else if(cmd === 'plot mersenne' || cmd === 'plot hexagon') { plotMersenneHexagon(); log("[MATH] M_7 Hexagon berekend.", "math"); }
+        else if(cmd === 'clear plotter') { mersenneLayerGroup.clearLayers(); targetLayerGroup.clearLayers(); log("Plotter gereinigd.", "ok"); }
+        else if(cmd === 'plot target') { 
+            const c = map.getCenter(); L.circleMarker(c, {radius: 6, color: '#ff00ff', weight: 2, fillOpacity: 0.8}).addTo(targetLayerGroup).bindPopup("Target");
+            log(`Target geplot: [${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}]`, "ok");
+        }
+        else if(cmd === 'enable sensors' || cmd === 'request sensors') { toggleSensorCam(); requestSensors(); }
+        else if(cmd === 'calibrate sensor') { calibrateGyro(); }
+        else if(cmd === 'sync camera') { toggleCameraSync(); }
+        else if(cmd === 'view lidar') { shaderMode=1; zLabel.innerText = `Z-DOMAIN: LIDAR`; log("Z-Domain: LiDAR", "ok"); }
+        else if(cmd === 'view cyclone') { shaderMode=3; zLabel.innerText = `Z-DOMAIN: CYCLONES`; log("Z-Domain: Cyclones", "ok"); }
+        else if(cmd === 'view droste') { shaderMode=5; zLabel.innerText = `Z-DOMAIN: DROSTE`; log("Z-Domain: Droste", "ok"); }
+        else if(cmd === 'view resonantie') { shaderMode=6; zLabel.innerText = `Z-DOMAIN: RESONANCE`; log("Z-Domain: Resonance", "ok"); }
+        else if(cmd === 'bodemkaart scan') {
+            if(ahnLayer) { map.removeLayer(ahnLayer); ahnLayer = null; log("Bodemkaart uit.", "sys"); }
+            else { ahnLayer = L.tileLayer.wms("https://service.pdok.nl/bzk/bro-bodemkaart/wms/v1_0?", { layers: 'bodemkaart', format: 'image/png', transparent: true, opacity: 0.6, version: '1.3.0', crossOrigin: 'anonymous' }); ahnLayer.addTo(map); log("Bodemkaart aan.", "data");}
+        }
+        else if(cmd === 'shift doppler') {
+            if(!fromPeer) {
+                const r = Math.random(); const b = 1 - r; applyDoppler(r, b);
+                if(isP2PConnected) p2pChannel.postMessage({type: 'DOPPLER', r: r, b: b});
+                log("Doppler frequentie-verschuiving toegepast.", "sys");
+            }
+        }
+        else if(cmd.startsWith('mirror all')) {
+            mirrorState = mirrorState.map(v => v === 1.0 ? 0.0 : 1.0); 
+            document.getElementById('st-mir').innerText = mirrorState[0] > 0.5 ? "ACTIVE" : "OFF";
+            document.getElementById('st-mir').style.color = mirrorState[0] > 0.5 ? "var(--droste-purple)" : "#666";
+            log("Mirror toegepast.", "sys");
+        }
+        else if(cmd.startsWith('polarflip all')) {
+            polarState = polarState.map(v => v === 1.0 ? 0.0 : 1.0); 
+            document.getElementById('st-pol').innerText = polarState[0] > 0.5 ? "ACTIVE" : "OFF";
+            document.getElementById('st-pol').style.color = polarState[0] > 0.5 ? "var(--droste-purple)" : "#666";
+            log("Polaire Inversie toegepast.", "sys");
+        }
+        else if(cmd === 'reset transforms') {
+            mirrorState = [0.0,0.0,0.0,0.0,0.0,0.0]; polarState = [0.0,0.0,0.0,0.0,0.0,0.0];
+            document.getElementById('st-mir').innerText = "OFF"; document.getElementById('st-pol').innerText = "OFF";
+            log("Transformaties gereset.", "sys");
+        }
+        else if(cmd === 'clear') {
+            mersenneLayerGroup.clearLayers(); targetLayerGroup.clearLayers(); 
+            mirrorState = [0.0,0.0,0.0,0.0,0.0,0.0]; polarState = [0.0,0.0,0.0,0.0,0.0,0.0];
+            document.getElementById('st-mir').innerText = "OFF"; document.getElementById('st-pol').innerText = "OFF";
+            document.getElementById('termOut').innerHTML = ''; shaderMode=0; zLabel.innerText = `Z-DOMAIN: STRATIGRAFIE`;
+        }
+        else if(!fromPeer && cmd !== "") log(`Commando '${cmdRaw}' niet herkend. Typ 'help'.`, 'err');
+    }
+
+    function processCommand(input) {
+        if(!input) return;
+        log(`vortex@omni:~# ${input}`, 'cmd'); 
+        executeCoreCommand(input, false);
+    }
+    
+    document.getElementById('cliInput').addEventListener('keydown', (e) => { 
+        if(e.key === 'Enter') { processCommand(e.target.value); e.target.value = ''; } 
+    });
+
+    log(`VORTEX Omni-Core v6.1 (UI-Ergonomics) Opgestart.`, 'ok');
+    log(`Typ 'help' voor een lijst met commando's.`, 'sys');
+</script>
+</body>
+</html>

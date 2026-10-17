@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS v157.0 // Universele Planimeter Achtergrond I/O, King Wen 64×64, Zonnewijzer & Boomstructuur</title>
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="assets/assets_manifest.js" defer onerror="window.VORTEX_LATEST_ADDED = [];"></script>
+    <style>
+        :root, [data-theme="dark"] {
+            --bg: #050608;
+            --panel: #0a0e17;
+            --surface: #111927;
+            --border: #1e2d42;
+            --main: #00ffcc;
+            --mg-glow: #50ffb0;
+            --mg-white: #e6fff7;
+            --neg-glow: #ff3385;
+            --ai-glow: #00a2ff;
+            --gold: #ffcc33;
+            --purple: #a855f7;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --grid-fine: rgba(0, 210, 255, 0.14);
+            --grid-major: rgba(0, 210, 255, 0.30);
+            --font-mono: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+            --ui-scale: 1;
+            --col1-w: 355px;
+            --col2-w: 405px;
+            --log-h: 120px;
+        }
+
+        [data-theme="light"] {
+            --bg: #f1f5f9; --panel: #ffffff; --surface: #e2e8f0; --border: #cbd5e1;
+            --main: #0284c7; --mg-glow: #059669; --mg-white: #0f172a; --neg-glow: #e11d48;
+            --ai-glow: #2563eb; --gold: #b45309; --purple: #7c3aed; --text: #0f172a; --text-muted: #475569;
+        }
+
+        [data-theme="daylight"] {
+            --bg: #f4ecd8; --panel: #fbf6e9; --surface: #eaddc0; --border: #c8b48a;
+            --main: #0d5c75; --mg-glow: #1b7340; --mg-white: #2c221e; --neg-glow: #b91c1c;
+            --ai-glow: #1d4ed8; --gold: #9a5b06; --purple: #6d28d9; --text: #2c221e; --text-muted: #6e5a47;
+        }
+
+        [data-theme="nightlight"] {
+            --bg: #090202; --panel: #140505; --surface: #220808; --border: #451010;
+            --main: #ff4500; --mg-glow: #ff7733; --mg-white: #ffccb3; --neg-glow: #ff0055;
+            --ai-glow: #ff8800; --gold: #ffaa00; --purple: #cc3366; --text: #ff9966; --text-muted: #aa5533;
+        }
+
+        * { box-sizing: border-box; -webkit-user-drag: none; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--ai-glow); border-radius: 10px; }
+
+        body {
+            margin: 0; padding: 0; width: 100vw; height: 100vh;
+            background: var(--bg); color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            overflow: hidden; user-select: none;
+            display: flex; flex-direction: column;
+        }
+
+        #app-scale-root {
+            width: calc(100vw / var(--ui-scale));
+            height: calc(100vh / var(--ui-scale));
+            transform: scale(var(--ui-scale));
+            transform-origin: top left;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            height: 46px; border-bottom: 1px solid var(--border); background: var(--panel);
+            display: flex; align-items: center; padding: 0 12px; justify-content: space-between;
+            gap: 8px; z-index: 40; flex-shrink: 0;
+        }
+
+        .brand-cluster { display: flex; align-items: center; gap: 8px; font-weight: bold; font-size: 0.76rem; }
+        .page-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+        .tab-btn {
+            background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
+            padding: 4px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.56rem;
+            cursor: pointer; font-weight: bold;
+        }
+        .tab-btn:hover, .tab-btn.active { border-color: var(--main); color: var(--main); background: rgba(0,255,204,0.12); }
+
+        .workspace-shell { flex: 1; display: flex; width: 100%; min-height: 0; overflow: hidden; background: var(--bg); }
+        .column { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+        #col-left { width: var(--col1-w); min-width: 220px; max-width: 580px; flex-shrink: 0; }
+        #col-mid  { width: var(--col2-w); min-width: 250px; max-width: 650px; flex-shrink: 0; }
+        #col-right { flex: 1; min-width: 320px; }
+
+        .v-splitter {
+            width: 6px; cursor: col-resize; background: var(--panel);
+            border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 25;
+            touch-action: none; font-size: 10px; color: var(--text-muted);
+        }
+        .h-splitter {
+            height: 6px; cursor: row-resize; background: var(--panel);
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 25;
+            touch-action: none; font-size: 10px; color: var(--text-muted);
+        }
+        .v-splitter:hover, .h-splitter:hover { background: var(--main); color: #000; }
+
+        .col-header {
+            padding: 6px 10px; font-size: 0.59rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid var(--border); background: var(--panel); letter-spacing: 0.8px;
+            color: var(--ai-glow); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+
+        .scroll-pane { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+
+        .hud-box {
+            background: var(--panel); border: 1px solid var(--border);
+            border-radius: 5px; padding: 6px 8px; font-family: var(--font-mono); font-size: 0.58rem;
+            display: flex; flex-direction: column;
+        }
+        .hud-box.collapsed > .hud-body { display: none !important; }
+        .hud-box.maximized-win {
+            position: fixed !important; inset: 50px 10px 10px 10px !important;
+            width: auto !important; height: auto !important; z-index: 2500 !important; overflow-y: auto !important;
+        }
+
+        .hud-title {
+            color: var(--gold); font-size: 0.58rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 204, 51, 0.22); padding-bottom: 3px; margin-bottom: 5px;
+            display: flex; justify-content: space-between; align-items: center; gap: 4px;
+        }
+        .win-ctrl {
+            background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+            width: 18px; height: 16px; border-radius: 3px; font-size: 0.52rem; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; padding: 0;
+        }
+        .win-ctrl:hover { border-color: var(--main); color: var(--main); }
+
+        .kv { display: flex; justify-content: space-between; margin: 1.5px 0; }
+        .kv span:first-child { color: var(--text-muted); }
+        .kv span:last-child { color: var(--main); font-weight: bold; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; margin-top: 4px; }
+        .btn, select.vortex-select, input.vortex-inp {
+            background: var(--surface); color: var(--text); border: 1px solid var(--border);
+            border-radius: 3px; padding: 4px 5px; font-size: 0.55rem; font-family: var(--font-mono);
+            cursor: pointer; font-weight: bold;
+        }
+        select.vortex-select, input.vortex-inp { width: 100%; text-align: left; margin-bottom: 4px; cursor: text; }
+        .btn:hover { border-color: var(--main); color: var(--main); }
+        .btn.active { background: rgba(0, 255, 204, 0.2); border-color: var(--main); color: var(--main); }
+        .btn-home { background: rgba(255, 204, 51, 0.16); border-color: var(--gold); color: var(--gold); }
+        .btn-stop { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
+        .btn-start { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #6ee7b7; }
+        .btn-neg { background: rgba(255, 51, 133, 0.2); border-color: var(--neg-glow); color: #ff99c2; }
+        .btn-op { background: rgba(0, 162, 255, 0.14); border-color: var(--ai-glow); color: var(--ai-glow); }
+        .btn-mg { background: rgba(80, 255, 176, 0.15); border-color: var(--mg-glow); color: var(--mg-glow); }
+
+        .io-dropzone {
+            border: 1px dashed var(--mg-glow); background: rgba(80, 255, 176, 0.05);
+            border-radius: 4px; padding: 7px; text-align: center; cursor: pointer;
+            font-size: 0.55rem; color: var(--text); margin-bottom: 5px;
+        }
+        .io-dropzone:hover, .io-dropzone.dragover { background: rgba(80, 255, 176, 0.18); border-color: var(--gold); }
+
+        textarea.code-io-box {
+            width: 100%; height: 64px; background: var(--surface); color: var(--mg-glow);
+            border: 1px solid var(--border); border-radius: 3px; padding: 5px;
+            font-family: var(--font-mono); font-size: 0.54rem; resize: vertical; outline: none;
+        }
+
+        /* Boomstructuur & Laatst Toegevoegd Lijst */
+        .tree-box {
+            max-height: 165px; overflow-y: auto; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 3px; padding: 4px; margin-top: 3px;
+        }
+        .tree-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 2.5px 4px; border-bottom: 1px dashed rgba(148,163,184,0.12);
+            cursor: pointer; font-size: 0.54rem;
+        }
+        .tree-item:hover { background: rgba(0, 255, 204, 0.12); color: var(--main); }
+        .badge-new { background: rgba(80,255,176,0.2); color: var(--mg-glow); border: 1px solid var(--mg-glow); padding: 0 4px; border-radius: 3px; font-size: 0.48rem; }
+
+        /* 64x64 Change Map & King Wen 64 Mini-Matrix */
+        .kw64-mini-grid {
+            display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; margin-top: 4px;
+        }
+        .kw-cell {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 2px;
+            padding: 2px; text-align: center; font-size: 0.48rem; cursor: pointer;
+        }
+        .kw-cell:hover, .kw-cell.active { border-color: var(--gold); background: rgba(255,204,51,0.2); }
+
+        .matrix-grid-wrap { max-height: 135px; overflow-y: auto; border: 1px solid var(--border); border-radius: 3px; background: var(--surface); margin-top: 4px; }
+        table.mat-table { width: 100%; border-collapse: collapse; font-size: 0.53rem; text-align: right; font-family: var(--font-mono); }
+        table.mat-table th { position: sticky; top: 0; background: var(--panel); color: var(--gold); padding: 2.5px 4px; border-bottom: 1px solid var(--border); text-align: right; z-index: 2; }
+        table.mat-table th:first-child, table.mat-table td:first-child { text-align: left; }
+        table.mat-table td { padding: 2px 4px; border-bottom: 1px solid rgba(148,163,184,0.1); }
+        table.mat-table tr:hover { background: rgba(0, 255, 204, 0.12); cursor: pointer; }
+        table.mat-table tr.sim-active-row { background: rgba(80, 255, 176, 0.25) !important; font-weight: bold; }
+
+        .vernier-drums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 4px 0; text-align: center; }
+        .drum-card { background: var(--surface); border: 1px solid var(--gold); border-radius: 4px; padding: 3px 2px; cursor: pointer; }
+        .drum-card small { display: block; font-size: 0.48rem; color: var(--text-muted); }
+        .drum-card strong { font-size: 0.82rem; color: var(--gold); }
+
+        .dual-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; align-items: center; }
+        .mini-lbl { font-size: 0.51rem; color: var(--text-muted); display: flex; justify-content: space-between; }
+
+        /* VIEWPORT STACK: 1. MAPGLOBE -> 2. ACHTERGROND CANVAS (BITMAP/KML/64x64/ZONNEWIJZER) -> 3. SVG PLANIMETER */
+        .viewport-frame { flex: 1; background: var(--bg); position: relative; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+        #svg-stage {
+            flex: 1; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; position: relative; perspective: 1200px; min-height: 0;
+            background: radial-gradient(circle at center, rgba(16, 26, 46, 0.5) 0%, var(--bg) 100%);
+        }
+        #mapglobe-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.80; }
+        #mapglobe-bg.interactive-globe { pointer-events: auto !important; z-index: 4; cursor: grab; }
+        #custom-grid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+        #geo-svg { position: relative; z-index: 3; width: 100%; height: 100%; cursor: crosshair; background: transparent; touch-action: none; }
+
+        .viewport-hud-overlay {
+            position: absolute; top: 8px; left: 10px; pointer-events: none;
+            font-family: var(--font-mono); font-size: 0.56rem; color: var(--main);
+            background: rgba(5, 8, 15, 0.88); border: 1px solid var(--border);
+            padding: 6px 9px; border-radius: 4px; line-height: 1.38; z-index: 10;
+        }
+        .viewport-QuickActions { position: absolute; top: 8px; right: 10px; display: flex; gap: 4px; z-index: 12; flex-wrap: wrap; }
+
+        .key-bar {
+            position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 3px; align-items: center; z-index: 14;
+            background: var(--panel); border: 1px solid var(--border);
+            padding: 3px 7px; border-radius: 5px; font-family: var(--font-mono); font-size: 0.52rem; white-space: nowrap;
+        }
+        .kbd-key {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 18px; padding: 0 4px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 3px; color: var(--text); font-weight: bold; cursor: pointer;
+        }
+        .kbd-key.mg-active { background: var(--mg-glow); color: #000; }
+
+        .cockpit-controls {
+            padding: 6px 12px; background: var(--panel); border-top: 1px solid var(--border); z-index: 20;
+            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; flex-shrink: 0;
+        }
+        .slider-box { display: flex; flex-direction: column; gap: 2px; }
+        .slider-info { display: flex; justify-content: space-between; font-size: 0.53rem; color: var(--main); font-family: var(--font-mono); }
+        input[type="range"] { width: 100%; accent-color: var(--main); height: 4px; cursor: pointer; }
+
+        #logbook-pane { height: var(--log-h); min-height: 28px; max-height: 45vh; background: var(--panel); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+        #logbook-list { flex: 1; overflow-y: auto; padding: 4px 10px; font-family: var(--font-mono); font-size: 0.54rem; line-height: 1.38; }
+        .log-row { border-bottom: 1px dashed rgba(148,163,184,0.12); padding: 1.5px 0; display: flex; gap: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="app-scale-root">
+    <!-- BOVENBALK -->
+    <header>
+        <div class="brand-cluster">
+            <span>🧭 VORTEX <span style="color:var(--main)">OS v157.0 (OMNI-I/O)</span></span>
+            <div class="page-tabs">
+                <button class="tab-btn active" onclick="selectTreeBranch('ALL', this)">📂 ALLE MAPPEN</button>
+                <button class="tab-btn" onclick="selectTreeBranch('LATEST', this)">🕒 LAATST TOEGEVOEGD</button>
+                <button class="tab-btn" onclick="selectTreeBranch('NEBRA', this)">🌌 NEBRA (1-3)</button>
+                <button class="tab-btn" onclick="selectTreeBranch('REIMERSWAAL', this)">🏛️ REIMERSWAAL (Notion 2.5)</button>
+                <button class="tab-btn" onclick="selectTreeBranch('OVER_ONS', this)">⚖️ BELEID / BEHEER / ANNEROSE</button>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:4px; align-items:center;">
+            <button class="btn" onclick="setThemeMode('light')">☀️ Helder</button>
+            <button class="btn active" onclick="setThemeMode('dark')">🌑 Donker</button>
+            <button class="btn" onclick="setThemeMode('daylight')">🌤️ Daglicht</button>
+            <button class="btn" onclick="setThemeMode('nightlight')">🔴 Nacht</button>
+            <div style="display:flex; align-items:center; gap:3px; padding:2px 5px; border:1px solid var(--border); border-radius:4px; font-family:var(--font-mono); font-size:0.54rem;">
+                <span>🔍</span>
+                <input type="range" min="0.75" max="1.35" step="0.05" value="1.00" style="width:48px;" oninput="setGlobalUiScale(this.value)">
+                <strong id="lbl-ui-scale" style="color:var(--gold)">100%</strong>
+            </div>
+            <div id="clock" style="font-family:var(--font-mono); color:var(--main); font-size:0.66rem; font-weight:bold;">11:14:00</div>
+        </div>
+    </header>
+
+    <div class="workspace-shell">
+
+        <!-- ========================================================================= -->
+        <!-- KOLOM 1: UNIVERSEEL PLANIMETER ACHTERGROND INVOERVAK & BOOMSTRUCTUUR      -->
+        <!-- ========================================================================= -->
+        <section class="column" id="col-left">
+            <div class="col-header">
+                <span>1. Universele Planimeter Achtergrond I/O</span>
+                <span style="color:var(--mg-glow)">JPEG•BMP•KML•SVG•TXT</span>
+            </div>
+            <div class="scroll-pane">
+
+                <!-- A. UNIVERSEEL ACHTERGROND INVOERVAK & UPLOADER -->
+                <div class="hud-box" id="win-UNIV-IO" style="border-color: var(--mg-glow);">
+                    <div class="hud-title" style="color:var(--mg-glow);">
+                        <span>📥 Universeel Achtergrond Invoervak (Planimeter)</span>
+                        <button class="win-ctrl" onclick="winAction('win-UNIV-IO','collapse')">—</button>
+                    </div>
+                    <div class="hud-body">
+                        <!-- Multi-format file input -->
+                        <input type="file" id="univ-file-input" accept=".jpg,.jpeg,.png,.bmp,.webp,.gif,.svg,.kml,.geojson,.json,.txt,.csv,.sce,.stl,.html" multiple style="display:none;" onchange="handleUniversalFileUpload(this.files)">
+                        <div class="io-dropzone" id="io-dropzone" onclick="document.getElementById('univ-file-input').click()">
+                            📂 <b>Sleep of Klik voor Upload onder Planimeter-Arm</b><br>
+                            <span style="font-size:0.49rem; color:var(--text-muted);">Ondersteunt: <b>JPEG, PNG, BMP (Bitmap), WebP, SVG-code, KML, GeoJSON, CSV, TXT, STL</b> + Klembord Plakken (Ctrl+V)</span>
+                        </div>
+
+                        <!-- Invoervak voor directe SVG-code, KML-code, Base64 Bitmap, Matrix-TXT of Externe URL -->
+                        <div class="mini-lbl">
+                            <span>Plak hier SVG-code, KML-XML, TXT/CSV, Data-URI of URL:</span>
+                            <span style="color:var(--gold); cursor:pointer;" onclick="clearBackgroundCodeBox()">[Wis]</span>
+                        </div>
+                        <textarea id="bg-code-input" class="code-io-box" placeholder="<svg>...</svg> of <?xml ...><kml>...</kml> of https://.../kaart.jpg of X,Y,Theta matrix..."></textarea>
+
+                        <div class="btn-grid-3">
+                            <button class="btn btn-mg" onclick="injectCodeOrUrlToBackground()">🚀 Projecteer op Achtergrond</button>
+                            <button class="btn btn-op" onclick="startWebRTCCameraBackground()">📹 Camera als Achtergrond</button>
+                            <button class="btn btn-home" onclick="recalculateAllLoadedImages()">🔬 Bereken Alle Beelden Uit</button>
+                        </div>
+
+                        <!-- Presets van de 3 nieuw toegevoegde beelden (King Wen 64, 64x64 Change Map, 60/360 Zonnewijzer) -->
+                        <div class="mini-lbl" style="margin-top:5px;"><span>Synthetische Reconstructie van de 3 Nieuwe Beelden Eronder:</span></div>
+                        <select class="vortex-select" id="sel-bg-preset" onchange="setSyntheticBackgroundMode(this.value)">
+                            <option value="radial_sundial_60_360">☀️ Beeld 3: Dubbele Radiale 60/360 Sector-Zonnewijzer (Klokstappen)</option>
+                            <option value="change_map_64x64">🟦 Beeld 2: 64×64 Hexagram Change Map (Hinge Duograms × Wuxing)</option>
+                            <option value="king_wen_64_chain">☯️ Beeld 1: King Wen 64 Exact Chain Helper (H → N → N² → t)</option>
+                            <option value="cellarius_hex">✡️ Cellarius √3 (60°) Hexagonaal & Polair 0,5cm Grid</option>
+                            <option value="nautical_rose">⚓ Maritieme Zeekaart Kompasroos (32 streken)</option>
+                        </select>
+
+                        <!-- Achtergrond Kalibratie Sliders -->
+                        <div class="dual-sliders">
+                            <div>
+                                <div class="mini-lbl"><span>Achtergrond Schaal</span><span id="lbl-bg-scale">100%</span></div>
+                                <input type="range" min="20" max="250" value="100" id="sl-bg-scale" oninput="updateBgTransform()">
+                            </div>
+                            <div>
+                                <div class="mini-lbl"><span>Achtergrond Rotatie</span><span id="lbl-bg-rot">0°</span></div>
+                                <input type="range" min="0" max="360" value="0" id="sl-bg-rot" oninput="updateBgTransform()">
+                            </div>
+                        </div>
+                        <div class="dual-sliders" style="margin-top:3px;">
+                            <div>
+                                <div class="mini-lbl"><span>Beeld / Grid Alpha</span><span id="lbl-bg-alpha">80%</span></div>
+                                <input type="range" min="0" max="100" value="80" id="sl-bg-alpha" oninput="updateBgTransform()">
+                            </div>
+                            <div>
+                                <div class="mini-lbl"><span>3D MapGlobe Alpha</span><span id="lbl-globe-alpha">75%</span></div>
+                                <input type="range" min="0" max="100" value="75" id="sl-globe-alpha" oninput="setGlobeOpacity(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- ALLE UITVOER MOGELIJKHEDEN (EXPORT) -->
+                        <div class="mini-lbl" style="margin-top:5px; color:var(--gold);"><span>📤 Alle Uitvoer & Export Mogelijkheden:</span></div>
+                        <div class="btn-grid-3">
+                            <button class="btn btn-op" onclick="exportAllFormats('png')">🖼️ PNG Snapshot</button>
+                            <button class="btn btn-op" onclick="exportAllFormats('bmp')">🏁 Bitmap (.BMP)</button>
+                            <button class="btn btn-op" onclick="exportAllFormats('svg')">📐 Vector (.SVG)</button>
+                            <button class="btn btn-op" onclick="exportAllFormats('kml')">🌍 Google KML</button>
+                            <button class="btn btn-op" onclick="exportAllFormats('geojson')">🗺️ GeoJSON</button>
+                            <button class="btn btn-op" onclick="exportAllFormats('csv')">📊 CSV + Scilab</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B. BEELD-DOORREKENING & AUTOMATISCHE ANKER-EXTRACTIE -->
+                <div class="hud-box" id="win-IMG-CALC" style="border-color: var(--gold);">
+                    <div class="hud-title">
+                        <span>🔬 Beeld-Doorrekening & Auto-Ankers (Ott Nr. 573)</span>
+                        <span id="img-calc-badge" style="color:var(--mg-glow)">8 BEELDEN GEKALIBREERD</span>
+                    </div>
+                    <div class="hud-body">
+                        <div class="kv"><span>Actief Beeld / Formaat:</span><span id="ic-name">55497649814_KW64.png (2048×2048)</span></div>
+                        <div class="kv"><span>Fysieke Maat (40 px/cm):</span><span id="ic-dim">51,20 × 51,20 cm (2621,4 cm²)</span></div>
+                        <div class="kv"><span>Planimeter Nonius & Diagonaal:</span><span id="ic-nonius" style="color:var(--gold)">26214 nonius | ∠ 45,00°</span></div>
+                        <div class="kv"><span>Optisch Zwaartepunt (x̄, ȳ):</span><span id="ic-centroid">[+0,14, -0,08] cm (Helderheid 48%)</span></div>
+                        <div class="kv"><span>Wuxing / Kleur-Dominantie:</span><span id="ic-wuxing" style="color:var(--mg-glow)">Aarde (Geel) 34% • Hout (Groen) 26%</span></div>
+                        <div class="kv"><span>Gedetecteerde Anker-Pieken:</span><span id="ic-anchors">8 hoog-contrast ankers → Matrix M</span></div>
+                    </div>
+                </div>
+
+                <!-- C. BOOMSTRUCTUUR MAPPEN & METHODE: LAATST TOEGEVOEGD -->
+                <div class="hud-box" id="win-TREE-LATEST" style="border-color: var(--ai-glow);">
+                    <div class="hud-title" style="color:var(--ai-glow);">
+                        <span>🌳 Boomstructuur & Methode: Laatst Toegevoegd</span>
+                        <span id="lbl-tree-count" style="color:var(--gold)">LIVE SYNC</span>
+                    </div>
+                    <div class="hud-body">
+                        <div style="display:flex; gap:4px; margin-bottom:4px;">
+                            <input type="text" id="tree-filter" class="vortex-inp" style="margin:0;" placeholder="Zoek in NEBRA, Reimerswaal, Annerose, KML..." oninput="renderBoomstructuur()">
+                            <button class="btn btn-mg" onclick="sortTreeByLatest()">🕒 Nieuwste</button>
+                        </div>
+                        <div class="tree-box" id="boomstructuur-list"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="v-splitter" id="vSplit1">⋮</div>
+
+        <!-- ========================================================================= -->
+        <!-- KOLOM 2: KING WEN 64×64, KLOKSTAPPEN / ZONNEWIJZER, MATRIX & API MODULE   -->
+        <!-- ========================================================================= -->
+        <section class="column" id="col-mid">
+            <div class="col-header">
+                <span>2. Geodetische & Astronomische Dashboard Modules</span>
+                <span id="sim-status" style="color:var(--mg-glow)">KLOKSTAP // LOCK</span>
+            </div>
+            <div class="scroll-pane">
+
+                <!-- MODULE 1: KLOKSTAPPEN (MERCURIUS) & ZONNEWIJZER (UIT HANDGESCHREVEN NOTITIE) -->
+                <div class="hud-box" id="win-MOD-SUNDIAL" style="border-color: var(--gold);">
+                    <div class="hud-title">
+                        <span>☀️ Module 1 & 2: Klokstappen (Mercurius) & Zonnewijzer</span>
+                        <span id="lbl-sundial-time" style="color:var(--main)">15 OKT 20:15</span>
+                    </div>
+                    <div class="hud-body">
+                        <div class="kv"><span>1. Klokstap Mercurius (15 okt):</span><span id="mod-merc-lock" style="color:var(--neg-glow)">Az 245,91° WZW | Hoogte -4,20°</span></div>
+                        <div class="kv"><span>2. Zonnewijzer Gnomon Schaduw:</span><span id="mod-sundial-az" style="color:var(--gold)">Uurhoek +15,0°/u | Schaduw 65,91° ONO</span></div>
+                        <div class="kv"><span>Aldebaran / Taurus Counter-Anker:</span><span style="color:var(--ai-glow)">Az 51,40° NO | Hoogte -3,70° (Δ=0,48°)</span></div>
+                        <div class="kv"><span>Dubbele Radiale 60/360 Sector:</span><span id="mod-radial-sec">Jiazi #33 (Bing-Shen) • Substraal 4/6</span></div>
+
+                        <div class="dual-sliders" style="margin-top:4px;">
+                            <div>
+                                <div class="mini-lbl"><span>Klokstap (Tijd / Uurhoek)</span><span id="lbl-clock-step">20:15u</span></div>
+                                <input type="range" min="0" max="1440" step="5" value="1215" id="sl-clock-step" oninput="updateSundialAndClockStep(this.value)">
+                            </div>
+                            <div>
+                                <div class="mini-lbl"><span>Mercurius Elevatie</span><span id="lbl-merc-elev">-4,2°</span></div>
+                                <input type="range" min="-25" max="45" step="0.1" value="-4.2" oninput="document.getElementById('lbl-merc-elev').textContent=this.value+'°'">
+                            </div>
+                        </div>
+
+                        <div class="btn-grid-3" style="margin-top:4px;">
+                            <button class="btn btn-home" onclick="lockClockTo15Oct()">🎯 Lock 15 Okt (-4,2°)</button>
+                            <button class="btn btn-mg" onclick="lockClockToEclipse2026()">🌑 Eclips 12 Aug '26</button>
+                            <button class="btn btn-op" onclick="setSyntheticBackgroundMode('radial_sundial_60_360')">☀️ Toon Zonnewijzer</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE 2: KING WEN 64 EXACT CHAIN HELPER & 64×64 HINGE DUOGRAM CHANGE MAP -->
+                <div class="hud-box" id="win-MOD-KW64" style="border-color: var(--purple);">
+                    <div class="hud-title" style="color:var(--purple);">
+                        <span>☯️ King Wen 64 Chain (H→N→N²) & 64×64 Hinge Map</span>
+                        <span id="kw-wuxing-pill" style="color:var(--gold)">VUUR / METAAL</span>
+                    </div>
+                    <div class="hud-body">
+                        <div class="kv"><span>Primair Hexagram (Ben Gua H):</span><span id="kw-ben">KW #43 Guai (111110) • Metaal</span></div>
+                        <div class="kv"><span>Nucleair Pad (H → N(H) → N²(H)):</span><span id="kw-chain" style="color:var(--gold)">111110 → 111111 → 111111 (t = 11)</span></div>
+                        <div class="kv"><span>Secundair Hexagram (Zhi Gua):</span><span id="kw-zhi">KW #35 Jin (000101) • Vuur</span></div>
+                        <div class="kv"><span>Lijnen 3–4 Hinge Duogram Klasse:</span><span id="kw-hinge">Rij-Hinge [11] × Kolom-Hinge [01] (1/16)</span></div>
+                        <div class="kv"><span>64×64 Wuxing Interactie:</span><span id="kw-relation" style="color:var(--neg-glow)">🟥 Controlling (Xiang Ke: Vuur → Metaal)</span></div>
+
+                        <!-- Klikbare 16 Structurele Hinge Klassen (4x4: 00, 01, 10, 11) -->
+                        <div class="btn-grid-4" style="margin-top:4px;">
+                            <button class="btn" onclick="selectHingeDuogram('00')" style="border-color:#a855f7;">Hinge 00 (Kun)</button>
+                            <button class="btn" onclick="selectHingeDuogram('01')" style="border-color:#eab308;">Hinge 01 (WeiJi)</button>
+                            <button class="btn" onclick="selectHingeDuogram('10')" style="border-color:#50ffb0;">Hinge 10 (JiJi)</button>
+                            <button class="btn" onclick="selectHingeDuogram('11')" style="border-color:#f97316;">Hinge 11 (Qian)</button>
+                        </div>
+                        <div class="kw64-mini-grid" id="kw64-selector-grid"></div>
+                    </div>
+                </div>
+
+                <!-- MODULE 3: MATRIX SIMULATOR, OPERATOREN & SANITIZER -->
+                <div class="hud-box" id="win-MOD-MATRIX" style="border-color: var(--mg-glow);">
+                    <div class="hud-title" style="color:var(--mg-glow);">
+                        <span>🎛️ Matrix Simulator & Operator Tools (<span id="lbl-mat-dim">8×7</span>)</span>
+                        <span id="lbl-sim-step" style="color:var(--gold)">Rij #1</span>
+                    </div>
+                    <div class="hud-body">
+                        <div class="btn-grid-4">
+                            <button class="btn btn-start" id="btn-sim-play" onclick="toggleMatrixSimulator()">▶️ Simuleer</button>
+                            <button class="btn btn-op" onclick="stepMatrixSimulator(-1)">⏮️ Vorige</button>
+                            <button class="btn btn-op" onclick="stepMatrixSimulator(1)">⏭️ Volgende</button>
+                            <button class="btn btn-stop" onclick="stopPlanimeterArm()">🛑 Stop [S]</button>
+                        </div>
+                        <div class="btn-grid-4" style="margin-top:4px;">
+                            <button class="btn btn-home" onclick="applyMatrixOperator('flatten0')">P̂_0 Plat</button>
+                            <button class="btn btn-neg" onclick="applyMatrixOperator('invert_origin')">Î_-1 Oorspr.</button>
+                            <button class="btn btn-mg" onclick="applyMatrixOperator('hinge_involute')">Ĝ Scharnier</button>
+                            <button class="btn btn-mg" onclick="applyMatrixOperator('nuclear_hugua')">N̂ Hu Gua</button>
+                        </div>
+                        <div class="matrix-grid-wrap">
+                            <table class="mat-table">
+                                <thead>
+                                    <tr><th>Anker / Beeld</th><th>X</th><th>Y</th><th>θ (°)</th><th>ρ</th><th>Nonius</th><th>H (6-bit)</th></tr>
+                                </thead>
+                                <tbody id="matrix-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODULE 4: API CONNECTOR HUB & GITHUB / CONSTRUCTIES -->
+                <div class="hud-box" id="win-MOD-API" style="border-color: var(--ai-glow);">
+                    <div class="hud-title" style="color:var(--ai-glow);">
+                        <span>🔌 Open Geodetische APIs & GitHub Constructies</span>
+                        <span style="color:var(--mg-glow)">ZONDER KEY</span>
+                    </div>
+                    <div class="hud-body">
+                        <div class="btn-grid">
+                            <button class="btn btn-op" onclick="fetchPDOKLocatieServer('Laren NH')">🇳🇱 PDOK RD/NAP API (Laren)</button>
+                            <button class="btn btn-op" onclick="fetchPDOKLocatieServer('Reimerswaal')">🌊 PDOK Kadaster Reimerswaal</button>
+                            <button class="btn btn-mg" onclick="runBashManifestSync()">⚡ Sync assets_manifest.js</button>
+                            <button class="btn btn-home" onclick="copyBashUpdateCmd()">📋 Kopieer Bash Update Script</button>
+                        </div>
+                        <div class="kv" style="margin-top:4px;"><span>API / GitHub Status:</span><span id="api-status-lbl">Gereed (CORS-vrij)</span></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="v-splitter" id="vSplit2">⋮</div>
+
+        <!-- ========================================================================= -->
+        <!-- KOLOM 3: OMNI-BRIDGE VIEWPORT (ACHTERGROND + PLANIMETER-ARM) + LOGBOEK    -->
+        <!-- ========================================================================= -->
+        <section class="column" id="col-right">
+            <div class="col-header">
+                <span>3. Planimeter Achtergrond-Canvas + 3D MapGlobe + A. Ott Nr. 573 Arm</span>
+                <span id="hud-coord-mini" style="color:var(--mg-glow); font-family:var(--font-mono);">[T: 0.00, +10.75 cm]</span>
+            </div>
+
+            <div class="viewport-frame">
+                <div id="svg-stage">
+                    <!-- LAAG 1: 3D MAPGLOBE & ZEEKAARTEN -->
+                    <div id="mapglobe-bg"></div>
+
+                    <!-- LAAG 2: DYNAMISCH ACHTERGROND-CANVAS (60/360 ZONNEWIJZER, 64x64 CHANGE MAP, BITMAP, KML) -->
+                    <canvas id="custom-grid-canvas"></canvas>
+
+                    <div class="viewport-hud-overlay">
+                        <div>ACTIEVE LAAG: <b id="vp-bg-mode" style="color:var(--gold)">60/360 SECTOR-ZONNEWIJZER</b></div>
+                        <div>OTT NR. 573 NONIUS: <b id="vp-nonius" style="color:var(--gold)">+3630</b> (<b id="vp-area">+363.0 cm²</b>)</div>
+                        <div>VOLGSTIFT T(θ, ρ): <b id="vp-az">0.00°</b> | ρ = <b id="vp-rho">+10.75 cm</b></div>
+                        <div>KING WEN / HINGE: <b id="vp-kw-hinge" style="color:var(--mg-glow)">KW #01 (111111) → t=11 (90,75 cm²)</b></div>
+                        <div>KLOKSTAP / GIS: <b id="vp-gis-coord" style="color:var(--ai-glow)">52.250°N, 5.220°E (Laren P)</b></div>
+                    </div>
+
+                    <div class="viewport-QuickActions">
+                        <button class="btn btn-op" id="btn-vp-globe-nav" onclick="toggleGlobeInteraction()">🌍 Globe [M]</button>
+                        <button class="btn btn-home" onclick="resetToBeginstand()">🎯 Begin [0]</button>
+                        <button class="btn" onclick="setGlobalAxisFlatten(0.0)">➖ Plat [8]</button>
+                        <button class="btn btn-neg" onclick="setGlobalAxisFlatten(-1.0)">🔄 Neg [9]</button>
+                        <button class="btn btn-mg" onclick="stampMagnesiumPoint()">📌 +Anker [T]</button>
+                    </div>
+
+                    <div class="key-bar">
+                        <span class="kbd-key" id="key-0" onclick="resetToBeginstand()">0:BEGIN</span>
+                        <span class="kbd-key" id="key-left" onclick="stepPolar(-1, 0)">←</span>
+                        <span class="kbd-key" id="key-up" onclick="stepPolar(0, 0.5)">↑</span>
+                        <span class="kbd-key" id="key-down" onclick="stepPolar(0, -0.5)">↓</span>
+                        <span class="kbd-key" id="key-right" onclick="stepPolar(1, 0)">→</span>
+                        <span class="kbd-key" id="key-8" onclick="setGlobalAxisFlatten(0.0)">8:PLAT</span>
+                        <span class="kbd-key" id="key-9" onclick="setGlobalAxisFlatten(-1.0)">9:NEG</span>
+                        <span class="kbd-key" id="key-7" onclick="setGlobalAxisFlatten(1.0)">7:POS</span>
+                        <span class="kbd-key mg-active" id="key-p" onclick="toggleMatrixSimulator()">P:SIM</span>
+                        <span class="kbd-key mg-active" id="key-t" onclick="stampMagnesiumPoint()">T:+ANKER</span>
+                    </div>
+
+                    <!-- LAAG 3: SVG PLANIMETER & WIELEN MET ACHTERGROND-GROEPEN -->
+                    <svg id="geo-svg" viewBox="-480 -480 960 960" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <pattern id="grid-05cm" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--grid-fine)" stroke-width="0.7"/>
+                            </pattern>
+                            <pattern id="grid-25cm" width="100" height="100" patternUnits="userSpaceOnUse">
+                                <rect width="100" height="100" fill="url(#grid-05cm)"/>
+                                <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--grid-major)" stroke-width="1.1"/>
+                            </pattern>
+                            <filter id="laser-glow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur stdDeviation="3.0" result="blur1"/>
+                                <feMerge><feMergeNode in="blur1"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                        </defs>
+
+                        <rect id="svg-base-grid-rect" x="-480" y="-480" width="960" height="960" fill="url(#grid-25cm)" opacity="0.28"/>
+                        <!-- Geüploade JPEG/PNG/BMP/SVG/KML Achtergrond-laag direct onder de Planimeter-arm -->
+                        <g id="assets-image-layer" opacity="0.82"></g>
+                        <g id="kml-vector-bg-layer"></g>
+                        <g id="pyramid-footprint-layer"></g>
+
+                        <g id="axes" opacity="0.85">
+                            <line x1="-480" y1="0" x2="480" y2="0" stroke="#50ffb0" stroke-width="1.2" stroke-dasharray="6,3"/>
+                            <line x1="0" y1="-480" x2="0" y2="480" stroke="#00e5ff" stroke-width="1.2" stroke-dasharray="6,3"/>
+                            <circle cx="0" cy="0" r="5" fill="none" stroke="#ffcc33" stroke-width="1.5"/>
+                        </g>
+
+                        <g id="multi-axis-wheels-root">
+                            <g id="wheel-iching-64"></g>
+                            <g id="wheel-jiazi-60"></g>
+                            <g id="wheel-inner-16"></g>
+                        </g>
+
+                        <g id="magnesium-overtrek-layer">
+                            <g id="mg-traces-group"></g>
+                        </g>
+
+                        <g id="planimeter-layer"></g>
+                        <g id="laser-layer"></g>
+                    </svg>
+                </div>
+
+                <div class="cockpit-controls">
+                    <div class="slider-box">
+                        <div class="slider-info">ARM DRAAI (θ ←/→) <span id="yaw-deg">0.0°</span></div>
+                        <input type="range" min="0" max="360" step="0.1" value="0" id="yaw-slider" oninput="processKinematica('yaw', this.value)">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-info">STRAAL DOOR (0,0) (ρ) <span id="rho-val">+10.75 cm</span></div>
+                        <input type="range" min="-11.5" max="11.5" step="0.05" value="10.75" id="rho-slider" oninput="processKinematica('rho', this.value)">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-info">WIEL PLAT → NEG (σ) <span id="sigma-val" style="color:var(--mg-glow)">+1.00</span></div>
+                        <input type="range" min="-1" max="1" step="0.01" value="1.0" id="sigma-slider" oninput="setGlobalAxisFlatten(this.value)">
+                    </div>
+                    <div class="slider-box">
+                        <div class="slider-info">3D PITCH / LASER <span id="pitch-deg">0° | 589nm</span></div>
+                        <input type="range" min="0" max="60" step="1" value="0" id="pitch-slider" oninput="processKinematica('pitch', this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-splitter" id="hSplitLog">⋯</div>
+
+            <footer id="logbook-pane">
+                <div class="col-header" style="padding: 4px 10px;">
+                    <span>📜 Systeemlogboek & Koppelingen (NEBRA • Reimerswaal • Beleid/Beheer/Annerose • Laatst Toegevoegd)</span>
+                    <span id="log-counter" style="color:var(--gold)">0 events</span>
+                </div>
+                <div id="logbook-list"></div>
+            </footer>
+        </section>
+
+    </div>
+</div>
+
+<!-- Verborgen video-element voor WebRTC Live Camera-Achtergrond -->
+<video id="webrtc-video" autoplay playsinline muted style="display:none;"></video>
+
+<script>
+    const PX_PER_CM = 40;
+    const R_KOMPAS_CM = Math.sqrt(363.0 / Math.PI); // 10.74905 cm
+    const R_KOMPAS_PX = R_KOMPAS_CM * PX_PER_CM;    // 429.96 px
+    const R_JIAZI_PX  = 355;
+    const R_NUC_PX    = (R_KOMPAS_CM / 4) * PX_PER_CM;
+
+    const STEMS = ["Jia","Yi","Bing","Ding","Wu","Ji","Geng","Xin","Ren","Gui"];
+    const BRANCHES = ["Zi","Chou","Yin","Mao","Chen","Si","Wu","Wei","Shen","You","Xu","Hai"];
+    const COMPASS_16 = ["N","NNO","NO","ONO","O","OZO","ZO","ZZO","Z","ZZW","ZW","WZW","W","WNW","NW","NNW"];
+    const WUXING_NAMES = ["Hout (Wood)", "Vuur (Fire)", "Aarde (Earth)", "Metaal (Metal)", "Water (Water)"];
+    const WUXING_COLORS = ["#22c55e", "#ef4444", "#eab308", "#f8fafc", "#3b82f6"];
+    const CORE_COLORS = { "00": "#a855f7", "01": "#eab308", "10": "#50ffb0", "11": "#f97316" };
+
+    // =========================================================================================
+    // 1. ALLE UITGEREKENDE BEELDEN & BOOMSTRUCTUUR MAPPEN (INCL. METHODE: LAATST TOEGEVOEGD)
+    // =========================================================================================
+    const CALCULATED_IMAGES_DB = [
+        // De 3 nieuw toegevoegde beelden (Laatst Toegevoegd bovenaan!)
+        { submapId: "SUB-IMG-KW64", branch: "LATEST", folder: "NEBRA/simulatie", name: "55497649814_a3103c00e9_o.png (King Wen 64 Chain)", w_px: 2048, h_px: 2048, w_cm: 51.2, h_cm: 51.2, area_cm2: 2621.4, nonius: 26214, azDeg: 45.0, rhoCm: 10.75, wuxing: "Aarde/Metaal", added: "2026-10-17 11:12", preset: "king_wen_64_chain" },
+        { submapId: "SUB-IMG-MAP64", branch: "LATEST", folder: "NEBRA/simulatie", name: "55497645614_e8737f459a_o.png (64×64 Hinge Change Map)", w_px: 2048, h_px: 1536, w_cm: 51.2, h_cm: 38.4, area_cm2: 1966.1, nonius: 19661, azDeg: 53.13, rhoCm: 10.75, wuxing: "5-Elementen Matrix", added: "2026-10-17 11:11", preset: "change_map_64x64" },
+        { submapId: "SUB-IMG-SUN60", branch: "LATEST", folder: "NEBRA/img", name: "55593598410_d1878e1bec_o.jpg (Dubbele 60/360 Zonnewijzer)", w_px: 1024, h_px: 454, w_cm: 25.6, h_cm: 11.35, area_cm2: 290.6, nonius: 2906, azDeg: 66.1, rhoCm: 8.88, wuxing: "Chromatisch 60×6", added: "2026-10-17 11:10", preset: "radial_sundial_60_360" },
+        // NEBRA (1 - img/src, 2 - README, 3 - simulatie/cockpit)
+        { submapId: "SUB-NEB-01", branch: "NEBRA", folder: "NEBRA/1-img-src", name: "nebra-pleiaden-precisie-overlay.png", w_px: 2048, h_px: 2048, w_cm: 51.2, h_cm: 51.2, area_cm2: 2621.4, nonius: 26214, azDeg: 82.5, rhoCm: 10.75, wuxing: "Goud/Brons", added: "2026-10-16 22:34", url: "assets/images/nebra-pleiaden-precisie-overlay.png" },
+        { submapId: "SUB-NEB-02", branch: "NEBRA", folder: "NEBRA/2-README", name: "GEOCENTRUM_VORTEX_OS_v155_Rapport.pdf", w_px: 1680, h_px: 2376, w_cm: 42.0, h_cm: 59.4, area_cm2: 2494.8, nonius: 2476, azDeg: 245.91, rhoCm: 10.75, wuxing: "Mercurius Lock", added: "2026-10-16 22:30", url: "pdf/1c66d21e-6829-4aca-9cc7-b29b0b1d5b07_Planitaire_data.pdf" },
+        { submapId: "SUB-NEB-03", branch: "NEBRA", folder: "NEBRA/3-simulatie-cockpit", name: "cellarius-raster-overlay-v4.png", w_px: 2048, h_px: 2048, w_cm: 51.2, h_cm: 51.2, area_cm2: 2621.4, nonius: 26214, azDeg: 60.0, rhoCm: 10.75, wuxing: "Cellarius √3", added: "2026-10-16 20:15", url: "assets/images/cellarius-raster-overlay-v4.png" },
+        // Boomstructuur Reimerswaalse families (Notion 2.5)
+        { submapId: "SUB-REIM-01", branch: "REIMERSWAAL", folder: "Notion-2.5/Reimerswaal", name: "Familie Moeliker / Lonke / Vos / Stierman (Tholen 82,5°)", w_px: 1950, h_px: 1125, w_cm: 48.8, h_cm: 28.1, area_cm2: 1370.8, nonius: 13708, azDeg: 82.5, rhoCm: 10.0, wuxing: "Water (Zeeland)", added: "2026-10-16 18:00" },
+        { submapId: "SUB-REIM-02", branch: "REIMERSWAAL", folder: "Notion-2.5/Kaarten", name: "Verdronken Stad Reimerswaal (51.49°N, 4.16°E)", w_px: 1500, h_px: 1500, w_cm: 37.5, h_cm: 37.5, area_cm2: 1406.2, nonius: 14062, azDeg: 226.4, rhoCm: 9.5, wuxing: "Aarde/Water", added: "2026-10-15 14:20" },
+        // Koppelingen Over Ons pagina: Beleid, Beheer, Verwerken + Annerose map
+        { submapId: "SUB-OVR-BELEID", branch: "OVER_ONS", folder: "Over-Ons/Beleid", name: "Omgevingswet & IDD-Koppeling (SBI 43.12 Bouwrijp)", w_px: 1920, h_px: 1080, w_cm: 48.0, h_cm: 27.0, area_cm2: 1296.0, nonius: 12960, azDeg: 29.0, rhoCm: 10.25, wuxing: "Beleid/Kadaster", added: "2026-10-16 19:40" },
+        { submapId: "SUB-OVR-BEHEER", branch: "OVER_ONS", folder: "Over-Ons/Beheer", name: "DSO / Bal § 4.119 & BW Boek 5 Zakelijke Rechten", w_px: 1920, h_px: 1080, w_cm: 48.0, h_cm: 27.0, area_cm2: 1296.0, nonius: 12960, azDeg: 108.0, rhoCm: 10.5, wuxing: "Beheer/Register", added: "2026-10-16 19:35" },
+        { submapId: "SUB-OVR-VERWERK", branch: "OVER_ONS", folder: "Over-Ons/Verwerken", name: "MapAnalyst 1.3.35 & Snellius 589nm Verwerking", w_px: 2048, h_px: 1195, w_cm: 51.2, h_cm: 29.9, area_cm2: 1529.9, nonius: 15299, azDeg: 198.79, rhoCm: 10.65, wuxing: "Optica 589nm", added: "2026-10-16 19:30" },
+        { submapId: "SUB-OVR-ANNEROSE", branch: "OVER_ONS", folder: "Over-Ons/Annerose", name: "Annerose Dossier & Geocentrum Koppelingen", w_px: 671, h_px: 355, w_cm: 16.78, h_cm: 8.88, area_cm2: 148.9, nonius: 1489, azDeg: 62.1, rhoCm: 8.875, wuxing: "Vizierkerf Anker", added: "2026-10-17 10:55", url: "assets/images/vizierkerf.png" }
+    ];
+
+    const assetsLayerEl = document.getElementById('assets-image-layer');
+    const kmlVectorBgLayer = document.getElementById('kml-vector-bg-layer');
+    const pyramidLayerEl = document.getElementById('pyramid-footprint-layer');
+    const wheel64El = document.getElementById('wheel-iching-64');
+    const wheel60El = document.getElementById('wheel-jiazi-60');
+    const wheel16El = document.getElementById('wheel-inner-16');
+    const mgTracesGroup = document.getElementById('mg-traces-group');
+    const planimeterGroup = document.getElementById('planimeter-layer');
+    const laserGroup = document.getElementById('laser-layer');
+    const svgEl = document.getElementById('geo-svg');
+
+    const state = {
+        uiScale: 1.0,
+        activeBranch: 'ALL',
+        syntheticBgMode: 'radial_sundial_60_360',
+        bgScale: 1.0,
+        bgRot: 0,
+        bgAlpha: 0.80,
+        azDeg: 245.91,
+        rhoCm: R_KOMPAS_CM,
+        globalSigmaY: 1.0,
+        globalSigmaX: 1.0,
+        w64: { rot: 0.0, tilt: 1.0 },
+        w60: { rot: 0.0, tilt: 1.0 },
+        w16: { rot: 0.0, tilt: 1.0 },
+        poleX: 0, poleY: -300,
+        txPx: 0, tyPx: -R_KOMPAS_PX,
+        gxPx: 0, gyPx: 0,
+        armStopped: false,
+        mouseFollow: false,
+        matrix: [],
+        activeSimRow: 0,
+        simTimer: null,
+        globeInteractive: false,
+        selectedBenKw: 43,
+        selectedZhiKw: 35,
+        logCount: 0
+    };
+
+    function logVortex(action, folder, subId, msg) {
+        state.logCount++;
+        document.getElementById('log-counter').textContent = `${state.logCount} events`;
+        const list = document.getElementById('logbook-list');
+        const t = new Date().toLocaleTimeString('nl-NL');
+        const row = document.createElement('div');
+        row.className = 'log-row';
+        row.innerHTML = `<span style="color:var(--text-muted)">[${t}]</span> <b style="color:var(--gold)">${action}</b> <span style="color:var(--ai-glow)">[${folder} › ${subId}]</span> <span>${msg}</span>`;
+        list.prepend(row);
+    }
+
+    // =========================================================================================
+    // 2. UNIVERSELE ACHTERGROND UPLOADER & CODE-INJECTOR (JPEG, BMP, PNG, SVG, KML, TXT, URL)
+    // =========================================================================================
+    function setupUniversalDragDropAndPaste() {
+        const dz = document.getElementById('io-dropzone');
+        dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+        dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+        dz.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dz.classList.remove('dragover');
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                handleUniversalFileUpload(e.dataTransfer.files);
+            }
+        });
+
+        // Klembord plakken (Ctrl+V) van bitmaps, screenshots, SVG-code of KML
+        window.addEventListener('paste', (e) => {
+            if (!e.clipboardData) return;
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const file = items[i].getAsFile();
+                    if (file) handleUniversalFileUpload([file]);
+                }
+            }
+        });
+    }
+
+    function handleUniversalFileUpload(files) {
+        Array.from(files).forEach(file => {
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            const nowStr = new Date().toTimeString().slice(0, 5);
+
+            // 1. Raster Afbeeldingen: JPEG, PNG, BMP (Bitmap), WebP, GIF
+            if (['jpg', 'jpeg', 'png', 'bmp', 'webp', 'gif'].includes(ext) || file.type.startsWith('image/')) {
+                if (ext === 'svg' || file.type === 'image/svg+xml') {
+                    const rSvg = new FileReader();
+                    rSvg.onload = (ev) => injectRawSvgStringToBackground(ev.target.result, file.name);
+                    rSvg.readAsText(file);
+                    return;
+                }
+                const url = URL.createObjectURL(file);
+                analyzeAndMountBitmapImage(url, file.name, nowStr);
+                return;
+            }
+
+            // 2. Tekstuele formaten: KML, SVG, GeoJSON, CSV, TXT, Scilab
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const content = ev.target.result;
+                document.getElementById('bg-code-input').value = content.slice(0, 4000);
+                if (ext === 'kml' || content.includes('<kml')) {
+                    parseAndProjectKMLToBackground(content, file.name);
+                } else if (ext === 'svg' || content.includes('<svg')) {
+                    injectRawSvgStringToBackground(content, file.name);
+                } else if (ext === 'geojson' || ext === 'json') {
+                    parseAndProjectGeoJSONToBackground(content, file.name);
+                } else {
+                    parseAndCleanTextToMatrix(content, file.name);
+                }
+                CALCULATED_IMAGES_DB.unshift({
+                    submapId: `SUB-UPL-${CALCULATED_IMAGES_DB.length + 1}`,
+                    branch: 'LATEST', folder: 'Uploads/Laatst-Toegevoegd',
+                    name: file.name, w_px: 960, h_px: 960, w_cm: 24.0, h_cm: 24.0,
+                    area_cm2: 576.0, nonius: 5760, azDeg: state.azDeg, rhoCm: state.rhoCm,
+                    wuxing: ext.toUpperCase(), added: `2026-10-17 ${nowStr}`
+                });
+                renderBoomstructuur();
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    // Reken elk ingeladen beeld (JPEG, PNG, Bitmap) pixel-voor-pixel door op een offscreen canvas
+    function analyzeAndMountBitmapImage(imgUrl, fileName, timeStr = "11:14") {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = () => {
+            const wPx = img.naturalWidth || 960;
+            const hPx = img.naturalHeight || 960;
+            const wCm = wPx / PX_PER_CM;
+            const hCm = hPx / PX_PER_CM;
+            const areaCm2 = wCm * hCm;
+            const nonius = Math.round(areaCm2 * 10);
+            const diagAz = (Math.atan2(wCm, hCm) * 180 / Math.PI);
+
+            // Pixel-analyse voor optisch zwaartepunt (x̄, ȳ), Wuxing-kleurdominantie en automatische ankers
+            const off = document.createElement('canvas');
+            const sw = 120, sh = 120;
+            off.width = sw; off.height = sh;
+            const octx = off.getContext('2d');
+            octx.drawImage(img, 0, 0, sw, sh);
+
+            let sumW = 0, sumX = 0, sumY = 0, lumSum = 0;
+            let wuxCounts = [0, 0, 0, 0, 0]; // Wood, Fire, Earth, Metal, Water
+            const peakAnchors = [];
+
+            try {
+                const data = octx.getImageData(0, 0, sw, sh).data;
+                for (let y = 0; y < sh; y++) {
+                    for (let x = 0; x < sw; x++) {
+                        const idx = (y * sw + x) * 4;
+                        const r = data[idx], g = data[idx+1], b = data[idx+2], a = data[idx+3];
+                        if (a < 30) continue;
+                        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                        lumSum += lum;
+                        sumW += lum + 1;
+                        sumX += ((x / sw) - 0.5) * wCm * (lum + 1);
+                        sumY += (0.5 - (y / sh)) * hCm * (lum + 1);
+
+                        // Wuxing classificatie per pixel
+                        if (g > r * 1.2 && g > b * 1.1) wuxCounts[0]++;      // Hout (Groen)
+                        else if (r > g * 1.3 && r > b * 1.3) wuxCounts[1]++; // Vuur (Rood)
+                        else if (r > 160 && g > 140 && b < 100) wuxCounts[2]++; // Aarde (Geel/Goud)
+                        else if (r > 200 && g > 200 && b > 200) wuxCounts[3]++; // Metaal (Wit)
+                        else if (b > r * 1.2 && b > g) wuxCounts[4]++;       // Water (Blauw)
+
+                        if (lum > 210 && (x % 15 === 0) && (y % 15 === 0) && peakAnchors.length < 8) {
+                            const ax = ((x / sw) - 0.5) * 21.5;
+                            const ay = (0.5 - (y / sh)) * 21.5;
+                            peakAnchors.push({
+                                label: `IMG_P${peakAnchors.length + 1}`,
+                                x_cm: ax, y_cm: ay,
+                                azDeg: (Math.atan2(ax, ay) * 180 / Math.PI + 360) % 360,
+                                rhoCm: Math.min(10.75, Math.hypot(ax, ay))
+                            });
+                        }
+                    }
+                }
+            } catch (e) {}
+
+            const cxCm = sumW > 0 ? (sumX / sumW) : 0;
+            const cyCm = sumW > 0 ? (sumY / sumW) : 0;
+            const avgLumPct = Math.round((lumSum / (sw * sh * 255)) * 100);
+            const maxWuxIdx = wuxCounts.indexOf(Math.max(...wuxCounts));
+            const domWuxing = WUXING_NAMES[maxWuxIdx];
+
+            // Plaats afbeelding direct op de achtergrond van de Planimeter-arm
+            assetsLayerEl.innerHTML = `<image href="${imgUrl}" x="-430" y="-430" width="860" height="860" preserveAspectRatio="xMidYMid meet"/>`;
+            updateBgTransform();
+
+            // Update Beeld-Doorrekening HUD
+            document.getElementById('ic-name').textContent = `${fileName.slice(0, 24)} (${wPx}×${hPx} px)`;
+            document.getElementById('ic-dim').textContent = `${wCm.toFixed(2)} × ${hCm.toFixed(2)} cm (${areaCm2.toFixed(1)} cm²)`;
+            document.getElementById('ic-nonius').textContent = `${nonius} nonius | ∠ ${diagAz.toFixed(2)}°`;
+            document.getElementById('ic-centroid').textContent = `[${cxCm >= 0 ? '+' : ''}${cxCm.toFixed(2)}, ${cyCm >= 0 ? '+' : ''}${cyCm.toFixed(2)}] cm (Lum ${avgLumPct}%)`;
+            document.getElementById('ic-wuxing').textContent = `${domWuxing} • ${peakAnchors.length} ankers`;
+
+            // Voeg toe aan 'Laatst Toegevoegd' in de Boomstructuur
+            CALCULATED_IMAGES_DB.unshift({
+                submapId: `SUB-IMG-${Date.now().toString().slice(-4)}`,
+                branch: 'LATEST', folder: 'Uploads/Laatst-Toegevoegd',
+                name: fileName, w_px: wPx, h_px: hPx, w_cm: Number(wCm.toFixed(1)), h_cm: Number(hCm.toFixed(1)),
+                area_cm2: Number(areaCm2.toFixed(1)), nonius: nonius, azDeg: Number(diagAz.toFixed(2)),
+                rhoCm: R_KOMPAS_CM, wuxing: domWuxing, added: `2026-10-17 ${timeStr}`, imgUrl: imgUrl
+            });
+            renderBoomstructuur();
+
+            // Als er heldere ankerpunten in het beeld zijn gevonden, koppel ze direct aan de Matrix
+            if (peakAnchors.length >= 3) {
+                const normAnchors = peakAnchors.map((a, i) => normalizeMatrixRow(a, i));
+                setMatrixData(normAnchors, fileName);
+            }
+            logVortex('IMG_CALC', 'LAATST_TOEGEVOEGD', fileName, `Beeld doorgerekend: ${wPx}×${hPx}px = ${areaCm2.toFixed(1)}cm² (${nonius} nonius)`);
+        };
+        img.src = imgUrl;
+    }
+
+    // Parseer KML (<coordinates>lon,lat,alt ...</coordinates>) en projecteer op zowel 3D Globe als Planimeter-achtergrond
+    function parseAndProjectKMLToBackground(kmlText, sourceName = "KML_Upload") {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(kmlText, "text/xml");
+        const coordNodes = xml.getElementsByTagName("coordinates");
+        const extractedRows = [];
+        let svgPathsHtml = '';
+
+        Array.from(coordNodes).forEach((node, idx) => {
+            const raw = node.textContent.trim().split(/\s+/);
+            const ptsSvg = [];
+            raw.forEach((triplet, pIdx) => {
+                const parts = triplet.split(',').map(Number);
+                if (parts.length >= 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                    const lon = parts[0], lat = parts[1];
+                    // Projecteer t.o.v. Laren Poolanker (5.22°E, 52.25°N) of N² Kern (1.85°E, 47.25°N)
+                    const xCm = (lon - 1.85) * 1.15;
+                    const yCm = (lat - 47.25) * 1.45;
+                    const xPx = Math.max(-450, Math.min(450, xCm * PX_PER_CM));
+                    const yPx = Math.max(-450, Math.min(450, -yCm * PX_PER_CM));
+                    ptsSvg.push(`${xPx.toFixed(1)},${yPx.toFixed(1)}`);
+                    extractedRows.push({
+                        label: `KML_${idx+1}_${pIdx+1}`,
+                        x_cm: xCm, y_cm: yCm,
+                        azDeg: (Math.atan2(xCm, yCm) * 180 / Math.PI + 360) % 360,
+                        rhoCm: Math.min(11.2, Math.hypot(xCm, yCm))
+                    });
+                }
+            });
+            if (ptsSvg.length > 1) {
+                svgPathsHtml += `<polyline points="${ptsSvg.join(' ')}" fill="none" stroke="#ffcc33" stroke-width="2.5" stroke-dasharray="6,3"/>`;
+            } else if (ptsSvg.length === 1) {
+                const [cx, cy] = ptsSvg[0].split(',');
+                svgPathsHtml += `<circle cx="${cx}" cy="${cy}" r="7" fill="#00ffcc" stroke="#fff" stroke-width="1.5"/>`;
+            }
+        });
+
+        kmlVectorBgLayer.innerHTML = svgPathsHtml;
+        if (extractedRows.length > 0) {
+            setMatrixData(extractedRows.map((r, i) => normalizeMatrixRow(r, i)), sourceName);
+        }
+        logVortex('KML_MOUNT', 'MAP-KAARTEN', sourceName, `${extractedRows.length} KML-coördinaten geprojecteerd onder Planimeter-arm`);
+    }
+
+    function injectRawSvgStringToBackground(svgStr, sourceName = "SVG_Code") {
+        const encoded = 'data:image/svg+xml;utf8,' + encodeURIComponent(svgStr);
+        assetsLayerEl.innerHTML = `<image href="${encoded}" x="-430" y="-430" width="860" height="860" preserveAspectRatio="xMidYMid meet"/>`;
+        parseAndCleanTextToMatrix(svgStr, sourceName);
+        logVortex('SVG_INJECT', 'MAP-ARM', sourceName, 'SVG-code direct als Planimeter-achtergrond geladen');
+    }
+
+    function parseAndProjectGeoJSONToBackground(jsonStr, sourceName = "GeoJSON") {
+        try {
+            const geo = JSON.parse(jsonStr);
+            if (globeMap && globeMap.getSource('k7-matrix')) {
+                globeMap.getSource('k7-matrix').setData(geo);
+            }
+            logVortex('GEOJSON_BG', 'MAP-COCKPIT', sourceName, 'GeoJSON geladen op 3D Globe onder Planimeter');
+        } catch (e) {}
+    }
+
+    function injectCodeOrUrlToBackground() {
+        const val = document.getElementById('bg-code-input').value.trim();
+        if (!val) return;
+        if (val.startsWith('<svg') || val.includes('</svg>')) {
+            injectRawSvgStringToBackground(val, 'Inline_SVG');
+        } else if (val.includes('<kml') || val.includes('<coordinates>')) {
+            parseAndProjectKMLToBackground(val, 'Inline_KML');
+        } else if (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image/')) {
+            analyzeAndMountBitmapImage(val, 'Externe_URL_Kaart');
+        } else if (val.startsWith('{') && val.includes('Feature')) {
+            parseAndProjectGeoJSONToBackground(val, 'Inline_GeoJSON');
+        } else {
+            parseAndCleanTextToMatrix(val, 'Inline_TXT_Matrix');
+        }
+    }
+
+    function clearBackgroundCodeBox() {
+        document.getElementById('bg-code-input').value = '';
+        assetsLayerEl.innerHTML = '';
+        kmlVectorBgLayer.innerHTML = '';
+    }
+
+    // Live WebRTC Camera als Achtergrond onder de Planimeter-arm
+    async function startWebRTCCameraBackground() {
+        try {
+            const video = document.getElementById('webrtc-video');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            video.srcObject = stream;
+            state.syntheticBgMode = 'webrtc_cam';
+            logVortex('WEBRTC_CAM', 'MAP-COCKPIT', 'LIVE_FEED', 'Camera-feed geactiveerd onder Planimeter-arm');
+            requestAnimationFrame(drawWebRTCFrameLoop);
+        } catch (err) {
+            logVortex('WEBRTC_ERR', 'MAP-COCKPIT', 'CAM', 'Geen camera gevonden of toestemming geweigerd');
+        }
+    }
+
+    function drawWebRTCFrameLoop() {
+        if (state.syntheticBgMode !== 'webrtc_cam') return;
+        renderCustomUnderGrid();
+        requestAnimationFrame(drawWebRTCFrameLoop);
+    }
+
+    // =========================================================================================
+    // 3. SYNTHETISCHE RENDERING VAN DE 3 NIEUWE BEELDEN OP HET ACHTERGROND-CANVAS
+    // =========================================================================================
+    function setSyntheticBackgroundMode(mode) {
+        state.syntheticBgMode = mode;
+        document.getElementById('sel-bg-preset').value = mode;
+        const titles = {
+            radial_sundial_60_360: "60/360 SECTOR-ZONNEWIJZER (BEELD 3)",
+            change_map_64x64: "64×64 HINGE DUOGRAM CHANGE MAP (BEELD 2)",
+            king_wen_64_chain: "KING WEN 64 EXACT CHAIN HELPER (BEELD 1)",
+            cellarius_hex: "CELLARIUS √3 HEXAGONAAL GRID",
+            nautical_rose: "MARITIEM 32-STREKEN ZEEKAART GRID"
+        };
+        document.getElementById('vp-bg-mode').textContent = titles[mode] || mode.toUpperCase();
+        renderCustomUnderGrid();
+        logVortex('BG_PRESET', 'NEBRA/simulatie', mode.toUpperCase(), `Achtergrond gewisseld naar ${titles[mode] || mode}`);
+    }
+
+    function updateBgTransform() {
+        const sc = parseInt(document.getElementById('sl-bg-scale').value);
+        const rot = parseInt(document.getElementById('sl-bg-rot').value);
+        const alpha = parseInt(document.getElementById('sl-bg-alpha').value);
+
+        state.bgScale = sc / 100.0;
+        state.bgRot = rot;
+        state.bgAlpha = alpha / 100.0;
+
+        document.getElementById('lbl-bg-scale').textContent = `${sc}%`;
+        document.getElementById('lbl-bg-rot').textContent = `${rot}°`;
+        document.getElementById('lbl-bg-alpha').textContent = `${alpha}%`;
+
+        assetsLayerEl.setAttribute('opacity', state.bgAlpha.toFixed(2));
+        assetsLayerEl.setAttribute('transform', `scale(${state.bgScale}) rotate(${state.bgRot})`);
+        renderCustomUnderGrid();
+    }
+
+    function renderCustomUnderGrid() {
+        const canvas = document.getElementById('custom-grid-canvas');
+        if (!canvas) return;
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = Math.max(100, (rect.width / state.uiScale) || 800);
+        canvas.height = Math.max(100, (rect.height / state.uiScale) || 800);
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const maxR = Math.min(cx, cy) * 0.88 * state.bgScale;
+
+        ctx.save();
+        ctx.globalAlpha = state.bgAlpha;
+        ctx.translate(cx, cy);
+        ctx.rotate((state.bgRot * Math.PI) / 180);
+
+        const mode = state.syntheticBgMode;
+
+        if (mode === 'webrtc_cam') {
+            const video = document.getElementById('webrtc-video');
+            if (video && video.readyState >= 2) {
+                ctx.drawImage(video, -maxR, -maxR, maxR * 2, maxR * 2);
+            }
+        }
+        // BEELD 3: Dubbele Radiale 60/360 Sector-Zonnewijzer (55593598410_d1878e1bec_o.jpg)
+        else if (mode === 'radial_sundial_60_360') {
+            const innerR = maxR * 0.50;
+            const palette = ['#c0564b', '#6b8e78', '#b89f5d', '#5c7a99', '#8c6d53', '#7a9a8b'];
+
+            // 60 gekleurde Jiazi-binnenwiggen vanuit het centrum
+            for (let j = 0; j < 60; j++) {
+                const a1 = (j * 6 - 90) * Math.PI / 180;
+                const a2 = ((j + 1) * 6 - 90) * Math.PI / 180;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, innerR, a1, a2);
+                ctx.closePath();
+                ctx.fillStyle = palette[j % palette.length];
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(10, 25, 35, 0.55)';
+                ctx.lineWidth = 0.8;
+                ctx.stroke();
+
+                // 6 chromatische klokstap-waaiers van elk Jiazi-anker naar de 360°-buitenring
+                const anchorX = Math.cos((a1 + a2) / 2) * innerR;
+                const anchorY = Math.sin((a1 + a2) / 2) * innerR;
+                const rayCols = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#38bdf8', '#e2e8f0'];
+                for (let s = 0; s < 6; s++) {
+                    const deg360 = j * 6 + s;
+                    const radOut = (deg360 - 90) * Math.PI / 180;
+                    const ox = Math.cos(radOut) * maxR;
+                    const oy = Math.sin(radOut) * maxR;
+                    ctx.beginPath();
+                    ctx.moveTo(anchorX, anchorY);
+                    ctx.lineTo(ox, oy);
+                    ctx.strokeStyle = rayCols[s];
+                    ctx.lineWidth = 1.05;
+                    ctx.stroke();
+                }
+
+                // Wit knooppunt-anker op de 60-ring
+                ctx.beginPath();
+                ctx.arc(anchorX, anchorY, 2.6, 0, Math.PI * 2);
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fill();
+            }
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+        }
+        // BEELD 2: 64x64 Hexagram Change Map · Hinge Duograms (Lines 3-4) × Wuxing (55497645614_e8737f459a_o.png)
+        else if (mode === 'change_map_64x64') {
+            const boxSize = maxR * 1.72;
+            const half = boxSize / 2;
+            const cell = boxSize / 64;
+            const wuxRelCols = ['#e2e8f0', '#16a34a', '#ef4444', '#38bdf8', '#facc15']; // Same, Generating, Controlling, Counteracting, Weakening
+
+            for (let r = 0; r < 64; r++) {
+                for (let c = 0; c < 64; c++) {
+                    const rel = (r * 3 + c * 2) % 5;
+                    ctx.fillStyle = wuxRelCols[rel];
+                    ctx.fillRect(-half + c * cell, -half + r * cell, cell - 0.4, cell - 0.4);
+                }
+            }
+            // Teken de 4x4 = 16 structurele Hinge Duogram kaders (00, 01, 10, 11)
+            const qSize = boxSize / 4;
+            const hLabels = ['00', '01', '10', '11'];
+            const hCols = ['#a855f7', '#eab308', '#50ffb0', '#f97316'];
+            for (let i = 0; i < 4; i++) {
+                ctx.strokeStyle = hCols[i];
+                ctx.lineWidth = 2.2;
+                ctx.strokeRect(-half + i * qSize, -half, qSize, boxSize);
+                ctx.strokeRect(-half, -half + i * qSize, boxSize, qSize);
+                ctx.fillStyle = hCols[i];
+                ctx.font = 'bold 12px monospace';
+                ctx.fillText(hLabels[i], -half + i * qSize + qSize / 2 - 8, -half - 8);
+                ctx.fillText(hLabels[i], -half - 24, -half + i * qSize + qSize / 2 + 4);
+            }
+        }
+        // BEELD 1: King Wen 64 Hexagrams: Exact Chain Helper (55497649814_a3103c00e9_o.png)
+        else if (mode === 'king_wen_64_chain') {
+            const boxSize = maxR * 1.70;
+            const half = boxSize / 2;
+            const cell = boxSize / 8;
+            ctx.fillStyle = 'rgba(8, 10, 14, 0.85)';
+            ctx.fillRect(-half, -half, boxSize, boxSize);
+
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const kw = r * 8 + c + 1;
+                    const x0 = -half + c * cell;
+                    const y0 = -half + r * cell;
+                    ctx.strokeStyle = '#d4af37';
+                    ctx.lineWidth = 1.2;
+                    ctx.strokeRect(x0 + 2, y0 + 2, cell - 4, cell - 4);
+
+                    // Wuxing dot
+                    ctx.beginPath();
+                    ctx.arc(x0 + 11, y0 + 13, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = WUXING_COLORS[(kw * 3) % 5];
+                    ctx.fill();
+
+                    ctx.fillStyle = '#fde047';
+                    ctx.font = 'bold 9px monospace';
+                    ctx.fillText(`KW ${String(kw).padStart(2, '0')}`, x0 + 20, y0 + 15);
+
+                    const bits = getShaoYongBits(kw - 1);
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = '7.5px monospace';
+                    ctx.fillText(bits, x0 + 18, y0 + 25);
+
+                    // Teken mini H, N, N² balkjes
+                    for (let col = 0; col < 3; col++) {
+                        for (let b = 0; b < 6; b++) {
+                            ctx.fillStyle = '#e5c158';
+                            ctx.fillRect(x0 + 10 + col * 18, y0 + 32 + b * 4, 12, 2);
+                        }
+                    }
+                }
+            }
+        }
+        else if (mode === 'cellarius_hex') {
+            ctx.strokeStyle = 'rgba(255, 204, 51, 0.30)';
+            ctx.lineWidth = 1;
+            const step = 38;
+            for (let a = 0; a < 180; a += 60) {
+                const rad = (a * Math.PI) / 180;
+                const nx = -Math.sin(rad), ny = Math.cos(rad);
+                for (let d = -maxR; d <= maxR; d += step) {
+                    const px = nx * d, py = ny * d;
+                    ctx.beginPath();
+                    ctx.moveTo(px - Math.cos(rad) * maxR, py - Math.sin(rad) * maxR);
+                    ctx.lineTo(px + Math.cos(rad) * maxR, py + Math.sin(rad) * maxR);
+                    ctx.stroke();
+                }
+            }
+        }
+        else if (mode === 'nautical_rose') {
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+            for (let i = 0; i < 32; i++) {
+                const rad = (i * 11.25 * Math.PI) / 180;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(rad) * maxR, Math.sin(rad) * maxR); ctx.stroke();
+            }
+            ctx.beginPath(); ctx.arc(0, 0, maxR, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
+    // =========================================================================================
+    // 4. BOOMSTRUCTUUR MAPPEN & METHODE: LAATST TOEGEVOEGD
+    // =========================================================================================
+    function selectTreeBranch(branch, btnEl) {
+        state.activeBranch = branch;
+        document.querySelectorAll('.page-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+        if (btnEl) btnEl.classList.add('active');
+        renderBoomstructuur();
+    }
+
+    function sortTreeByLatest() {
+        CALCULATED_IMAGES_DB.sort((a, b) => (b.added || '').localeCompare(a.added || ''));
+        renderBoomstructuur();
+        logVortex('SORT_LATEST', 'BOOMSTRUCTUUR', 'LAATST_TOEGEVOEGD', 'Boomstructuur gesorteerd op Laatst Toegevoegd');
+    }
+
+    function renderBoomstructuur() {
+        const q = (document.getElementById('tree-filter').value || '').toLowerCase().trim();
+        const box = document.getElementById('boomstructuur-list');
+        const filtered = CALCULATED_IMAGES_DB.filter(item => {
+            const matchBranch = state.activeBranch === 'ALL' || item.branch === state.activeBranch;
+            const matchQ = !q || item.name.toLowerCase().includes(q) || item.folder.toLowerCase().includes(q) || item.submapId.toLowerCase().includes(q);
+            return matchBranch && matchQ;
+        });
+
+        document.getElementById('lbl-tree-count').textContent = `${filtered.length} ITEMS`;
+        box.innerHTML = filtered.map((item, idx) => `
+            <div class="tree-item" onclick="activateTreeItem('${item.submapId}')">
+                <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:215px;">
+                    ${idx < 3 ? '<span class="badge-new">NIEUW</span> ' : ''}
+                    <b style="color:var(--gold)">[${item.folder}]</b> ${item.name}
+                </div>
+                <span style="color:var(--mg-glow); font-size:0.5rem;">${item.nonius}n | ${item.azDeg}°</span>
+            </div>
+        `).join('');
+    }
+
+    function activateTreeItem(subId) {
+        const item = CALCULATED_IMAGES_DB.find(x => x.submapId === subId);
+        if (!item) return;
+
+        document.getElementById('ic-name').textContent = `${item.name.slice(0, 26)} (${item.w_px}×${item.h_px})`;
+        document.getElementById('ic-dim').textContent = `${item.w_cm} × ${item.h_cm} cm (${item.area_cm2} cm²)`;
+        document.getElementById('ic-nonius').textContent = `${item.nonius} nonius | ∠ ${item.azDeg}°`;
+        document.getElementById('ic-wuxing').textContent = `${item.wuxing} (${item.added})`;
+
+        if (item.preset) {
+            setSyntheticBackgroundMode(item.preset);
+        } else if (item.imgUrl || item.url) {
+            assetsLayerEl.innerHTML = `<image href="${item.imgUrl || item.url}" x="-430" y="-430" width="860" height="860" preserveAspectRatio="xMidYMid meet"/>`;
+        }
+
+        state.azDeg = item.azDeg;
+        state.rhoCm = item.rhoCm || R_KOMPAS_CM;
+        updatePlanimeterFromPolar(true);
+        logVortex('ANCHOR_LOCK', item.folder, item.submapId, `Gekoppeld aan Planimeter op θ=${item.azDeg}°, Nonius=${item.nonius}`);
+    }
+
+    function recalculateAllLoadedImages() {
+        const rows = CALCULATED_IMAGES_DB.map((img, i) => normalizeMatrixRow({
+            label: img.name.slice(0, 10),
+            azDeg: img.azDeg,
+            rhoCm: img.rhoCm,
+            sigma: state.globalSigmaY,
+            nonius: img.nonius
+        }, i));
+        setMatrixData(rows, 'ALLE_BEELDEN');
+        document.getElementById('img-calc-badge').textContent = `${CALCULATED_IMAGES_DB.length} BEELDEN DOORMING`;
+        logVortex('BATCH_CALC', 'NEBRA/simulatie', 'ALL_IMAGES', `Alle ${CALCULATED_IMAGES_DB.length} beelden uitgerekend en gekoppeld aan Matrix M`);
+    }
+
+    // Ontvang live updates vanuit build_geocentrum_assets.sh
+    window.syncVortexLatestManifest = function(latestArr, meta) {
+        if (!Array.isArray(latestArr)) return;
+        latestArr.forEach(f => {
+            if (!CALCULATED_IMAGES_DB.some(x => x.name === f.name)) {
+                CALCULATED_IMAGES_DB.push({
+                    submapId: f.submapId, branch: 'LATEST', folder: f.path.split('/')[0] || 'Root',
+                    name: f.name, w_px: 1024, h_px: 1024, w_cm: 25.6, h_cm: 25.6,
+                    area_cm2: 655.4, nonius: Math.round(f.kb * 10), azDeg: (f.kb * 13) % 360,
+                    rhoCm: 10.75, wuxing: f.type, added: f.mtime, url: f.path
+                });
+            }
+        });
+        renderBoomstructuur();
+        logVortex('BASH_SYNC', 'MANIFEST', meta ? meta.version : '157.0', `${latestArr.length} laatst toegevoegde schijfbestanden gekoppeld`);
+    };
+
+    // =========================================================================================
+    // 5. KLOKSTAPPEN (MERCURIUS) & ZONNEWIJZER + KING WEN 64×64 HINGE DUOGRAMS
+    // =========================================================================================
+    function updateSundialAndClockStep(minutesVal) {
+        const mins = parseInt(minutesVal);
+        const hh = Math.floor(mins / 60);
+        const mm = mins % 60;
+        const timeStr = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}u`;
+        document.getElementById('lbl-clock-step').textContent = timeStr;
+        document.getElementById('lbl-sundial-time').textContent = `15 OKT ${timeStr}`;
+
+        // Zonnewijzer uurhoek (15° per uur t.o.v. 12:00 lokale middag op 52.25°N)
+        const solarHourAngle = ((mins - 720) / 60.0) * 15.0;
+        const latRad = 52.25 * Math.PI / 180;
+        const sunAz = (180 + Math.atan2(Math.sin(solarHourAngle * Math.PI / 180), Math.cos(solarHourAngle * Math.PI / 180) * Math.sin(latRad)) * 180 / Math.PI + 360) % 360;
+        const shadowAz = (sunAz + 180) % 360;
+
+        const jiaziSec = Math.floor(sunAz / 6.0) % 60;
+        const subRay = Math.floor(sunAz % 6) + 1;
+
+        document.getElementById('mod-sundial-az').textContent = `Zon ${sunAz.toFixed(1)}° → Schaduw ${shadowAz.toFixed(1)}°`;
+        document.getElementById('mod-radial-sec').textContent = `Jiazi #${jiaziSec + 1} (${STEMS[jiaziSec%10]}-${BRANCHES[jiaziSec%12]}) • Straal ${subRay}/6`;
+
+        state.azDeg = sunAz;
+        updatePlanimeterFromPolar(true);
+    }
+
+    function lockClockTo15Oct() {
+        document.getElementById('sl-clock-step').value = 1215; // 20:15 CEST
+        state.azDeg = 245.91;
+        state.rhoCm = R_KOMPAS_CM;
+        updatePlanimeterFromPolar(true);
+        logVortex('CLOCK_LOCK', 'MODULE-1', 'MERCURIUS', 'Klokstap vergrendeld op 15 okt 20:15 CEST (Az 245,91°, Hoogte -4,2°)');
+    }
+
+    function lockClockToEclipse2026() {
+        state.azDeg = 245.91;
+        flyGlobeTo(-6.5000, 43.5500, 6.0, 45);
+        updatePlanimeterFromPolar(true);
+    }
+
+    function buildKw64MiniSelector() {
+        const grid = document.getElementById('kw64-selector-grid');
+        let html = '';
+        for (let kw = 1; kw <= 16; kw++) {
+            const bits = getShaoYongBits(kw - 1);
+            html += `<div class="kw-cell" onclick="selectKingWenPair(${kw}, ${(kw + 31) % 64 + 1})" title="KW #${kw} (${bits})">KW${kw}<br><span style="color:var(--gold)">${bits.slice(2,4)}</span></div>`;
+        }
+        grid.innerHTML = html;
+    }
+
+    function selectHingeDuogram(duogram) {
+        const mapAngle = { '00': 225.0, '01': 245.91, '10': 51.40, '11': 108.0 };
+        state.azDeg = mapAngle[duogram] || 0;
+        updatePlanimeterFromPolar(true);
+        setSyntheticBackgroundMode('change_map_64x64');
+        logVortex('HINGE_LOCK', '64x64_MAP', `DUO_${duogram}`, `Hinge Duogram (Lijnen 3–4) = ${duogram} geselecteerd (90,75 cm²)`);
+    }
+
+    function selectKingWenPair(benKw, zhiKw) {
+        state.selectedBenKw = benKw;
+        state.selectedZhiKw = zhiKw;
+        state.azDeg = ((benKw - 1) * 5.625) % 360;
+        updatePlanimeterFromPolar(true);
+    }
+
+    // =========================================================================================
+    // 6. ALLE EXPORTFORMATEN (PNG, BMP BITMAP, SVG, KML, GEOJSON, CSV/SCILAB)
+    // =========================================================================================
+    function exportAllFormats(fmt) {
+        if (fmt === 'kml') {
+            const placemarks = state.matrix.map(r => {
+                const lon = (1.85 + (r.x_cm / 1.15)).toFixed(4);
+                const lat = (47.25 + (r.y_cm / 1.45)).toFixed(4);
+                return `<Placemark><name>${r.label} (Nonius ${r.nonius})</name><Point><coordinates>${lon},${lat},0</coordinates></Point></Placemark>`;
+            }).join('\n');
+            const kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>VORTEX Planimeter Ankers</name>${placemarks}</Document></kml>`;
+            downloadBlob(kml, 'vortex_planimeter_ankers.kml', 'application/vnd.google-earth.kml+xml');
+        } else if (fmt === 'geojson') {
+            const feats = state.matrix.map(r => ({
+                type: 'Feature',
+                properties: { label: r.label, azDeg: r.azDeg, nonius: r.nonius, bits: r.bits },
+                geometry: { type: 'Point', coordinates: [1.85 + r.x_cm * 0.78, 47.25 + r.y_cm * 0.52] }
+            }));
+            downloadBlob(JSON.stringify({ type: 'FeatureCollection', features: feats }, null, 2), 'vortex_ankers.geojson', 'application/geo+json');
+        } else if (fmt === 'svg') {
+            const svgData = new XMLSerializer().serializeToString(svgEl);
+            downloadBlob(svgData, 'vortex_planimeter_achtergrond.svg', 'image/svg+xml');
+        } else if (fmt === 'csv') {
+            const csv = "idx,label,x_cm,y_cm,theta_deg,rho_cm,nonius,iching_6bit\n" +
+                state.matrix.map(r => `${r.idx},${r.label},${r.x_cm},${r.y_cm},${r.azDeg},${r.rhoCm},${r.nonius},"${r.bits}"`).join('\n');
+            downloadBlob(csv, 'vortex_matrix_export.csv', 'text/csv');
+        } else if (fmt === 'png' || fmt === 'bmp') {
+            const canvas = document.getElementById('custom-grid-canvas');
+            const url = canvas.toDataURL(fmt === 'bmp' ? 'image/bmp' : 'image/png');
+            const a = document.createElement('a');
+            a.href = url; a.download = `vortex_achtergrond.${fmt}`; a.click();
+        }
+        logVortex('EXPORT_IO', 'UITVOER', fmt.toUpperCase(), `Bestand geëxporteerd als .${fmt}`);
+    }
+
+    function downloadBlob(content, filename, mime) {
+        const blob = new Blob([content], { type: mime });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+    }
+
+    // =========================================================================================
+    // 7. OPEN GEODETISCHE API CONNECTOR (PDOK LOCATIESERVER ZONDER API-KEY) & BASH SYNC
+    // =========================================================================================
+    async function fetchPDOKLocatieServer(queryStr) {
+        document.getElementById('api-status-lbl').textContent = `PDOK API zoeken: ${queryStr}...`;
+        try {
+            const res = await fetch(`https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=${encodeURIComponent(queryStr)}&rows=1`);
+            const data = await res.json();
+            const doc = data.response && data.response.docs && data.response.docs[0];
+            if (doc && doc.centroide_ll) {
+                const m = doc.centroide_ll.match(/POINT\(([0-9.-]+)\s+([0-9.-]+)\)/);
+                if (m) {
+                    const lon = parseFloat(m[1]), lat = parseFloat(m[2]);
+                    flyGlobeTo(lon, lat, 8.5, 35);
+                    document.getElementById('api-status-lbl').textContent = `${doc.weergavenaam} (${lat.toFixed(3)}°N, ${lon.toFixed(3)}°E)`;
+                    logVortex('PDOK_API', 'API-CONNECTOR', queryStr.toUpperCase(), `Gevonden: ${doc.weergavenaam} | RD: ${doc.centroide_rd || 'OK'}`);
+                }
+            }
+        } catch (err) {
+            document.getElementById('api-status-lbl').textContent = `Offline / Lokale Coördinaat gebruikt`;
+        }
+    }
+
+    function runBashManifestSync() {
+        if (window.VORTEX_LATEST_ADDED && window.VORTEX_LATEST_ADDED.length > 0) {
+            window.syncVortexLatestManifest(window.VORTEX_LATEST_ADDED, window.VORTEX_MANIFEST_META);
+        } else {
+            sortTreeByLatest();
+        }
+    }
+
+    function copyBashUpdateCmd() {
+        const cmd = "cd ~/Bureaublad/geocentrum && ./build_geocentrum_assets.sh && git add . && git commit -m 'VORTEX v157 update' && git push origin main";
+        navigator.clipboard.writeText(cmd);
+        document.getElementById('api-status-lbl').textContent = "Bash & Git commando gekopieerd!";
+    }
+
+    // =========================================================================================
+    // 8. PLANIMETER KINEMATICA, 3D GLOBE & MATRIX ENGINE
+    // =========================================================================================
+    let globeMap = null;
+    function initMapGlobe() {
+        if (typeof maplibregl === 'undefined') return;
+        try {
+            globeMap = new maplibregl.Map({
+                container: 'mapglobe-bg',
+                preserveDrawingBuffer: true,
+                style: {
+                    version: 8,
+                    sources: {
+                        'base-tiles': { type: 'raster', tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'], tileSize: 256 },
+                        'openseamap-tiles': { type: 'raster', tiles: ['https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png'], tileSize: 256 }
+                    },
+                    layers: [
+                        { id: 'base-raster-layer', type: 'raster', source: 'base-tiles' },
+                        { id: 'openseamap-layer', type: 'raster', source: 'openseamap-tiles' }
+                    ]
+                },
+                center: [1.85, 47.25], zoom: 4.1, pitch: 35
+            });
+            globeMap.on('style.load', () => {
+                if (typeof globeMap.setProjection === 'function') {
+                    try { globeMap.setProjection({ type: 'globe' }); } catch (e) {}
+                }
+            });
+        } catch (e) {}
+    }
+
+    function flyGlobeTo(lng, lat, zoom = 5.5, pitch = 40) {
+        if (globeMap) globeMap.flyTo({ center: [lng, lat], zoom, pitch, duration: 1200 });
+    }
+
+    function setGlobeOpacity(val) {
+        document.getElementById('lbl-globe-alpha').textContent = `${val}%`;
+        document.getElementById('mapglobe-bg').style.opacity = val / 100;
+    }
+
+    function toggleGlobeInteraction() {
+        state.globeInteractive = !state.globeInteractive;
+        document.getElementById('mapglobe-bg').classList.toggle('interactive-globe', state.globeInteractive);
+        document.getElementById('btn-vp-globe-nav').classList.toggle('active', state.globeInteractive);
+    }
+
+    function getShaoYongBits(idx) {
+        const cleanIdx = ((idx % 64) + 64) % 64;
+        const val = cleanIdx < 32 ? (63 - cleanIdx) : (cleanIdx - 32);
+        return val.toString(2).padStart(6, '0');
+    }
+
+    function invertBits(bits) { return bits.split('').map(b => b === '1' ? '0' : '1').join(''); }
+
+    function computeNuclear(bits) {
+        const b2 = bits[1], b3 = bits[2], b4 = bits[3], b5 = bits[4];
+        return { N: `${b2}${b3}${b4}${b3}${b4}${b5}`, N2: `${b3}${b4}${b3}${b4}${b3}${b4}`, core: `${b3}${b4}` };
+    }
+
+    function normalizeMatrixRow(raw, idx) {
+        let x_cm = parseFloat(raw.x_cm), y_cm = parseFloat(raw.y_cm);
+        let azDeg = parseFloat(raw.azDeg), rhoCm = parseFloat(raw.rhoCm);
+        let sigma = (raw.sigma !== undefined && !isNaN(parseFloat(raw.sigma))) ? parseFloat(raw.sigma) : state.globalSigmaY;
+
+        if (!isNaN(x_cm) && !isNaN(y_cm) && (isNaN(azDeg) || isNaN(rhoCm))) {
+            rhoCm = Math.hypot(x_cm, y_cm);
+            azDeg = (Math.atan2(x_cm, y_cm) * 180 / Math.PI + 360) % 360;
+        } else {
+            if (isNaN(azDeg)) azDeg = 0;
+            if (isNaN(rhoCm)) rhoCm = R_KOMPAS_CM;
+            azDeg = ((azDeg % 360) + 360) % 360;
+            const rad = (azDeg - 90) * Math.PI / 180;
+            x_cm = Math.cos(rad) * rhoCm;
+            y_cm = -Math.sin(rad) * rhoCm * sigma;
+        }
+        const syIdx = Math.floor(azDeg / 5.625) % 64;
+        const bits = getShaoYongBits(syIdx);
+        const sweepFrac = azDeg === 0 ? 1.0 : (azDeg / 360.0);
+        const nonius = raw.nonius !== undefined ? parseInt(raw.nonius) : Math.round(3630 * sweepFrac * Math.pow(rhoCm / R_KOMPAS_CM, 2) * sigma);
+
+        return { idx: idx + 1, label: raw.label || `R${idx + 1}`, x_cm: Number(x_cm.toFixed(2)), y_cm: Number(y_cm.toFixed(2)), azDeg: Number(azDeg.toFixed(2)), rhoCm: Number(rhoCm.toFixed(2)), sigma: Number(sigma.toFixed(2)), nonius, syIdx, bits };
+    }
+
+    function parseAndCleanTextToMatrix(rawText, sourceName) {
+        const lines = (rawText || '').split(/\r?\n/);
+        const rows = [];
+        lines.forEach(l => {
+            const nums = l.replace(/,/g, '.').match(/[+-]?\d+(?:\.\d+)?/g);
+            if (nums && nums.length >= 2) {
+                rows.push({ label: `TXT_${rows.length+1}`, x_cm: parseFloat(nums[0]), y_cm: parseFloat(nums[1]), azDeg: nums[2] ? parseFloat(nums[2]) : undefined, rhoCm: nums[3] ? parseFloat(nums[3]) : undefined });
+            }
+        });
+        if (rows.length > 0) setMatrixData(rows.map((r, i) => normalizeMatrixRow(r, i)), sourceName);
+        return rows;
+    }
+
+    function setMatrixData(newMatrix) {
+        state.matrix = newMatrix.map((r, i) => ({ ...r, idx: i + 1 }));
+        state.activeSimRow = 0;
+        renderMatrixTable();
+        renderMagnesiumOvertrek();
+    }
+
+    function renderMatrixTable() {
+        document.getElementById('lbl-mat-dim').textContent = `${state.matrix.length}×7`;
+        document.getElementById('matrix-tbody').innerHTML = state.matrix.map((r, i) => `
+            <tr class="${i === state.activeSimRow ? 'sim-active-row' : ''}" onclick="jumpSimulatorToRow(${i})">
+                <td style="color:var(--mg-glow)">#${r.idx} ${r.label.slice(0,9)}</td>
+                <td>${r.x_cm.toFixed(1)}</td>
+                <td>${r.y_cm.toFixed(1)}</td>
+                <td style="color:var(--gold)">${r.azDeg.toFixed(1)}°</td>
+                <td>${r.rhoCm.toFixed(1)}</td>
+                <td style="color:var(--gold); font-weight:bold;">${r.nonius}</td>
+                <td>${r.bits}</td>
+            </tr>
+        `).join('');
+    }
+
+    function jumpSimulatorToRow(rowIdx) {
+        if (state.matrix.length === 0) return;
+        state.activeSimRow = ((rowIdx % state.matrix.length) + state.matrix.length) % state.matrix.length;
+        const r = state.matrix[state.activeSimRow];
+        state.azDeg = r.azDeg; state.rhoCm = r.rhoCm; state.globalSigmaY = r.sigma;
+        document.getElementById('lbl-sim-step').textContent = `Rij #${r.idx}/${state.matrix.length}`;
+        renderMatrixTable();
+        updatePlanimeterFromPolar(true);
+    }
+
+    function stepMatrixSimulator(d) { jumpSimulatorToRow(state.activeSimRow + d); }
+
+    function toggleMatrixSimulator() {
+        const btn = document.getElementById('btn-sim-play');
+        if (state.simTimer) { clearInterval(state.simTimer); state.simTimer = null; btn.textContent = "▶️ Simuleer"; }
+        else { btn.textContent = "⏹️ Stop"; state.simTimer = setInterval(() => stepMatrixSimulator(1), 650); }
+    }
+
+    function applyMatrixOperator(opType) {
+        let updated = state.matrix.map((r, i) => {
+            let { x_cm, y_cm, azDeg, rhoCm, sigma, nonius, bits, label } = r;
+            if (opType === 'flatten0') { sigma = 0.0; y_cm = 0.0; nonius = 0; }
+            else if (opType === 'invert_origin') { x_cm = -x_cm; y_cm = -y_cm; rhoCm = -rhoCm; sigma = -sigma; nonius = -nonius; bits = invertBits(bits); }
+            else if (opType === 'hinge_involute') { azDeg = (azDeg + 14.99) % 360; }
+            else if (opType === 'nuclear_hugua') { bits = computeNuclear(bits).N; }
+            return normalizeMatrixRow({ label, x_cm, y_cm, azDeg, rhoCm, sigma, nonius, bits }, i);
+        });
+        setMatrixData(updated);
+        jumpSimulatorToRow(state.activeSimRow);
+    }
+
+    function buildIndependentWheels() {
+        let h64 = `<circle cx="0" cy="0" r="${R_KOMPAS_PX}" fill="none" stroke="#00e5ff" stroke-width="2"/>`;
+        for (let i = 0; i < 64; i++) {
+            const a1 = (i * 5.625 - 90) * Math.PI / 180;
+            const am = ((i + 0.5) * 5.625 - 90) * Math.PI / 180;
+            const bits = getShaoYongBits(i), { core } = computeNuclear(bits);
+            h64 += `<line x1="${Math.cos(a1)*(R_KOMPAS_PX-30)}" y1="${Math.sin(a1)*(R_KOMPAS_PX-30)}" x2="${Math.cos(a1)*R_KOMPAS_PX}" y2="${Math.sin(a1)*R_KOMPAS_PX}" stroke="#1e40af" stroke-width="0.8"/>`;
+            h64 += `<circle cx="${Math.cos(am)*(R_KOMPAS_PX-10)}" cy="${Math.sin(am)*(R_KOMPAS_PX-10)}" r="3.2" fill="${CORE_COLORS[core]}"/>`;
+        }
+        wheel64El.innerHTML = h64;
+        wheel60El.innerHTML = `<circle cx="0" cy="0" r="${R_JIAZI_PX}" fill="none" stroke="#a855f7" stroke-width="1.3" stroke-dasharray="4,3"/>`;
+        wheel16El.innerHTML = `<circle cx="0" cy="0" r="${R_NUC_PX}" fill="rgba(15, 23, 42, 0.45)" stroke="#ff9900" stroke-width="1.8"/>`;
+    }
+
+    function updatePlanimeterFromPolar(syncSliders = true) {
+        const safeSy = Math.abs(state.globalSigmaY) < 0.001 ? 0.001 : state.globalSigmaY;
+        wheel64El.setAttribute('transform', `scale(1, ${safeSy})`);
+
+        const rad = (state.azDeg - 90) * Math.PI / 180;
+        const tx = Math.cos(rad) * (state.rhoCm * PX_PER_CM);
+        const ty = Math.sin(rad) * (state.rhoCm * PX_PER_CM) * state.globalSigmaY;
+
+        const px = state.poleX, py = state.poleY, R = 300, L = 435;
+        const dx = tx - px, dy = ty - py;
+        let ed = Math.max(Math.abs(R - L) + 1, Math.min(R + L - 1, Math.hypot(dx, dy) || 1));
+        const a = (R * R - L * L + ed * ed) / (2 * ed);
+        const h = Math.sqrt(Math.max(0, R * R - a * a));
+        const mx = px + a * (dx / ed), my = py + a * (dy / ed);
+        const gx = mx - h * (dy / ed), gy = my + h * (dx / ed);
+
+        const armLen = Math.hypot(tx - gx, ty - gy) || 1;
+        const ux = (tx - gx) / armLen, uy = (ty - gy) / armLen;
+        const wx = gx + ux * (L + 65), wy = gy + uy * (L + 65);
+
+        state.txPx = tx; state.tyPx = ty;
+
+        const normAz = ((state.azDeg % 360) + 360) % 360;
+        const sweepFraction = normAz === 0 ? 1.0 : (normAz / 360.0);
+        const signedNonius = Math.round(3630 * sweepFraction * Math.pow(state.rhoCm / R_KOMPAS_CM, 2) * state.globalSigmaY);
+        const signedAreaCm2 = signedNonius * 0.1;
+
+        let pHtml = `<line x1="${px}" y1="${py}" x2="${gx}" y2="${gy}" stroke="#d4af37" stroke-width="14" stroke-linecap="round" opacity="0.9"/>`;
+        pHtml += `<circle cx="${px}" cy="${py}" r="8" fill="#92400e" stroke="#fde047" stroke-width="2"/>`;
+        pHtml += `<line x1="${gx}" y1="${gy}" x2="${wx}" y2="${wy}" stroke="#eab308" stroke-width="10" stroke-linecap="round" opacity="0.92"/>`;
+        pHtml += `<circle cx="${gx}" cy="${gy}" r="9" fill="#451a03" stroke="#50ffb0" stroke-width="2.5"/>`;
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="12" fill="rgba(0,0,0,0.65)" stroke="#50ffb0" stroke-width="2.8"/>`;
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="3.5" fill="#fff"/>`;
+        pHtml += `<circle cx="${wx}" cy="${wy}" r="19" fill="#fef3c7" stroke="#92400e" stroke-width="2.2"/>`;
+        pHtml += `<text x="${wx}" y="${wy + 3}" fill="#000" font-size="8" font-weight="bold" text-anchor="middle">${signedNonius}</text>`;
+        planimeterGroup.innerHTML = pHtml;
+
+        // Update King Wen 64 Chain & 64x64 Hinge Duogram Telemetrie op basis van de Arm-hoek
+        const syIdx = Math.floor(normAz / 5.625) % 64;
+        const bits = getShaoYongBits(syIdx);
+        const { N, N2, core } = computeNuclear(bits);
+        const zhiIdx = (syIdx + 32) % 64;
+        const zhiBits = getShaoYongBits(zhiIdx);
+        const zhiCore = computeNuclear(zhiBits).core;
+        const wuxBen = WUXING_NAMES[syIdx % 5], wuxZhi = WUXING_NAMES[zhiIdx % 5];
+        const relNames = ["⬛ Same Element (Tong Lei)", "🟩 Generating (Xiang Sheng)", "🟥 Controlling (Xiang Ke)", "🟦 Counteracting (Xiang Chong)", "🟨 Weakening (Xiang Xie)"];
+        const relStr = relNames[(syIdx + zhiIdx) % 5];
+
+        document.getElementById('kw-ben').textContent = `KW #${syIdx + 1} (${bits}) • ${wuxBen}`;
+        document.getElementById('kw-chain').textContent = `${bits} → ${N} → ${N2} (t = ${core})`;
+        document.getElementById('kw-zhi').textContent = `KW #${zhiIdx + 1} (${zhiBits}) • ${wuxZhi}`;
+        document.getElementById('kw-hinge').textContent = `Rij-Hinge [${core}] × Kolom-Hinge [${zhiCore}] (90,75 cm²)`;
+        document.getElementById('kw-relation').textContent = relStr;
+
+        document.getElementById('vp-nonius').textContent = `${signedNonius >= 0 ? '+' : ''}${signedNonius}`;
+        document.getElementById('vp-area').textContent = `${signedAreaCm2.toFixed(1)} cm²`;
+        document.getElementById('vp-az').textContent = `${normAz.toFixed(2)}°`;
+        document.getElementById('vp-rho').textContent = `${state.rhoCm.toFixed(2)} cm`;
+        document.getElementById('vp-kw-hinge').textContent = `KW #${syIdx + 1} (${bits}) → N²=${N2} [Hinge t=${core}]`;
+        document.getElementById('hud-coord-mini').textContent = `[T: ${(tx/40).toFixed(2)}, ${(-ty/40).toFixed(2)} cm | KW#${syIdx+1}]`;
+
+        renderMagnesiumOvertrek();
+
+        if (syncSliders) {
+            document.getElementById('yaw-slider').value = normAz.toFixed(1);
+            document.getElementById('yaw-deg').innerText = `${normAz.toFixed(1)}°`;
+            document.getElementById('rho-slider').value = state.rhoCm.toFixed(2);
+            document.getElementById('rho-val').innerText = `${state.rhoCm.toFixed(2)} cm`;
+        }
+    }
+
+    function renderMagnesiumOvertrek() {
+        const M = state.matrix;
+        if (M.length === 0) { mgTracesGroup.innerHTML = ''; return; }
+        let mHtml = '';
+        const pts = M.map(r => {
+            const rad = (r.azDeg - 90) * Math.PI / 180;
+            return { ...r, drawX: Math.cos(rad) * r.rhoCm * PX_PER_CM, drawY: Math.sin(rad) * r.rhoCm * PX_PER_CM * state.globalSigmaY };
+        });
+        if (pts.length > 1) {
+            const dPoly = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.drawX.toFixed(1)} ${p.drawY.toFixed(1)}`).join(' ');
+            mHtml += `<path d="${dPoly} Z" fill="rgba(80, 255, 176, 0.10)" stroke="#50ffb0" stroke-width="2"/>`;
+        }
+        pts.forEach((p, i) => {
+            const act = i === state.activeSimRow;
+            mHtml += `<circle cx="${p.drawX.toFixed(1)}" cy="${p.drawY.toFixed(1)}" r="${act ? 8 : 4.5}" fill="rgba(80,255,176,0.3)" stroke="${act ? '#ffcc33' : '#50ffb0'}" stroke-width="2"/>`;
+        });
+        mgTracesGroup.innerHTML = mHtml;
+    }
+
+    function stampMagnesiumPoint() {
+        const txCm = state.txPx / PX_PER_CM, tyCm = -state.tyPx / PX_PER_CM;
+        state.matrix.push(normalizeMatrixRow({ label: `ANKER_${state.matrix.length + 1}`, x_cm: txCm, y_cm: tyCm, azDeg: state.azDeg, rhoCm: state.rhoCm, sigma: state.globalSigmaY }, state.matrix.length));
+        state.activeSimRow = state.matrix.length - 1;
+        setMatrixData(state.matrix);
+    }
+
+    function resetToBeginstand() { state.azDeg = 0.0; state.rhoCm = R_KOMPAS_CM; state.globalSigmaY = 1.0; updatePlanimeterFromPolar(true); }
+    function setGlobalAxisFlatten(val) { state.globalSigmaY = parseFloat(val); document.getElementById('sigma-val').textContent = state.globalSigmaY.toFixed(2); updatePlanimeterFromPolar(true); }
+    function stepPolar(dAz, dRho) { state.azDeg = (state.azDeg + dAz + 360) % 360; state.rhoCm = Math.max(-11.5, Math.min(11.5, state.rhoCm + dRho)); updatePlanimeterFromPolar(true); }
+    function stopPlanimeterArm() { if (state.simTimer) toggleMatrixSimulator(); }
+    function setThemeMode(t) { document.documentElement.setAttribute('data-theme', t); renderCustomUnderGrid(); }
+    function setGlobalUiScale(v) { state.uiScale = parseFloat(v); document.documentElement.style.setProperty('--ui-scale', state.uiScale); document.getElementById('lbl-ui-scale').textContent = Math.round(state.uiScale*100)+'%'; setTimeout(renderCustomUnderGrid, 50); }
+    function winAction(id, act) { const el = document.getElementById(id); if (el && act === 'collapse') el.classList.toggle('collapsed'); }
+
+    function processKinematica(axis, val) {
+        const num = parseFloat(val);
+        if (axis === 'yaw') state.azDeg = num;
+        else if (axis === 'rho') state.rhoCm = num;
+        else if (axis === 'pitch') { svgEl.style.transform = `rotateX(${num}deg)`; return; }
+        updatePlanimeterFromPolar(true);
+    }
+
+    function getSafeSvgCoords(e) {
+        try {
+            const ctm = svgEl.getScreenCTM();
+            if (ctm) {
+                const inv = ctm.inverse();
+                if (inv) { const pt = svgEl.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(inv); }
+            }
+        } catch (err) {}
+        const rect = svgEl.getBoundingClientRect();
+        const sc = Math.min(rect.width, rect.height) / 960.0;
+        return { x: (e.clientX - (rect.left + rect.width / 2)) / (sc || 1), y: (e.clientY - (rect.top + rect.height / 2)) / (sc || 1) };
+    }
+
+    svgEl.addEventListener('pointermove', (e) => {
+        if (state.globeInteractive || e.buttons !== 1) return;
+        const cursor = getSafeSvgCoords(e);
+        state.azDeg = (Math.atan2(cursor.y, cursor.x) * 180 / Math.PI + 90 + 360) % 360;
+        state.rhoCm = Math.min(11.5, Math.hypot(cursor.x, cursor.y) / PX_PER_CM);
+        updatePlanimeterFromPolar(true);
+    });
+
+    svgEl.addEventListener('pointerdown', (e) => {
+        if (state.globeInteractive || e.button !== 0) return;
+        const cursor = getSafeSvgCoords(e);
+        if (e.shiftKey) { state.poleX = cursor.x; state.poleY = cursor.y; }
+        else {
+            state.azDeg = (Math.atan2(cursor.y, cursor.x) * 180 / Math.PI + 90 + 360) % 360;
+            state.rhoCm = Math.min(11.5, Math.hypot(cursor.x, cursor.y) / PX_PER_CM);
+        }
+        updatePlanimeterFromPolar(true);
+    });
+
+    // Splitters
+    (function initSplitters() {
+        const v1 = document.getElementById('vSplit1'), v2 = document.getElementById('vSplit2'), hL = document.getElementById('hSplitLog');
+        let mode = null;
+        v1.addEventListener('pointerdown', (e) => { mode = 'v1'; v1.setPointerCapture(e.pointerId); });
+        v2.addEventListener('pointerdown', (e) => { mode = 'v2'; v2.setPointerCapture(e.pointerId); });
+        hL.addEventListener('pointerdown', (e) => { mode = 'hL'; hL.setPointerCapture(e.pointerId); });
+        window.addEventListener('pointermove', (e) => {
+            if (!mode) return;
+            const sc = state.uiScale || 1;
+            if (mode === 'v1') document.documentElement.style.setProperty('--col1-w', `${Math.max(220, Math.min(540, e.clientX / sc))}px`);
+            else if (mode === 'v2') {
+                const c1 = document.getElementById('col-left').getBoundingClientRect().width / sc;
+                document.documentElement.style.setProperty('--col2-w', `${Math.max(250, Math.min(620, (e.clientX / sc) - c1 - 6))}px`);
+            } else if (mode === 'hL') {
+                const th = window.innerHeight / sc;
+                document.documentElement.style.setProperty('--log-h', `${Math.max(28, Math.min(th * 0.45, th - (e.clientY / sc)))}px`);
+            }
+            renderCustomUnderGrid();
+            if (globeMap) globeMap.resize();
+        });
+        window.addEventListener('pointerup', () => { mode = null; });
+    })();
+
+    const stageObs = new ResizeObserver(() => { renderCustomUnderGrid(); if (globeMap) globeMap.resize(); });
+    stageObs.observe(document.getElementById('svg-stage'));
+
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('nl-NL'); }, 1000);
+
+    // Initialisatie
+    initMapGlobe();
+    setupUniversalDragDropAndPaste();
+    buildIndependentWheels();
+    buildKw64MiniSelector();
+    renderBoomstructuur();
+    recalculateAllLoadedImages();
+    renderCustomUnderGrid();
+    updatePlanimeterFromPolar(true);
+    logVortex('BOOT_V157', 'NEBRA/simulatie', 'LAATST_TOEGEVOEGD', 'VORTEX OS v157.0 gestart met Universeel Achtergrond I/O, King Wen 64×64 & 60/360 Zonnewijzer');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1944 @@
+<!--
+SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<!DOCTYPE html>
+<html lang="nl"><!-- If this file is not called customize.dist/src/template.html, it is generated --><head><span id="alertifyCSS" data-but-why="see: common-interface.js"></span>
+    <title data-localization="main_title">Startpagina - CryptPad.fr</title>
+    <meta property="og:url" content="https://cryptpad.fr/index.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="CryptPad: end-to-end encrypted collaboration suite">
+    <meta property="og:description" content="CryptPad: end-to-end encrypted collaboration suite">
+    <meta property="og:image" content="https://cryptpad.fr/customize/images/opengraph_preview/og-default.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="https://cryptpad.fr/customize/favicon/main-favicon.png" id="favicon">
+    <script src="Startpagina%20-%20CryptPad.fr_files/pre-loading.js"></script>
+    <link href="Startpagina%20-%20CryptPad.fr_files/pre-loading.css" rel="stylesheet" type="text/css">
+    <script async="" data-bootload="/customize/template.js" data-main="/common/boot.js?ver=1.0" src="Startpagina%20-%20CryptPad.fr_files/require.js"></script>
+<script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/boot.js?ver=1.0" src="Startpagina%20-%20CryptPad.fr_files/boot.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/api/config?cb=19e82974831" src="Startpagina%20-%20CryptPad.fr_files/config.es"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/boot2.js" src="Startpagina%20-%20CryptPad.fr_files/boot2.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/requireconfig.js" src="Startpagina%20-%20CryptPad.fr_files/requireconfig.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/application_config.js" src="Startpagina%20-%20CryptPad.fr_files/application_config.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/api/config" src="Startpagina%20-%20CryptPad.fr_files/config_002.es"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/application_config_internal.js" src="Startpagina%20-%20CryptPad.fr_files/application_config_internal.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/template.js" src="Startpagina%20-%20CryptPad.fr_files/template.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="jquery" src="Startpagina%20-%20CryptPad.fr_files/jquery.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/hyperscript.js" src="Startpagina%20-%20CryptPad.fr_files/hyperscript.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/pages.js" src="Startpagina%20-%20CryptPad.fr_files/pages.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/nthen/index.js" src="Startpagina%20-%20CryptPad.fr_files/index.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-language.js" src="Startpagina%20-%20CryptPad.fr_files/common-language.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-util.js" src="Startpagina%20-%20CryptPad.fr_files/common-util.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/messages.js" src="Startpagina%20-%20CryptPad.fr_files/messages_002.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/extensions.js" src="Startpagina%20-%20CryptPad.fr_files/extensions.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="optional" src="Startpagina%20-%20CryptPad.fr_files/optional.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-icons.js" src="Startpagina%20-%20CryptPad.fr_files/common-icons.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/translations/messages.js" src="Startpagina%20-%20CryptPad.fr_files/messages.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/translations/messages.nl.js" src="Startpagina%20-%20CryptPad.fr_files/messages.nl.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/tweetnacl-util/nacl-util.min.js" src="Startpagina%20-%20CryptPad.fr_files/nacl-util.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="json" src="Startpagina%20-%20CryptPad.fr_files/json.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/api/instance" src="Startpagina%20-%20CryptPad.fr_files/instance.es"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/lucide.js" src="Startpagina%20-%20CryptPad.fr_files/lucide.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="text" src="Startpagina%20-%20CryptPad.fr_files/text.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/extensions.js" src="Startpagina%20-%20CryptPad.fr_files/extensions_003.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/accounts/extensions.js" src="Startpagina%20-%20CryptPad.fr_files/extensions_002.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/RequireLess.js" src="Startpagina%20-%20CryptPad.fr_files/RequireLess.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/accounts/plans.js" src="Startpagina%20-%20CryptPad.fr_files/plans.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-interface.js" src="Startpagina%20-%20CryptPad.fr_files/common-interface.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/outer/local-store.js" src="Startpagina%20-%20CryptPad.fr_files/local-store.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/LessLoader.js" src="Startpagina%20-%20CryptPad.fr_files/LessLoader.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-constants.js" src="Startpagina%20-%20CryptPad.fr_files/common-constants.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-hash.js" src="Startpagina%20-%20CryptPad.fr_files/common-hash.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/cache-store.js" src="Startpagina%20-%20CryptPad.fr_files/cache-store.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/localforage/dist/localforage.min.js" src="Startpagina%20-%20CryptPad.fr_files/localforage.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/chainpad-crypto/crypto.js" src="Startpagina%20-%20CryptPad.fr_files/crypto.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-signing-keys.js" src="Startpagina%20-%20CryptPad.fr_files/common-signing-keys.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/tweetnacl/nacl-fast.min.js" src="Startpagina%20-%20CryptPad.fr_files/nacl-fast.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/accounts/api.js" src="Startpagina%20-%20CryptPad.fr_files/api.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/marked/marked.min.js" src="Startpagina%20-%20CryptPad.fr_files/marked.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/common-notifier.js" src="Startpagina%20-%20CryptPad.fr_files/common-notifier.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/alertify.js/dist/js/alertify.js" src="Startpagina%20-%20CryptPad.fr_files/alertify.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/lib/tippy/tippy.min.js" src="Startpagina%20-%20CryptPad.fr_files/tippy.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/loading.js" src="Startpagina%20-%20CryptPad.fr_files/loading.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/clipboard.js" src="Startpagina%20-%20CryptPad.fr_files/clipboard.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/lib/jquery-ui/jquery-ui.min.js" src="Startpagina%20-%20CryptPad.fr_files/jquery-ui.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/bootstrap-tokenfield/dist/bootstrap-tokenfield.js" src="Startpagina%20-%20CryptPad.fr_files/bootstrap-tokenfield.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/require-css/css.js" src="Startpagina%20-%20CryptPad.fr_files/css.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/lib/less.min.js" src="Startpagina%20-%20CryptPad.fr_files/less.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/visible.js" src="Startpagina%20-%20CryptPad.fr_files/visible.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/notify.js" src="Startpagina%20-%20CryptPad.fr_files/notify.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/accounts/http-command.js" src="Startpagina%20-%20CryptPad.fr_files/http-command.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/components/file-saver/FileSaver.min.js" src="Startpagina%20-%20CryptPad.fr_files/FileSaver.min.js"></script><link type="text/css" rel="stylesheet" href="Startpagina%20-%20CryptPad.fr_files/tippy.css"><link type="text/css" rel="stylesheet" href="Startpagina%20-%20CryptPad.fr_files/jquery-ui.min.css"><style data-original-src="/accounts/style.less" type="text/css">body .cp-spinner svg {
+  animation: spin 10s linear infinite;
+}
+body .cp-accounts-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0px;
+}
+body .cp-accounts-list .cp-accounts-list-group {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 1;
+  justify-content: center;
+  gap: 0px;
+}
+body .cp-accounts-list .cp-accounts-custom-msg:empty {
+  display: none;
+}
+body .cp-accounts-list .cp-accounts-custom-msg {
+  flex-basis: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+body .cp-accounts-list .cp-accounts-custom-msg div.alert.alert-info {
+  font-size: 16px;
+  max-width: 600px;
+}
+body .cp-accounts-list .cp-accounts-custom-msg div.alert.alert-info *:last-child {
+  margin-bottom: 0;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle {
+  flex-basis: 100%;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle {
+  flex: 1 1 0px;
+  display: flex;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle.cp-selected {
+  font-weight: 800;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle:first-child {
+  justify-content: flex-end;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle:last-child {
+  justify-content: flex-start;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle .btn-primary {
+  cursor: default;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle-btn button {
+  width: 50px;
+  height: 25px;
+  border-radius: 20px;
+  padding: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  border-color: #424242;
+  background: #FAFAFA;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle-btn button[aria-pressed=true] {
+  justify-content: flex-end;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle-btn button[aria-pressed=false] {
+  justify-content: flex-start;
+}
+body .cp-accounts-list .cp-accounts-yearly-toggle .cp-accounts-toggle-btn button .cp-toggle {
+  height: 20px;
+  width: 20px;
+  background: #424242;
+  border-radius: 25px;
+}
+body .cp-accounts-list .cp-accounts-org-title {
+  flex-basis: 100%;
+  display: flex;
+  justify-content: center;
+  font-family: "IBM Plex Mono";
+  font-size: 36px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+body [data-accounts-plan=free] .cp-colored {
+  color: #424242;
+  border-color: #424242;
+}
+body [data-accounts-plan=free].cp-accounts-card {
+  background-color: rgba(66, 66, 66, 0.15);
+}
+body [data-accounts-plan=cloud] .cp-colored {
+  color: #424242;
+  border-color: #424242;
+}
+body [data-accounts-plan=cloud].cp-accounts-card {
+  background-color: rgba(66, 66, 66, 0.15);
+}
+body [data-accounts-plan=basic] .cp-colored {
+  color: #0087ff;
+  border-color: #0087ff;
+}
+body [data-accounts-plan=basic].cp-accounts-card {
+  background-color: rgba(0, 135, 255, 0.15);
+}
+body [data-accounts-plan=pro] .cp-colored {
+  color: #48ab71;
+  border-color: #48ab71;
+}
+body [data-accounts-plan=pro].cp-accounts-card {
+  background-color: rgba(72, 171, 113, 0.15);
+}
+body [data-accounts-plan=power] .cp-colored {
+  color: #9631ff;
+  border-color: #9631ff;
+}
+body [data-accounts-plan=power].cp-accounts-card {
+  background-color: rgba(150, 49, 255, 0.15);
+}
+body [data-accounts-plan=org_s] .cp-colored {
+  color: #ff3b3b;
+  border-color: #ff3b3b;
+}
+body [data-accounts-plan=org_s].cp-accounts-card {
+  background-color: rgba(255, 59, 59, 0.15);
+}
+body [data-accounts-plan=org_large] .cp-colored {
+  color: #ff7f31;
+  border-color: #ff7f31;
+}
+body [data-accounts-plan=org_large].cp-accounts-card {
+  background-color: rgba(255, 127, 49, 0.15);
+}
+body .cp-accounts-yourplan {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+body .cp-accounts-yourplan button {
+  font-size: 1.25em;
+}
+body .cp-accounts-card {
+  margin: 10px 10px;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  min-height: 380px;
+  width: 250px;
+  font-size: 18px;
+  border-radius: 10px;
+  padding: 10px;
+}
+body .cp-accounts-card[data-org="true"] {
+  width: 300px;
+}
+body .cp-accounts-card .cp-accounts-card-name,
+body .cp-accounts-card .cp-price-value {
+  font-family: "IBM Plex Mono";
+}
+body .cp-accounts-card .cp-accounts-card-name {
+  font-size: 36px;
+  text-align: center;
+}
+body .cp-accounts-card .cp-accounts-card-price {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+body .cp-accounts-card .cp-accounts-card-price .cp-price-value {
+  font-size: 72px;
+  font-weight: 700;
+  margin-bottom: -10px;
+}
+body .cp-accounts-card .cp-accounts-card-price .cp-price-value .cp-cent {
+  font-size: 36px;
+}
+body .cp-accounts-card .cp-accounts-card-desc {
+  margin-top: 20px;
+  width: 100%;
+}
+body .cp-accounts-card .cp-accounts-card-button {
+  display: flex;
+  flex-flow: column;
+  flex: 1;
+  width: 100%;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+body .cp-accounts-card .cp-accounts-card-button button {
+  font-weight: 700;
+  font-size: 18px;
+  margin-top: 0.5rem;
+  white-space: unset;
+}
+</style><style data-original-src="/customize/src/less2/include/loading.less" type="text/css">/*
+ * SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+#cp-loading {
+  --LessLoader_require: "/customize/src/less2/include/password-input.less?ver=2026.5.1-2";
+  --LessLoader_require: "/customize/src/less2/include/forms.less?ver=2026.5.1-2";
+  visibility: visible;
+  position: fixed;
+  z-index: 10000000;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  background-color: #FFF;
+  color: #424242;
+  font-size: 1.3em;
+  line-height: 120%;
+  opacity: 1;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: center;
+  font: 20px 'Open Sans', 'Helvetica Neue', sans-serif !important;
+}
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.svg?ver=2026.5.1-2#OpenSansRegular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+#cp-loading.cp-loading-transparent {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+#cp-loading.cp-loading-hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.75s, visibility 0s 0.75s;
+}
+#cp-loading .cp-loading-logo {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #939393;
+}
+#cp-loading .cp-loading-logo img {
+  margin: 0;
+  max-height: 60px;
+}
+#cp-loading .cp-loading-logo span {
+  font-size: 40px;
+  font-family: "IBM Plex Mono";
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+#cp-loading .cp-loading-container {
+  width: 700px;
+  max-width: 90vw;
+  max-height: calc(100vh - 20px);
+  flex-shrink: 0;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+#cp-loading .cp-loading-cryptofist {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 90vw;
+  max-height: max(40vh, 250px);
+  width: auto;
+  height: auto;
+  margin-bottom: 2em;
+}
+#cp-loading.cp-loading-empty {
+  justify-content: center;
+}
+#cp-loading.cp-loading-empty > :not(.cp-loading-empty) {
+  display: none !important;
+}
+@media screen and (max-width: 500px) {
+  #cp-loading {
+    font-size: 16px !important;
+  }
+}
+@media screen and (max-width: 300px) {
+  #cp-loading .cp-loading-logo img {
+    max-height: 40px;
+  }
+  #cp-loading .cp-loading-logo span {
+    font-size: 20px;
+  }
+}
+@media screen and (max-height: 600px) {
+  #cp-loading {
+    font-size: 16px !important;
+  }
+}
+#cp-loading #cp-loading-spinner-message {
+  color: #616161;
+}
+#cp-loading #cp-loading-message {
+  background: #EEEEEE;
+  padding: 1rem;
+  width: 100%;
+  border-radius: 5px;
+  color: #424242;
+  text-align: left;
+  overflow-y: auto;
+}
+#cp-loading #cp-loading-message.cp-error-message,
+#cp-loading #cp-loading-message.cp-error-message-alt {
+  margin: 0;
+  font-size: 16px;
+  padding: 0.5rem;
+  width: auto;
+}
+#cp-loading #cp-loading-message.cp-error-message {
+  background-color: #FFD4D4;
+  color: #6b0000;
+}
+#cp-loading #cp-loading-message.cp-error-message-alt {
+  background-color: #6b0000;
+  color: #FFD4D4;
+}
+#cp-loading #cp-loading-message:empty {
+  display: none;
+}
+#cp-loading #cp-loading-message a {
+  color: #0087ff;
+  border-radius: 5px;
+}
+#cp-loading #cp-loading-message p:last-child {
+  margin-bottom: 0;
+}
+#cp-loading #cp-loading-message svg {
+  margin: 0;
+}
+#cp-loading #cp-loading-status {
+  display: flex;
+  color: #616161;
+  align-items: center;
+  font-family: "IBM Plex Mono";
+  font-size: 0.75em;
+  margin-top: 2rem;
+  gap: 0.5rem;
+}
+#cp-loading #cp-loading-status svg {
+  margin: 0;
+}
+#cp-loading #cp-loading-footer {
+  margin-bottom: 2rem;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+#cp-loading #cp-loading-password-prompt p.cp-password-error {
+  margin: 0;
+  margin-bottom: 0.5rem;
+  font-size: 16px;
+  padding: 0.5rem;
+  background-color: #FFD4D4;
+  color: #6b0000;
+  border-radius: 5px;
+}
+#cp-loading #cp-loading-password-prompt .cp-password-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  width: 100%;
+}
+#cp-loading #cp-loading-password-prompt .cp-password-form .cp-password-container {
+  flex: 1;
+  min-width: 0;
+}
+#cp-loading #cp-loading-password-prompt .cp-password-form .cp-password-reveal {
+  margin-left: 0.5rem;
+}
+#cp-loading #cp-loading-password-prompt .cp-password-form .cp-password-reveal:focus-visible {
+  outline: #0087ff solid 2px;
+  border-radius: 5px;
+}
+#cp-loading #cp-loading-password-prompt .cp-password-input {
+  font-size: 16px;
+}
+#cp-loading #cp-loading-password-prompt .cp-password-input:focus-visible {
+  outline: #0087ff solid 2px;
+}
+#cp-loading #cp-loading-password-prompt::-webkit-input-placeholder {
+  /* WebKit, Blink, Edge */
+  color: rgba(66, 66, 66, 0.75);
+  font-weight: normal;
+}
+#cp-loading #cp-loading-password-prompt::placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: rgba(66, 66, 66, 0.75);
+  opacity: 1;
+  /* Firefox */
+  font-weight: normal;
+}
+#cp-loading #cp-loading-password-prompt:-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: rgba(66, 66, 66, 0.75);
+  font-weight: normal;
+}
+#cp-loading #cp-loading-password-prompt::-ms-input-placeholder {
+  /* Microsoft Edge */
+  color: rgba(66, 66, 66, 0.75);
+  font-weight: normal;
+}
+#cp-loading p.cp-password-info {
+  text-align: left;
+  margin-bottom: 0.5rem;
+}
+#cp-loading .cp-loading-progress {
+  width: 100%;
+  text-align: center;
+}
+#cp-loading .cp-loading-progress p {
+  margin: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#cp-loading .cp-loading-progress .cp-loading-progress-list {
+  display: inline-block;
+  max-width: 100%;
+  color: #616161;
+}
+#cp-loading .cp-loading-progress .cp-loading-progress-bar {
+  margin: 1rem 0;
+  height: 5px;
+  background: #EEEEEE;
+  border: 0;
+  border-radius: 5px;
+}
+#cp-loading .cp-loading-progress .cp-loading-progress-bar-value {
+  height: 100%;
+  background: #0087ff;
+  border-radius: 5px;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(1800deg);
+  }
+}
+#cp-loading .cp-loading-spinner-container {
+  margin: 1rem 0;
+  height: 5px;
+  width: 100%;
+  border: 0;
+  overflow: hidden;
+  background: #EEEEEE;
+  border-radius: 5px;
+}
+#cp-loading .cp-spinner-main {
+  width: 100%;
+  height: 5px;
+  background: #0087ff;
+  border-radius: 5px;
+  animation: loading-animation 1s infinite linear;
+  transform-origin: 0% 50%;
+}
+@keyframes loading-animation {
+  0% {
+    transform: translateX(0) scaleX(0);
+  }
+  40% {
+    transform: translateX(0) scaleX(0.4);
+  }
+  100% {
+    transform: translateX(100%) scaleX(0.5);
+  }
+}
+#cp-loading button .cp-spinner svg {
+  animation: spin 10s linear infinite ;
+  margin: 0 0 0.1rem 0.3rem;
+}
+</style><style data-original-src="/customize/src/less2/include/password-input.less" type="text/css">/*
+ * SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+.cp-password-container {
+  display: flex;
+  align-items: center;
+}
+.cp-password-container input {
+  flex: 1;
+  min-width: 0;
+}
+.cp-password-container svg:hover {
+  color: #006ccc;
+}
+.cp-password-change-container {
+  display: flex;
+  align-items: center;
+}
+.cp-password-change-container .cp-password-container {
+  margin-bottom: 0 !important;
+  flex: 1;
+}
+.cp-password-change-container button {
+  margin: 0 !important;
+}
+</style><style data-original-src="/customize/src/less2/include/forms.less" type="text/css">/*
+ * SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+input:not(.numInput):not(.form-control):not([type="checkbox"]),
+textarea,
+div.cp-textarea {
+  color: #424242;
+  background-color: #F5F5F5;
+  border: 1px solid #0087ff;
+  border-radius: 5px;
+  font-size: 100%;
+  padding: 12px;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"]):not(.tui-full-calendar-content),
+textarea:not(.tui-full-calendar-content),
+div.cp-textarea:not(.tui-full-calendar-content) {
+  width: 100%;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"]).tui-full-calendar-content,
+textarea.tui-full-calendar-content,
+div.cp-textarea.tui-full-calendar-content {
+  font-size: 16px;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"]).tui-full-calendar-content:focus-visible,
+textarea.tui-full-calendar-content:focus-visible,
+div.cp-textarea.tui-full-calendar-content:focus-visible {
+  outline: #0087ff solid 2px;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"])[readonly],
+textarea[readonly],
+div.cp-textarea[readonly] {
+  background-color: rgba(0, 135, 255, 0.25);
+  border-color: #0087ff;
+  color: #424242;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"])::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder,
+div.cp-textarea::-webkit-input-placeholder {
+  /* WebKit, Blink, Edge */
+  color: rgba(66, 66, 66, 0.75);
+  font-weight: normal;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"])::placeholder,
+textarea::placeholder,
+div.cp-textarea::placeholder {
+  /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: rgba(66, 66, 66, 0.75);
+  opacity: 1;
+  /* Firefox */
+  font-weight: normal;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"]):-ms-input-placeholder,
+textarea:-ms-input-placeholder,
+div.cp-textarea:-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: rgba(66, 66, 66, 0.75);
+  font-weight: normal;
+}
+input:not(.numInput):not(.form-control):not([type="checkbox"])::-ms-input-placeholder,
+textarea::-ms-input-placeholder,
+div.cp-textarea::-ms-input-placeholder {
+  /* Microsoft Edge */
+  color: rgba(66, 66, 66, 0.75);
+  font-weight: normal;
+}
+input:not(.form-control) {
+  height: 38px;
+}
+div.cp-alertify-type {
+  display: flex;
+}
+div.cp-alertify-type input {
+  margin: 0 !important;
+  flex: 1;
+  border-radius: 5px 0 0 5px !important;
+  min-width: 0;
+}
+div.cp-alertify-type span button {
+  margin: 0;
+  height: 100%;
+  margin-left: -1px;
+  text-transform: unset !important;
+  border-radius: 0 5px 5px 0;
+}
+.mfa-enabled span,
+.mfa-enabled i,
+.mfa-enabled svg {
+  color: #3f7f00;
+}
+.mfa-disabled span,
+.mfa-disabled i,
+.mfa-disabled svg {
+  color: #9e0000;
+}
+textarea,
+div.cp-textarea {
+  padding: 8px 12px;
+}
+textarea[readonly],
+div.cp-textarea[readonly] {
+  overflow: hidden;
+  resize: none;
+}
+div.cp-textarea {
+  height: 60px;
+  width: 100%;
+  cursor: text;
+  outline: none;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  word-break: break-word;
+  resize: vertical;
+}
+div.cp-button-confirm {
+  display: inline-block;
+}
+div.cp-button-confirm.new {
+  vertical-align: top;
+}
+div.cp-button-confirm.new button {
+  height: 35px;
+}
+div.cp-button-confirm button {
+  margin: 0 !important;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+div.cp-button-confirm .cp-button-timer {
+  height: 3px;
+}
+div.cp-button-confirm .cp-button-timer > div {
+  height: 100%;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  background-color: #424242;
+}
+div.cp-button-confirm .cp-button-timer > div.btn-primary,
+div.cp-button-confirm .cp-button-timer > div.btn-secondary {
+  background-color: #0087ff;
+}
+div.cp-button-confirm .cp-button-timer > div.danger,
+div.cp-button-confirm .cp-button-timer > div.btn-danger,
+div.cp-button-confirm .cp-button-timer > div.danger-alt,
+div.cp-button-confirm .cp-button-timer > div.btn-danger-alt {
+  background-color: #E55236;
+}
+div.cp-palette-container {
+  display: flex;
+  justify-content: space-between;
+}
+div.cp-palette-container .cp-palette-color {
+  display: inline-block;
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  text-align: center;
+  line-height: 30px;
+  color: #424242;
+  border: 1px solid rgba(66, 66, 66, 0.4);
+  outline: none;
+}
+div.cp-palette-container .cp-palette-color.svg {
+  color: #424242;
+}
+div.cp-palette-container .cp-palette-color:focus-visible {
+  outline: #0087ff solid 2px;
+}
+button.btn {
+  background-color: #ffffff;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 20px;
+  padding: 8px 6px;
+  white-space: nowrap;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: none;
+  color: #0087ff;
+  border: 1px solid #0087ff;
+  outline: none;
+}
+button.btn.no-margin {
+  margin: 0;
+}
+button.btn.small {
+  line-height: initial;
+  padding: 5px;
+  height: auto !important;
+}
+button.btn:hover,
+button.btn:not(:disabled):not(.disabled):active,
+button.btn:focus {
+  color: #0087ff;
+  border: 1px solid #0087ff;
+  background-color: rgba(0, 135, 255, 0.25);
+}
+button.btn.btn-default {
+  border-color: #424242;
+  color: #424242;
+}
+button.btn.btn-default:hover,
+button.btn.btn-default:not(:disabled):active,
+button.btn.btn-default:focus {
+  border-color: #424242;
+  color: #424242;
+  background-color: #CCC;
+}
+button.btn.btn-toolbar {
+  background-color: #EEEEEE;
+  color: #424242;
+  border-color: #EEEEEE;
+}
+button.btn.btn-toolbar:hover,
+button.btn.btn-toolbar:not(:disabled):active,
+button.btn.btn-toolbar:focus {
+  background-color: rgba(66, 66, 66, 0.2);
+  border-color: #424242;
+  color: #424242;
+}
+button.btn.btn-toolbar-alt {
+  border-color: #424242;
+  color: #424242;
+  background-color: #FFF;
+}
+button.btn.btn-toolbar-alt:hover,
+button.btn.btn-toolbar-alt:not(:disabled):active,
+button.btn.btn-toolbar-alt:focus {
+  background-color: rgba(66, 66, 66, 0.2);
+}
+button.btn.danger,
+button.btn.btn-danger {
+  background-color: #E55236;
+  border-color: transparent;
+  color: #FFF;
+}
+button.btn.danger:hover,
+button.btn.btn-danger:hover,
+button.btn.danger:not(:disabled):active,
+button.btn.btn-danger:not(:disabled):active,
+button.btn.danger:focus,
+button.btn.btn-danger:focus {
+  border-color: transparent;
+  color: #FFF;
+  background-color: #cd371b;
+}
+button.btn.danger-alt,
+button.btn.btn-danger-alt,
+button.btn.btn-danger-outline {
+  border-color: #E55236;
+  color: #E55236;
+}
+button.btn.danger-alt:hover,
+button.btn.btn-danger-alt:hover,
+button.btn.btn-danger-outline:hover,
+button.btn.danger-alt:not(:disabled):active,
+button.btn.btn-danger-alt:not(:disabled):active,
+button.btn.btn-danger-outline:not(:disabled):active,
+button.btn.danger-alt:focus,
+button.btn.btn-danger-alt:focus,
+button.btn.btn-danger-outline:focus {
+  border-color: #E55236;
+  color: #FFF;
+  background-color: #E55236;
+}
+button.btn.primary,
+button.btn.btn-primary,
+button.btn.btn-success,
+button.btn.disable-button {
+  background-color: #0087ff;
+  color: #FFFFFF;
+  border-color: transparent;
+}
+button.btn.primary:hover,
+button.btn.btn-primary:hover,
+button.btn.btn-success:hover,
+button.btn.disable-button:hover,
+button.btn.primary:not(:disabled):active,
+button.btn.btn-primary:not(:disabled):active,
+button.btn.btn-success:not(:disabled):active,
+button.btn.disable-button:not(:disabled):active,
+button.btn.primary:focus,
+button.btn.btn-primary:focus,
+button.btn.btn-success:focus,
+button.btn.disable-button:focus {
+  color: #FFFFFF;
+  border-color: transparent;
+  background-color: #006ccc;
+}
+button.btn.btn-case {
+  text-transform: capitalize;
+  font-size: 16px;
+}
+button.btn.btn-primary-alt {
+  background-color: #99cfff;
+  border-color: #99cfff;
+  color: #424242;
+}
+button.btn.btn-primary-alt:hover,
+button.btn.btn-primary-alt:not(:disabled):active,
+button.btn.btn-primary-alt:focus {
+  color: #424242;
+  border-color: #99cfff;
+  background-color: #b3dbff;
+}
+button.btn.btn-light {
+  border-color: #424242;
+  color: #424242;
+  background-color: transparent;
+}
+button.btn.btn-light:hover,
+button.btn.btn-light:not(:disabled):active,
+button.btn.btn-light:focus {
+  border-color: #424242;
+  color: #424242;
+  background-color: rgba(66, 66, 66, 0.1);
+}
+button.btn.cancel,
+button.btn.btn-cancel {
+  border-color: #949494;
+  color: #949494;
+}
+button.btn.cancel:hover,
+button.btn.btn-cancel:hover,
+button.btn.cancel:not(:disabled):active,
+button.btn.btn-cancel:not(:disabled):active,
+button.btn.cancel:focus,
+button.btn.btn-cancel:focus {
+  border-color: #949494;
+  color: #949494;
+  background-color: rgba(148, 148, 148, 0.25);
+}
+button.btn.btn-register {
+  margin-top: 10px !important;
+  white-space: normal;
+}
+button.btn:focus-visible {
+  outline: #0087ff solid 2px;
+}
+button.btn::-moz-focus-inner {
+  border: 0;
+}
+button.btn:disabled {
+  cursor: not-allowed !important;
+  background-color: #6c757d;
+  color: #ffffff;
+  border-color: #6c757d;
+}
+button.btn:disabled:hover,
+button.btn:disabled:active {
+  background-color: #6c757d;
+}
+body .alert {
+  margin: 0px 0px 12px 0px;
+  font-size: 12px;
+  padding: 5px;
+  border-radius: 5px;
+}
+body .alert.cp-alert-top {
+  margin-top: 12px;
+}
+body .alert a {
+  color: #424242;
+  text-decoration: underline;
+}
+body .alert.alert-primary {
+  background-color: rgba(0, 135, 255, 0.15);
+  color: #0087ff;
+  border-color: #0087ff;
+}
+body .alert.alert-primary a {
+  color: #0087ff;
+  text-decoration: underline;
+}
+body .alert.alert-warning {
+  background-color: rgba(255, 230, 156, 0.5);
+  color: #836200;
+  border-color: #FFE69C;
+}
+body .alert.alert-danger {
+  background-color: #FFD4D4;
+  color: #6b0000;
+  border-color: #FFD4D4;
+}
+body .alert.alert-info {
+  background-color: rgba(0, 135, 255, 0.15);
+  color: #0087ff;
+  border-color: #0087ff;
+}
+body .alert.alert-success {
+  background-color: rgba(197, 255, 168, 0.2);
+  color: #357935;
+  border-color: #5cb85c;
+}
+body .alert.dismissable {
+  display: flex;
+  align-items: center;
+}
+.cp-banner {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: default;
+  border-radius: 5px;
+}
+.cp-banner.cp-banner-danger {
+  background-color: rgba(255, 212, 212, 0.75);
+  color: #bb0000;
+  border: 1px solid #bb0000;
+}
+.cp-banner.cp-banner-info {
+  background-color: rgba(0, 135, 255, 0.25);
+  color: #424242;
+}
+body .flatpickr-calendar {
+  background: #FAFAFA;
+  color: #424242;
+  border-radius: 5px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  -webkit-box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+body .flatpickr-calendar.arrowTop::before,
+body .flatpickr-calendar.arrowTop::after {
+  border-bottom: 0;
+}
+body .flatpickr-calendar .flatpickr-months .flatpickr-month,
+body .flatpickr-calendar .flatpickr-months .flatpickr-months,
+body .flatpickr-calendar .flatpickr-months .flatpickr-next-month,
+body .flatpickr-calendar .flatpickr-months .flatpickr-prev-month {
+  color: #424242;
+  fill: #424242;
+}
+body .flatpickr-calendar .flatpickr-months .flatpickr-month:hover svg,
+body .flatpickr-calendar .flatpickr-months .flatpickr-months:hover svg,
+body .flatpickr-calendar .flatpickr-months .flatpickr-next-month:hover svg,
+body .flatpickr-calendar .flatpickr-months .flatpickr-prev-month:hover svg {
+  fill: #424242;
+}
+body .flatpickr-calendar .flatpickr-months .flatpickr-month .flatpickr-monthDropdown-month,
+body .flatpickr-calendar .flatpickr-months .flatpickr-months .flatpickr-monthDropdown-month,
+body .flatpickr-calendar .flatpickr-months .flatpickr-next-month .flatpickr-monthDropdown-month,
+body .flatpickr-calendar .flatpickr-months .flatpickr-prev-month .flatpickr-monthDropdown-month {
+  background: #FAFAFA;
+}
+body .flatpickr-calendar .flatpickr-months .flatpickr-current-month span.cur-month:hover {
+  background: rgba(66, 66, 66, 0.1);
+}
+body .flatpickr-calendar .flatpickr-months .flatpickr-current-month .numInputWrapper span.arrowUp:after {
+  border-bottom-color: #424242;
+}
+body .flatpickr-calendar .flatpickr-months .flatpickr-current-month .numInputWrapper span.arrowDown:after {
+  border-top-color: #424242;
+}
+body .flatpickr-calendar .flatpickr-innerContainer {
+  border-bottom: 0;
+}
+body .flatpickr-calendar .flatpickr-innerContainer .flatpickr-weekdays span.flatpickr-weekday {
+  color: #424242;
+}
+body .flatpickr-calendar .flatpickr-innerContainer .flatpickr-days {
+  border-left: 0;
+  border-right: 0;
+}
+body .flatpickr-calendar .flatpickr-innerContainer .flatpickr-days .flatpickr-day {
+  color: #424242;
+}
+body .flatpickr-calendar .flatpickr-innerContainer .flatpickr-days .flatpickr-day:hover {
+  background-color: rgba(66, 66, 66, 0.1);
+  border: 0;
+}
+body .flatpickr-calendar .flatpickr-innerContainer .flatpickr-days .flatpickr-day.selected {
+  background: rgba(0, 135, 255, 0.25);
+  color: #424242;
+  border: 0;
+}
+body .flatpickr-calendar .flatpickr-innerContainer .flatpickr-days .flatpickr-disabled {
+  color: rgba(66, 66, 66, 0.2);
+}
+body .flatpickr-calendar .flatpickr-time {
+  border-top: none;
+}
+body .flatpickr-calendar .flatpickr-time .flatpickr-time-separator,
+body .flatpickr-calendar .flatpickr-time .flatpickr-am-pm {
+  color: #424242;
+}
+body .flatpickr-calendar .flatpickr-time .flatpickr-am-pm:hover {
+  background-color: rgba(66, 66, 66, 0.1);
+}
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .numInput,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .arrowUp,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .arrowDown {
+  color: #424242;
+}
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .numInput:hover,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .arrowUp:hover,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .arrowDown:hover,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .numInput:focus,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .arrowUp:focus,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper .arrowDown:focus {
+  background-color: rgba(66, 66, 66, 0.1);
+}
+body .flatpickr-calendar .flatpickr-time .numInputWrapper span.arrowDown::after,
+body .flatpickr-calendar .flatpickr-time .numInputWrapper span.arrowUp::after {
+  border-top-color: #424242;
+  border-bottom-color: #424242;
+}
+</style><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/pages/index.js" src="Startpagina%20-%20CryptPad.fr_files/index_002.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/lib/textFit.min.js" src="Startpagina%20-%20CryptPad.fr_files/textFit.min.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/pad-types.js" src="Startpagina%20-%20CryptPad.fr_files/pad-types.js"></script><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/common/onlyoffice/current-version.js" src="Startpagina%20-%20CryptPad.fr_files/current-version.js"></script><link type="text/css" rel="stylesheet" href="Startpagina%20-%20CryptPad.fr_files/bootstrap.min.css"><style data-original-src="/customize/src/less2/pages/page-index.less" type="text/css">/*
+ * SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+.cp-page-index {
+  --LessLoader_require: "/customize/src/less2/include/infopages.less?ver=2026.5.1-2";
+}
+.cp-page-index #cp-main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+.cp-page-index #cp-main .alert-info {
+  font-size: 16px;
+  background-color: rgba(0, 135, 255, 0.15);
+  color: #0087ff;
+}
+.cp-page-index #cp-main > .cp-container {
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-around;
+  justify-content: space-evenly;
+  max-width: 1000vh;
+}
+.cp-page-index body {
+  font-family: "Open Sans", Helvetica;
+  color: #424242;
+}
+.cp-page-index h1.cp-instance-title {
+  text-align: center;
+  font-family: "IBM Plex Mono";
+  font-weight: 500;
+  color: #0087ff;
+  font-size: 2.8rem;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+@media screen and (max-width: 600px) {
+  .cp-page-index.html h1.cp-instance-title {
+    font-size: 2.5em;
+  }
+}
+.cp-page-index .cp-home-hero {
+  width: 100%;
+  align-self: center;
+  align-items: center;
+  justify-content: flex-end;
+}
+@media screen and (max-width: 990px) {
+  .cp-page-index .cp-home-hero {
+    justify-content: center;
+  }
+}
+.cp-page-index .cp-home-hero img {
+  max-height: max(40vh, 250px);
+}
+.cp-page-index .cp-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  margin: 0 auto;
+  flex-grow: 1;
+  max-width: unset;
+}
+.cp-page-index .cp-title img {
+  max-width: 200px;
+  margin-bottom: 1.5em;
+}
+.cp-page-index .cp-title h1 {
+  font-family: "IBM Plex Mono";
+  font-weight: 500;
+  color: #0087ff;
+  font-size: 3.7rem;
+}
+.cp-page-index .cp-title .tag-line {
+  text-align: center;
+  font-size: 1.4em;
+  max-width: 50ch;
+}
+.cp-page-index .cp-title .cp-instance-location {
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+}
+.cp-page-index .cp-title .cp-instance-location svg {
+  font-size: 1.2em;
+  margin-right: 0.5rem;
+}
+.cp-page-index .cp-title .cp-instance-links {
+  padding: 1.3rem;
+}
+.cp-page-index .cp-title .cp-instance-links a {
+  display: inline-block;
+  margin: 0.5em;
+  white-space: nowrap;
+}
+.cp-page-index a:hover {
+  text-decoration: none;
+}
+.cp-page-index .cp-apps {
+  max-width: 575px;
+}
+@media screen and (max-width: 990px) {
+  .cp-page-index .cp-apps {
+    align-self: baseline;
+  }
+}
+.cp-page-index .cp-app-grid {
+  background-color: #FFF;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+}
+.cp-page-index .cp-app-grid .cp-app-new {
+  font-size: 1.4em;
+  line-height: 100%;
+  color: rgba(66, 66, 66, 0.8);
+  display: inline-flex;
+  align-items: center;
+}
+.cp-page-index .cp-app-grid .cp-app-grid-apps {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 0.8rem;
+}
+.cp-page-index .cp-app-grid .cp-app-grid-apps svg {
+  margin: 0;
+}
+.cp-page-index .cp-app-grid .cp-app-grid-apps .lucide * {
+  stroke-width: 2.7;
+  vector-effect: non-scaling-stroke;
+}
+.cp-page-index .cp-app-grid a {
+  margin: 10px;
+}
+@media screen and (max-width: 990px) {
+  .cp-page-index .cp-app-grid {
+    margin-top: 40px;
+  }
+}
+.cp-page-index .bs-callout {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  box-sizing: border-box;
+  position: relative;
+  flex-flow: column;
+  width: 120px;
+}
+@media only screen and (min-device-width: 576px) and (max-device-width: 767px) {
+  .cp-page-index .bs-callout div h4 {
+    font-size: 1.3em;
+  }
+}
+.cp-page-index .bs-callout div {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 16px;
+}
+.cp-page-index .bs-callout svg {
+  display: flex;
+  align-items: center;
+  font-size: 3.5em;
+  justify-content: center;
+  width: 120px;
+  padding: 10px 10px 0px 10px;
+}
+.cp-page-index .bs-callout .pad-button-text {
+  color: #424242;
+  padding: 5px;
+  white-space: wrap;
+  text-align: center;
+}
+.cp-page-index .cp-index-appitem.cp-app-hidden {
+  display: none;
+}
+.cp-page-index .cp-index-appitem.cp-app-disabled {
+  opacity: 0.5;
+}
+.cp-page-index .cp-index-appitem.cp-app-disabled div {
+  cursor: not-allowed !important;
+}
+.cp-page-index h4 {
+  margin: 0;
+}
+.cp-page-index .cp-callout-more-moremsg,
+.cp-page-index .cp-callout-more-lessmsg {
+  transform: none !important;
+}
+.cp-page-index .bs-callout + .bs-callout {
+  margin-top: -5px;
+}
+.cp-page-index .bs-callout:hover {
+  cursor: pointer;
+}
+.cp-page-index .bs-callout:hover.cp-callout-more {
+  transform: none !important;
+}
+.cp-page-index .cp-callout-default {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-default svg {
+  color: #0087ff;
+}
+.cp-page-index .cp-callout-default:hover {
+  background-color: #99cfff;
+}
+.cp-page-index .cp-callout-default:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-drive {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-drive svg {
+  color: #0087ff;
+}
+.cp-page-index .cp-callout-drive:hover {
+  background-color: #99cfff;
+}
+.cp-page-index .cp-callout-drive:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-pad {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-pad svg {
+  color: #256ad5;
+}
+.cp-page-index .cp-callout-pad:hover {
+  background-color: #a4c1ef;
+}
+.cp-page-index .cp-callout-pad:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-code {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-code svg {
+  color: #EAA000;
+}
+.cp-page-index .cp-callout-code:hover {
+  background-color: #ffd884;
+}
+.cp-page-index .cp-callout-code:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-slide {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-slide svg {
+  color: #e57614;
+}
+.cp-page-index .cp-callout-slide:hover {
+  background-color: #f6c69c;
+}
+.cp-page-index .cp-callout-slide:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-poll {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-poll svg {
+  color: #2c9e98;
+}
+.cp-page-index .cp-callout-poll:hover {
+  background-color: #86ddd9;
+}
+.cp-page-index .cp-callout-poll:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-form {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-form svg {
+  color: #2c9e98;
+}
+.cp-page-index .cp-callout-form:hover {
+  background-color: #86ddd9;
+}
+.cp-page-index .cp-callout-form:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-whiteboard {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-whiteboard svg {
+  color: #8f40f5;
+}
+.cp-page-index .cp-callout-whiteboard:hover {
+  background-color: #e4d1fd;
+}
+.cp-page-index .cp-callout-whiteboard:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-diagram {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-diagram svg {
+  color: #ce3ad3;
+}
+.cp-page-index .cp-callout-diagram:hover {
+  background-color: #edb7ef;
+}
+.cp-page-index .cp-callout-diagram:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-kanban {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-kanban svg {
+  color: #8C4;
+}
+.cp-page-index .cp-callout-kanban:hover {
+  background-color: #d4edbc;
+}
+.cp-page-index .cp-callout-kanban:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-sheet {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-sheet svg {
+  color: #40865c;
+}
+.cp-page-index .cp-callout-sheet:hover {
+  background-color: #93ccaa;
+}
+.cp-page-index .cp-callout-sheet:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-doc {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-doc svg {
+  color: #5170B5;
+}
+.cp-page-index .cp-callout-doc:hover {
+  background-color: #bcc8e3;
+}
+.cp-page-index .cp-callout-doc:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-presentation {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-presentation svg {
+  color: #C65D27;
+}
+.cp-page-index .cp-callout-presentation:hover {
+  background-color: #ebb69b;
+}
+.cp-page-index .cp-callout-presentation:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-callout-file {
+  border-radius: 5px;
+}
+.cp-page-index .cp-callout-file svg {
+  color: #CD2532;
+}
+.cp-page-index .cp-callout-file:hover {
+  background-color: #ed9ea4;
+}
+.cp-page-index .cp-callout-file:hover svg {
+  color: #424242;
+}
+.cp-page-index .cp-app-drive {
+  display: flex;
+  flex-direction: row;
+  margin: 20px 0px;
+}
+.cp-page-index .cp-app-drive a.cp-drive-btn {
+  color: #424242;
+  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  height: min-content;
+  flex-shrink: 0;
+  width: fit-content;
+  padding: 10px;
+  border-radius: 10px;
+  margin-right: 25px;
+}
+.cp-page-index .cp-app-drive a.cp-drive-btn:visited {
+  color: #424242;
+}
+.cp-page-index .cp-app-drive a.cp-drive-btn:hover {
+  background-color: rgba(66, 66, 66, 0.1);
+}
+.cp-page-index .cp-app-drive a.cp-drive-btn svg {
+  color: #0087ff;
+  margin-right: 10px;
+}
+.cp-page-index .cp-app-drive a.cp-drive-btn svg.lucide,
+.cp-page-index .cp-app-drive a.cp-drive-btn svg.lucide * {
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.cp-page-index .cp-app-drive .cp-sub-prompt * {
+  display: block;
+}
+.cp-page-index .cp-app-drive .cp-sub-prompt .subscribe-btn {
+  text-align: center;
+  background-color: #0087ff;
+  color: #424242;
+  font-size: 1.4rem;
+  margin: 10px 0;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+.cp-page-index .cp-app-drive .cp-sub-prompt .subscribe-btn svg {
+  display: inline;
+  margin-right: 10px;
+}
+.cp-page-index .cp-app-drive .cp-sub-prompt .subscribe-btn:hover,
+.cp-page-index .cp-app-drive .cp-sub-prompt .subscribe-btn:focus {
+  background-color: #006ccc;
+}
+.cp-page-index .cp-hidden {
+  display: none !important;
+}
+.cp-page-index .cp-callout-more {
+  display: inline-block;
+  align-content: center;
+  height: 2em;
+  border-radius: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 0;
+  background: none;
+  width: 100%;
+}
+.cp-page-index .cp-callout-more div {
+  text-decoration: none;
+  color: #0087ff;
+  cursor: pointer;
+  display: inline-flex;
+  color: #FFF;
+}
+.cp-page-index .cp-callout-more div:hover {
+  transform: scale(1.05);
+}
+.cp-page-index .cp-callout-more div svg {
+  font-size: inherit;
+  padding: 0;
+  width: 1.2em;
+  height: 1.2em;
+  padding-left: 5px;
+}
+.cp-page-index .cp-extensions-popups {
+  width: 100%;
+}
+.cp-page-index .cp-extensions-popups .cp-extensions-popup {
+  background-color: #FFF;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 100%;
+  color: #424242;
+  margin-left: 40px;
+}
+@media (max-width: 700px) {
+  .cp-page-index .cp-extensions-popups {
+    max-width: 90%;
+  }
+  .cp-page-index .cp-extensions-popups .cp-extensions-popup {
+    margin-left: 0;
+  }
+}
+@media (min-width: 576px) and (max-width: 767px) {
+  .cp-page-index .container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .cp-page-index div#cp-main.cp-page-index .cp-topbar .navbar-toggler-left {
+    left: 5px;
+  }
+}
+</style><style data-original-src="/customize/src/less2/include/infopages.less" type="text/css">/*
+ * SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+.cp-loading-noscroll {
+  overflow: hidden;
+}
+body.html {
+  --LessLoader_require: "/customize/src/less2/include/font.less?ver=2026.5.1-2";
+  background-color: #EEEEEE;
+  color: #424242;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+body.html a {
+  color: #0087ff;
+}
+body.html a:visited {
+  color: #0079e6;
+}
+body.html a:hover {
+  opacity: 1;
+}
+body.html a:focus-visible {
+  outline: #0087ff solid 2px;
+  border-radius: 5px;
+}
+body.html .lucide {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.5rem;
+}
+body.html #cp-main {
+  display: flex;
+  flex-flow: column;
+  min-height: 100vh;
+}
+body.html #cp-main > .cp-container {
+  flex: 1;
+}
+body.html .cp-container {
+  font-size: 16px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  min-height: 75vh;
+  max-width: 1200px;
+}
+body.html .cp-container h1 {
+  font-size: 3em;
+  margin-bottom: 0.5em;
+}
+body.html .cp-container h2 {
+  font-size: 1.8em;
+  margin-top: 20px;
+  margin-bottom: 0.5em;
+}
+body.html .cp-container h3 {
+  font-size: 1.5em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+body.html .cp-container img {
+  max-width: 100%;
+  margin-top: 20px;
+}
+body.html .cp-container img.left {
+  float: left;
+}
+body.html .cp-container .cp-page-title h1 {
+  font-family: "IBM Plex Mono";
+  color: #0087ff;
+  margin: 50px auto;
+}
+body.html .cp-container p a {
+  text-decoration: underline;
+}
+body.html .cp-container .row.cp-page-section {
+  margin: 50px 0px;
+}
+body.html .cp-container .row.cp-page-section a {
+  text-decoration: underline;
+}
+body.html .cp-container .row.cp-page-section .small-logo {
+  max-width: 40%;
+}
+body.html .cp-container img.cp-shadow {
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.2);
+}
+body.html .cp-container img.cp-img-invert {
+  filter: none;
+}
+body.html .cp-container button:not(.btn) {
+  outline: none;
+  background-color: #0087ff;
+  color: #FFFFFF;
+  border: none;
+  padding: 10px 20px;
+  margin-right: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+body.html .cp-container button:not(.btn):hover,
+body.html .cp-container button:not(.btn):focus {
+  background-color: #006ccc;
+}
+body.html .cp-container .form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+body.html .cp-container .form-group .checkbox-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+body.html .cp-container .form-group .checkbox-container label {
+  margin: 0;
+}
+body.html .cp-container .form-group .checkbox-container input {
+  margin-right: 0.5em;
+}
+body.html .cp-container .form-group .big-container {
+  width: 100%;
+}
+body.html .cp-container .form-group .input-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+body.html footer {
+  background-color: rgba(153, 207, 255, 0.3);
+  align-self: normal;
+  box-shadow: inset 0px 7px 15px -7px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+body.html footer .cp-footer-left,
+body.html footer .cp-footer-center,
+body.html footer .cp-footer-right {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+body.html footer .cp-footer-left a,
+body.html footer .cp-footer-center a,
+body.html footer .cp-footer-right a {
+  margin-right: 10px;
+}
+body.html footer .cp-logo-foot {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  padding: 10px;
+}
+body.html footer .cp-logo-foot img {
+  max-height: 40px;
+  margin-right: 10px;
+}
+body.html footer .cp-logo-foot .logo-font {
+  display: block;
+  font-family: "IBM Plex Mono";
+  font-size: 1.5rem;
+  color: #424242;
+  height: 40px;
+}
+body.html footer .cp-logo-btns {
+  padding: 10px;
+}
+body.html footer .cp-logo-btns a {
+  background-color: #0087ff;
+  color: #FAFAFA;
+  border-radius: 5px;
+  padding: 0.5em 0.7em;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+body.html footer .cp-logo-btns a:hover {
+  background-color: #FFF;
+  color: #424242;
+  text-decoration: none;
+}
+body.html footer .cp-footer-language {
+  padding: 10px;
+  margin-right: 10px;
+  display: inline-flex;
+  align-items: center;
+}
+body.html footer .cp-footer-language select {
+  min-width: 0;
+  background-color: #FFF;
+  color: #424242;
+  border: 0px;
+  border-radius: 5px;
+  padding: 0.5em 0.7em;
+}
+body.html footer .cp-footer-language select:focus-visible {
+  outline: #0087ff solid 2px;
+}
+body.html footer .cp-footer-version {
+  padding: 10px;
+  font-family: 'IBM Plex Mono';
+}
+body.html .navbar {
+  width: 100%;
+  color: #0087ff;
+  justify-content: flex-end;
+}
+body.html .navbar .navbar-brand {
+  display: block;
+  height: 50px;
+  width: 250px;
+  font-family: "IBM Plex Mono";
+  font-size: 1.8em;
+  margin-right: 0;
+}
+body.html .navbar .navbar-brand img {
+  max-width: 40px;
+  margin-right: 10px;
+}
+@media (max-width: 326px) {
+  body.html .navbar .navbar-brand {
+    width: 180px;
+  }
+}
+body.html .navbar a {
+  white-space: nowrap;
+  color: #0087ff;
+  background-color: #FFF;
+  border-radius: 5px;
+}
+body.html .navbar .nav-link {
+  padding: 0.5em 0.7em;
+  margin: 5px;
+  color: #0087ff;
+  display: flex;
+  align-items: center;
+}
+body.html .navbar .nav-link img {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 10px;
+}
+body.html .navbar .nav-link.cp-back-home {
+  margin-right: auto;
+}
+body.html .navbar .nav-link:hover {
+  color: #424242;
+}
+body.html .navbar .nav-link:focus-visible {
+  outline: #0087ff solid 2px;
+}
+body.html .navbar .cp-register-btn {
+  background-color: #0087ff;
+  color: #EEEEEE;
+}
+body.html .navbar .cp-register-btn:hover {
+  background-color: #FFF;
+  color: #424242;
+}
+body.html .navbar button:focus {
+  outline: none;
+}
+body.html .navbar .navbar-toggler {
+  margin-top: 10px;
+  color: #0087ff;
+}
+</style><style data-original-src="/customize/src/less2/include/font.less" type="text/css">/*
+ * SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url("/customize/fonts/IBMPlexMono-Medium.woff2?ver=2026.5.1-2") format("woff2"), url("/customize/fonts/IBMPlexMono-Medium.woff?ver=2026.5.1-2") format("woff");
+}
+@font-tools {
+  font-family: CryptPadTools;
+  src: url("/customize/fonts/cryptpadtools.ttf?ver=2026.5.1-2");
+}
+/*
+ * SPDX-FileCopyrightText: 2023 XWiki CryptPad Team <contact@cryptpad.org> and contributors
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/* Open Sans @font-face kit */
+/* BEGIN Light */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/Light/OpenSans-Light.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/Light/OpenSans-Light.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/Light/OpenSans-Light.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/Light/OpenSans-Light.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/Light/OpenSans-Light.svg?ver=2026.5.1-2#OpenSansLight') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
+/* END Light */
+/* BEGIN Light Italic */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/LightItalic/OpenSans-LightItalic.svg?ver=2026.5.1-2#OpenSansLightItalic') format('svg');
+  font-weight: 300;
+  font-style: italic;
+}
+/* END Light Italic */
+/* BEGIN Regular */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/Regular/OpenSans-Regular.svg?ver=2026.5.1-2#OpenSansRegular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+/* END Regular */
+/* BEGIN Italic */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/Italic/OpenSans-Italic.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/Italic/OpenSans-Italic.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/Italic/OpenSans-Italic.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/Italic/OpenSans-Italic.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/Italic/OpenSans-Italic.svg?ver=2026.5.1-2#OpenSansItalic') format('svg');
+  font-weight: normal;
+  font-style: italic;
+}
+/* END Italic */
+/* BEGIN Semibold */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/Semibold/OpenSans-Semibold.svg?ver=2026.5.1-2#OpenSansSemibold') format('svg');
+  font-weight: 600;
+  font-style: normal;
+}
+/* END Semibold */
+/* BEGIN Semibold Italic */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/SemiboldItalic/OpenSans-SemiboldItalic.svg?ver=2026.5.1-2#OpenSansSemiboldItalic') format('svg');
+  font-weight: 600;
+  font-style: italic;
+}
+/* END Semibold Italic */
+/* BEGIN Bold */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/Bold/OpenSans-Bold.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/Bold/OpenSans-Bold.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/Bold/OpenSans-Bold.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/Bold/OpenSans-Bold.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/Bold/OpenSans-Bold.svg?ver=2026.5.1-2#OpenSansBold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+}
+/* END Bold */
+/* BEGIN Bold Italic */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/BoldItalic/OpenSans-BoldItalic.svg?ver=2026.5.1-2#OpenSansBoldItalic') format('svg');
+  font-weight: bold;
+  font-style: italic;
+}
+/* END Bold Italic */
+/* BEGIN Extrabold */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/ExtraBold/OpenSans-ExtraBold.svg?ver=2026.5.1-2#OpenSansExtrabold') format('svg');
+  font-weight: 800;
+  font-style: normal;
+}
+/* END Extrabold */
+/* BEGIN Extrabold Italic */
+@font-face {
+  font-family: 'Open Sans';
+  src: url('/components/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.eot?ver=2026.5.1-2');
+  src: url('/components/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.eot?&ver=2026.5.1-2#iefix') format('embedded-opentype'), url('/components/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.woff?ver=2026.5.1-2') format('woff'), url('/components/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.ttf?ver=2026.5.1-2') format('truetype'), url('/components/open-sans-fontface/fonts/ExtraBoldItalic/OpenSans-ExtraBoldItalic.svg?ver=2026.5.1-2#OpenSansExtraboldItalic') format('svg');
+  font-weight: 800;
+  font-style: italic;
+}
+/* END Extrabold Italic */
+</style><script type="text/javascript" charset="utf-8" async="" data-requirecontext="_" data-requiremodule="/customize/main.js" src="Startpagina%20-%20CryptPad.fr_files/main.js"></script></head>
+<body class="html cp-page-index">
+    <noscript>
+        <p class="noscript">JavaScript must be enabled to perform encryption in your browser</p>
+        <p class="noscript">يجب أن يكون جافاسكربت مُمَكن لتمكين التشفير في متصفحك</p>
+        <p class="noscript">El JavaScript ha d'estar habilitat per a realitzar l'encriptatge al navegador</p>
+        <p class="noscript">JavaScript muss aktiviert sein, um die Verschlüsselung in deinem Browser zu ermöglichen</p>
+        <p class="noscript">JavaScript debe estar activado para realizar la encriptación en tu navegador</p>
+        <p class="noscript">JavaScript gaituta egon behar da zure nabigatzailean enkriptaketak egiteko</p>
+        <p class="noscript">JavaScriptin tulee olla käytössä, jotta salaus on mahdollista tehdä selaimessa</p>
+        <p class="noscript">JavaScript doit être activé pour effectuer le chiffrement dans votre navigateur</p>
+        <p class="noscript">JavaScript harus diaktifkan untuk melakukan enkripsi dalam peramban Anda</p>
+        <p class="noscript">JavaScript deve essere abilitato per eseguire la crittografia nel browser</p>
+        <p class="noscript">ブラウザーで暗号化を行うにはJavaScriptが有効になっている必要があります</p>
+        <p class="noscript">O JavaScript deve estar ativado para executar a criptografia em seu navegador</p>
+        <p class="noscript">Для выполнения шифрования в вашем браузере должен быть включен JavaScript</p>
+        <p class="noscript">JavaScript måste vara aktiverat för att utföra kryptering i din webbläsare</p>
+        <p class="noscript">必须启用 JavaScript 才能在浏览器中进行加密</p>
+    </noscript>
+<div id="cp-main"><nav class="navbar navbar-expand-lg"><a class="nav-item nav-link" href="https://cryptpad.fr/features.html" role="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="info" aria-hidden="true" class="lucide lucide-info"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>Prijzen</a><a class="nav-item nav-link" href="https://docs.cryptpad.org/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="book-open-text" aria-hidden="true" class="lucide lucide-book-open-text"><path d="M12 7v14"></path><path d="M16 12h2"></path><path d="M16 8h2"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path><path d="M6 12h2"></path><path d="M6 8h2"></path></svg>Documentatie</a><a class="nav-item nav-link cp-login-btn" href="https://cryptpad.fr/login/" role="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="log-in" aria-hidden="true" class="lucide lucide-log-in"><path d="m10 17 5-5-5-5"></path><path d="M15 12H3"></path><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path></svg>Inloggen</a><a class="nav-item nav-link cp-register-btn" href="https://cryptpad.fr/register/" role="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="user" aria-hidden="true" class="lucide lucide-user"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>registreren</a></nav><div class="cp-extensions-popups"></div><div class="container cp-container"><div class="row cp-home-hero"><div class="cp-title col-lg-6"><img src="Startpagina%20-%20CryptPad.fr_files/logo.svg" aria-hidden="true" alt=""><h1 class="cp-instance-title">CryptPad.fr</h1><span class="tag-line">Flagship-instantie
+ van CryptPad, de end-to-end versleutelde en open-source 
+samenwerkingssuite. Beheerd door het CryptPad ontwikkelingsteam.</span><div class="cp-instance-location"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="map-pin" aria-hidden="true" class="lucide lucide-map-pin"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>Versleutelde gegevens bewoording in gehoost 🇫🇷 Frankrijk</div><div class="cp-instance-links"><a href="https://cryptpad.fr/code/#/2/code/view/j18D9zbfY98cwWPGHPv91vllEYOy0tCGk1gCD5UOzlk/present/" data-localization="terms">Servicevoorwaarden</a><a href="https://cryptpad.fr/pad/#/2/pad/view/GcNjAWmK6YDB3EO2IipRZ0fUe89j43Ryqeb4fjkjehE/" data-localization="privacy">Privacybeleid</a><a href="https://cryptpad.fr/contact.html">Contact</a><a href="https://uptime.cryptpad.org/status/cryptpad" target="_blank" rel="noopener noreferrer" data-localization="status">Statuspagina</a></div></div><div class="cp-apps col-lg-6"><div class="cp-app-grid"><span class="cp-app-new"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" aria-hidden="true" class="lucide lucide-plus"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>Nieuw document</span><div class="cp-app-grid-apps"><a class="cp-index-appitem" href="https://cryptpad.fr/sheet/"><div class="bs-callout cp-callout-sheet"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cp-file-oo-sheet" aria-hidden="true" class="lucide lucide-cp-file-oo-sheet"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="m14 2v4a2 2 0 0 0 2 2h4"></path><path d="m8 11 8 8" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="m16 11-8 8" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="m14 11h3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="m7 11h3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="m14 19h3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path><path d="m7 19h3" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Blad</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/doc/"><div class="bs-callout cp-callout-doc"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cp-file-oo-document" aria-hidden="true" class="lucide lucide-cp-file-oo-document"><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M15 11h2"></path><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path><path d="M7 11h2"></path><path d="m8 11 2 8 2-6 2 6 2-8"></path></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Document</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/presentation/"><div class="bs-callout cp-callout-presentation"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cp-file-oo-presentation" aria-hidden="true" class="lucide lucide-cp-file-oo-presentation"><path d="M10 11v8"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path><path d="M9 11h4a2 2 0 0 1 0 4h-3"></path><path d="M9 19h2"></path></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Presentatie</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/pad/"><div class="bs-callout cp-callout-pad"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-text" aria-hidden="true" class="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg><div class="pad-button-text"><span class="textFitted" style="display: inline-block; font-size: 16px;">Opgemaakte modeltekst</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/kanban/"><div class="bs-callout cp-callout-kanban"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cp-file-kanban" aria-hidden="true" class="lucide lucide-cp-file-kanban"><path d="M12 12h.2"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path><path d="M16 12h.2"></path><path d="M16 15h.2"></path><path d="M8 12h.2"></path><path d="M8 15h.2"></path><path d="M8 18h.2"></path></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Kanban-bord</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/code/"><div class="bs-callout cp-callout-code"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-code" aria-hidden="true" class="lucide lucide-file-code"><path d="M10 12.5 8 15l2 2.5"></path><path d="m14 12.5 2 2.5-2 2.5"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Code</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/form/"><div class="bs-callout cp-callout-form"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-chart-column-increasing" aria-hidden="true" class="lucide lucide-file-chart-column-increasing"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M8 18v-2"></path><path d="M12 18v-4"></path><path d="M16 18v-6"></path></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Formulier</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/diagram/"><div class="bs-callout cp-callout-diagram"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cp-file-diagram" aria-hidden="true" class="lucide lucide-cp-file-diagram"><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="m15 12-6 6"></path><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path><path d="M9 14v4h4"></path></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Diagram</span></div></div></a><a class="cp-index-appitem" href="https://cryptpad.fr/slide/"><div class="bs-callout cp-callout-slide"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cp-file-slide" aria-hidden="true" class="lucide lucide-cp-file-slide"><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"></path><path d="M17 13v4a2 2 0 0 1-2 2h-5"></path><rect x="7" y="11" width="7" height="5" rx="1"></rect></svg><div class="pad-button-text" style="white-space: nowrap;"><span class="textFitted" style="display: inline-block; font-size: 16px;">Presentatie</span></div></div></a></div></div><div class="cp-app-drive"><a class="cp-drive-btn" href="https://cryptpad.fr/drive/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="hard-drive" aria-hidden="true" class="lucide lucide-hard-drive"><line x1="22" x2="2" y1="12" y2="12"></line><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path><line x1="6" x2="6.01" y1="16" y2="16"></line><line x1="10" x2="10.01" y1="16" y2="16"></line></svg>Schijf</a><div class="cp-sub-prompt"><span>Voor meer slaapplaats:</span><a class="subscribe-btn" href="https://cryptpad.fr/accounts/"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="ticket" style="margin-bottom: 0.25rem;" aria-hidden="true" class="lucide lucide-ticket"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>Categorie: Fli</a></div></div></div></div></div><footer class="cp-footer"><div class="cp-footer-left"><a href="https://cryptpad.org/" role="button"><div class="cp-logo-foot"><img src="Startpagina%20-%20CryptPad.fr_files/CryptPad_logo.svg" aria-hidden="true" alt=""><span class="logo-font">CryptPad</span></div></a><span class="cp-footer-version">v2026.5.1</span></div><div class="cp-footer-center"><div class="cp-logo-btns"><a href="https://cryptpad.org/" role="button" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="link" aria-hidden="true" class="lucide lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>Projectwebsite</a><a href="https://opencollective.com/cryptpad/contribute/" role="button" target="_blank" rel="noopener noreferrer" data-localization="footer_donate"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="hand-heart" aria-hidden="true" class="lucide lucide-hand-heart"><path d="M11 14h2a2 2 0 0 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"></path><path d="m14.45 13.39 5.05-4.694C20.196 8 21 6.85 21 5.75a2.75 2.75 0 0 0-4.797-1.837.276.276 0 0 1-.406 0A2.75 2.75 0 0 0 11 5.75c0 1.2.802 2.248 1.5 2.946L16 11.95"></path><path d="m2 15 6 6"></path><path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a1 1 0 0 0-2.75-2.91"></path></svg>Doneer</a></div></div><div class="cp-footer-right"><div class="cp-footer-language"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="languages" aria-hidden="true" class="lucide lucide-languages"><path d="m5 8 6 6"></path><path d="m4 14 6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="m22 22-5-10-5 10"></path><path d="M14 18h6"></path></svg><select aria-label="Een taal"><option value="ar">اَلْعَرَبِيَّةُ</option><option value="ca">Català</option><option value="cs">Čeština</option><option value="de">Deutsch</option><option value="en">English</option><option value="es">Español</option><option value="es_CU">Español cubano</option><option value="eu">Euskara</option><option value="fi">Suomi</option><option value="fr">Français</option><option value="id">Bahasa Indonesia</option><option value="it">Italiano</option><option value="ja">日本語</option><option value="nb">Norwegian Bokmål</option><option value="nl" selected="selected">Nederlands</option><option value="pl">Polski</option><option value="pt-br">Português do Brasil</option><option value="pt-pt">Português do Portugal</option><option value="ro">Română</option><option value="ru">Русский</option><option value="sv">Svenska</option><option value="uk">Українська</option><option value="zh">中文(簡體)</option><option value="zh_Hant">中文(正體)</option></select></div></div></footer></div></body></html>

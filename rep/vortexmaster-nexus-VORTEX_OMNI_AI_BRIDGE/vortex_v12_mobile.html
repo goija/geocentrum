@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>VORTEX v13.0 // OMNI-COMMAND NEXUS</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        :root {
+            --fc-100-black: #050508; --laser-cyan: #00e5ff; --lithos-amber: #ffb000;                     
+            --matrix-green: #00ff41; --alert-red: #d92534; --sirius-blue: #0044ff;
+            --droste-purple: #ff00ff; --panel-bg: rgba(5, 10, 15, 0.95); --border-dim: #1a2a3a;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+        * { box-sizing: border-box; cursor: crosshair; touch-action: manipulation; }
+        body, html { background-color: var(--fc-100-black); color: #e0e0e0; font-family: var(--font-mono); margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        header { flex: 0 0 50px; background: #000; border-bottom: 2px solid var(--laser-cyan); padding: 0 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2000; box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+        .title { color: var(--laser-cyan); font-size: 1.1em; font-weight: bold; letter-spacing: 1px; }
+
+        /* Responsive 3-Column to 1-Column Grid */
+        .main-grid { display: grid; grid-template-columns: 320px 1fr 340px; grid-template-rows: 1fr 180px; width: 100%; height: calc(100vh - 50px); transition: all 0.4s ease; }
+        
+        .panel { background: var(--panel-bg); border-bottom: 1px solid var(--border-dim); padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; z-index: 10; }
+        .panel-header { color: var(--lithos-amber); font-size: 0.85em; font-weight: bold; border-bottom: 1px solid var(--lithos-amber); padding-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        #panelLeft { grid-column: 1 / 2; grid-row: 1 / 2; border-right: 1px solid var(--laser-cyan); }
+        .maps-container { display: flex; flex-direction: column; grid-column: 2 / 3; grid-row: 1 / 2; position: relative; background: #000; }
+        #panelRight { grid-column: 3 / 4; grid-row: 1 / 2; border-left: 1px solid var(--laser-cyan); overflow: hidden; }
+
+        .vp-resize-btns { position: absolute; top: 10px; left: 10px; z-index: 1000; display: flex; gap: 5px; }
+        .btn-vp { background: rgba(0,0,0,0.8); border: 1px solid var(--laser-cyan); color: var(--laser-cyan); width: 35px; height: 35px; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 1.2em;}
+        .btn-vp:hover { background: var(--laser-cyan); color: #000; box-shadow: 0 0 10px var(--laser-cyan); }
+
+        /* MAPS & SHADERS & OVERLAYS */
+        #sensorCam { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 10; filter: grayscale(1) sepia(1) hue-rotate(130deg) contrast(1.5) brightness(0.8); }
+        #trackerMap { flex: 1.2; background: #000; border-bottom: 1px solid var(--laser-cyan); position: relative; z-index: 2; }
+        #astroCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 405; pointer-events: none; display: none; }
+        #stratiMap { flex: 1; background: #000; position: relative; overflow: hidden; z-index: 2; }
+        #glCanvas { width: 100%; height: 100%; display: block; position: absolute; top: 0; left: 0; z-index: 3; mix-blend-mode: screen; opacity: 0.9; }
+
+        .map-label { position: absolute; top: 10px; right: 10px; z-index: 400; background: rgba(0,0,0,0.8); padding: 4px 8px; border: 1px solid var(--laser-cyan); font-size: 0.65em; color: var(--laser-cyan); pointer-events: none; }
+
+        /* Compass HUD */
+        #compassContainer { position: absolute; top: 15px; left: 60px; width: 60px; height: 60px; border: 2px solid var(--matrix-green); border-radius: 50%; z-index: 1000; background: rgba(0,0,0,0.6); box-shadow: 0 0 10px rgba(0,255,65,0.2); display: flex; justify-content: center; align-items: center; }
+        #compassDial { width: 100%; height: 100%; position: absolute; border-radius: 50%; transition: transform 0.1s ease-out; }
+        #compassDial::before { content: 'N'; position: absolute; top: 2px; left: 50%; transform: translateX(-50%); color: var(--alert-red); font-size: 10px; font-weight: bold; }
+        #compassDial::after { content: 'S'; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); color: var(--matrix-green); font-size: 10px; font-weight: bold; }
+        .compass-e { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 10px; }
+        .compass-w { position: absolute; left: 4px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 10px; }
+        #compassNeedle { width: 2px; height: 50px; background: linear-gradient(to bottom, var(--alert-red) 50%, #fff 50%); position: absolute; z-index: 1001; }
+        #compassHeading { position: absolute; bottom: -20px; font-size: 10px; color: var(--matrix-green); text-align: center; width: 100%; font-weight: bold; background: #000; padding: 2px; border: 1px solid var(--matrix-green); border-radius: 3px;}
+
+        /* Terminal */
+        .terminal-container { grid-column: 1 / 4; grid-row: 2 / 3; background: #000; border-top: 1px solid var(--laser-cyan); display: flex; flex-direction: column; z-index: 100; }
+        .terminal-output { flex-grow: 1; padding: 10px; overflow-y: auto; font-size: 0.75em; color: #8af; line-height: 1.4; }
+        .terminal-input-wrapper { display: flex; padding: 8px 15px; background: #050508; border-top: 1px solid #1a2a3a; align-items: center; }
+        #cliInput { flex-grow: 1; background: transparent; border: none; color: var(--matrix-green); font-family: inherit; outline: none; font-size: 1em; }
+
+        /* UI Elements */
+        .btn-action { background: #111; color: var(--laser-cyan); border: 1px solid var(--laser-cyan); padding: 8px 6px; font-size: 0.65em; cursor: pointer; transition: 0.2s; width: 100%; font-weight: bold; margin-top: 3px; border-radius: 2px;}
+        .btn-action:hover:not(:disabled) { background: var(--laser-cyan); color: #000; box-shadow: 0 0 10px var(--laser-cyan); }
+        .btn-action:disabled { opacity: 0.3; cursor: not-allowed; border-color: #444; color: #666; }
+        
+        .badge { padding: 4px; border: 1px solid #333; font-size: 0.75em; background: #000; color: #555; text-align: center; flex: 1; font-weight: bold; transition: 0.3s; }
+        .online { border-color: var(--matrix-green) !important; color: var(--matrix-green) !important; box-shadow: 0 0 8px rgba(0,255,65,0.3); }
+
+        .data-box { background: rgba(0, 255, 65, 0.05); border: 1px solid #1a2a3a; padding: 8px; font-size: 0.7em; display: flex; flex-direction: column; gap: 4px; }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; }
+        select { width: 100%; padding: 6px; background: #000; color: var(--laser-cyan); border: 1px solid var(--laser-cyan); font-family: inherit; font-weight: bold; outline: none;}
+
+        /* MERSENNE GRID */
+        #mersenneGrid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(13, 1fr); gap: 4px; width: 100%; height: 160px; perspective: 800px; padding: 5px; }
+        .cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s; }
+        .cube div { position: absolute; width: 100%; height: 100%; border: 1px solid rgba(0, 210, 255, 0.3); background: rgba(0, 20, 40, 0.8); display: flex; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; color: var(--laser-cyan); }
+        .cube .front { transform: translateZ(10px); }
+        .cube .right { transform: rotateY(90deg) translateZ(10px); color: var(--matrix-green); border-color: var(--matrix-green);}
+        .active-node .front { background: var(--laser-cyan); color: #000; box-shadow: 0 0 15px var(--laser-cyan); }
+        .heavy-node .front { background: var(--droste-purple); color: #fff; box-shadow: 0 0 15px var(--droste-purple); border-color: var(--droste-purple);}
+        .audio-pulse { animation: hit 0.2s ease-out; }
+        @keyframes hit { 0% { transform: scale(1.2); filter: brightness(2); } 100% { transform: scale(1); filter: brightness(1); } }
+
+        .hidden-input { display: none; }
+
+        @media screen and (max-width: 950px) {
+            body, html { overflow-y: auto; height: 100vh; display: block; }
+            .main-grid { display: flex; flex-direction: column; height: auto; min-height: 100vh; }
+            .maps-container { height: 50vh; min-height: 400px; width: 100%; order: -1; border-bottom: 2px solid var(--laser-cyan); }
+            #panelLeft, #panelRight { border: none; border-bottom: 1px solid var(--border-dim); }
+            .terminal-container { height: 35vh; min-height: 250px; width: 100%; border-top: 2px solid var(--laser-cyan); }
+        }
+        body.viewport-maximized header { display: none !important; }
+        body.viewport-maximized .terminal-container { display: none !important; }
+        body.viewport-maximized .main-grid { height: 100vh !important; grid-template-rows: 1fr !important; grid-template-columns: 100% !important; }
+        body.viewport-maximized #panelLeft, body.viewport-maximized #panelRight { display: none !important; }
+        body.viewport-maximized .maps-container { grid-column: 1 / -1 !important; grid-row: 1 / -1 !important; border: none !important; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="title">VORTEX v13.0 // OMNI-COMMAND NEXUS</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span id="nodeLabel" style="color:var(--matrix-green); font-size:0.7em; font-weight:bold;">NODE: VTX-LOCAL</span>
+    </div>
+</header>
+
+<div class="main-grid">
+    <div class="panel" id="panelLeft">
+        
+        <div class="panel-header">P2P DATA TUNNEL</div>
+        <div style="display:flex; gap:5px; margin-bottom:5px;">
+            <div id="wsBadge" class="badge">SIG OFFLINE</div>
+            <div id="p2pBadge" class="badge">TUNNEL OFFLINE</div>
+        </div>
+        <select id="roleSelect" style="margin-bottom:5px;">
+            <option value="sender">VORTEX MASTER (Zender)</option>
+            <option value="receiver">M2M SLAVE (Ontvanger)</option>
+        </select>
+        <button class="btn-action" onclick="executeCoreCommand('connect p2p')">OPEN P2P LOCAL BUS</button>
+
+        <div class="panel-header" style="margin-top:15px;">SECURE DATA VAULT (AES-GCM)</div>
+        <div class="data-box" style="border-color: var(--alert-red);">
+            <input type="password" id="cryptoPassword" placeholder="AES Password Key..." style="width:100%; padding:5px; background:#000; color:#0f0; border:1px solid var(--laser-cyan);">
+            <input type="file" id="cryptoFileInput" class="hidden-input">
+            <button class="btn-action" style="border-color:var(--alert-red); color:var(--alert-red);" onclick="executeCoreCommand('encrypt pdf')">ENCRYPT PDF -> .DAT</button>
+            <button class="btn-action" style="border-color:var(--matrix-green); color:var(--matrix-green);" onclick="executeCoreCommand('decrypt pdf')">DECRYPT .DAT -> .PDF</button>
+        </div>
+
+        <div class="panel-header" style="margin-top:15px;">GEOJSON DATA I/O</div>
+        <div class="data-box" style="border-color: var(--lithos-amber);">
+            <input type="file" id="geoJsonInput" class="hidden-input" accept=".geojson,.json">
+            <button class="btn-action" style="color:var(--lithos-amber); border-color:var(--lithos-amber);" onclick="executeCoreCommand('import geojson')">IMPORT GEOJSON</button>
+            <button class="btn-action" style="color:var(--lithos-amber); border-color:var(--lithos-amber);" onclick="executeCoreCommand('export geojson')">EXPORT P2P GEOJSON</button>
+        </div>
+
+        <div class="panel-header" style="margin-top:15px;">TRANSFORM MATRIX</div>
+        <div class="data-box" id="transformBox">
+            <div class="stat-row"><span>MIRROR X:</span><span id="st-mir" style="color:#666;">OFF</span></div>
+            <div class="stat-row"><span>POLAR FLIP:</span><span id="st-pol" style="color:#666;">OFF</span></div>
+            <div class="stat-row"><span>HEADING:</span><span id="st-head" style="color:var(--matrix-green);">0°</span></div>
+        </div>
+        <button class="btn-action" style="border-color:var(--droste-purple); color:var(--droste-purple);" onclick="executeCoreCommand('mirror all')">TOGGLE MIRROR</button>
+        <button class="btn-action" style="border-color:var(--droste-purple); color:var(--droste-purple);" onclick="executeCoreCommand('polarflip all')">TOGGLE POLARFLIP</button>
+
+    </div>
+
+    <div class="maps-container">
+        <div class="vp-resize-btns">
+            <button class="btn-vp" onclick="executeCoreCommand('fullscreen on')">⛶</button>
+            <button class="btn-vp" onclick="executeCoreCommand('fullscreen off')">✕</button>
+        </div>
+        
+        <div id="trackerMap">
+            <div class="map-label">XY-DOMAIN // MAPPING NEXUS</div>
+            <div id="compassContainer">
+                <div id="compassDial"><span class="compass-e">E</span><span class="compass-w">W</span></div>
+                <div id="compassNeedle"></div>
+                <div id="compassHeading">0°</div>
+            </div>
+            <canvas id="astroCanvas"></canvas>
+        </div>
+        
+        <div id="stratiMap">
+            <div class="map-label" style="border-color:var(--lithos-amber); color:var(--lithos-amber);"><span id="z-label">Z-DOMAIN // SHADER</span></div>
+            <canvas id="glCanvas"></canvas>
+            <video id="sensorCam" autoplay playsinline></video>
+        </div>
+    </div>
+
+    <div class="panel" id="panelRight">
+        <div class="panel-header">OMNI-SHADER CONTROLS</div>
+        <button class="btn-action" onclick="executeCoreCommand('view lidar')">VIEW LIDAR</button>
+        <button class="btn-action" onclick="executeCoreCommand('view cyclone')">VIEW CYCLONES</button>
+        <button class="btn-action" onclick="executeCoreCommand('view droste')">VIEW DROSTE</button>
+        <button class="btn-action" onclick="executeCoreCommand('view resonantie')">VIEW RESONANCE</button>
+        <button class="btn-action" onclick="executeCoreCommand('scan nebula')">VIEW NEBULA</button>
+        <button class="btn-action" onclick="executeCoreCommand('enable sensors')" style="background:var(--matrix-green); color:#000; margin-top:10px;">ACTIVATE AR SENSORS</button>
+
+        <div class="panel-header" style="margin-top:15px;">13x4 MERSENNE KUBUS GRID</div>
+        <div style="flex-grow: 1; overflow: hidden; background: #020202; border: 1px solid #222; border-radius: 4px;">
+            <div id="mersenneGrid"></div>
+        </div>
+        <div class="data-box" style="margin-top:5px;">
+            <div class="stat-row"><span style="color:var(--lithos-amber);">EXPONENT:</span><span id="lblExp">0</span></div>
+            <div class="stat-row"><span style="color:var(--matrix-green);">FREQ:</span><span id="lblFreq">0 Hz</span></div>
+            <div class="stat-row"><span>GORTYN:</span><span id="lblGortyn">-</span></div>
+        </div>
+        <button class="btn-action" style="border-color:var(--lithos-amber); color:var(--lithos-amber);" onclick="executeCoreCommand('start audio')" id="btnAudio">▶ START 110HZ PUTUTU</button>
+        
+        <div class="panel-header" style="margin-top:15px;">DATABRICKS & GEO-AI</div>
+        <button class="btn-action" onclick="executeCoreCommand('init ai')" style="border-color:#ff00ff; color:#ff00ff;">INIT AI BRIDGE</button>
+        <button class="btn-action" onclick="executeCoreCommand('ai scan')" style="border-color:#ff00ff; color:#ff00ff;">RUN GEO-AI SCAN</button>
+
+        <div class="panel-header" style="margin-top:15px;">MAPPING COMMANDS</div>
+        <button class="btn-action" onclick="executeCoreCommand('astro engine')" style="border-color:var(--sirius-blue); color:var(--sirius-blue);">TOGGLE ASTRO ENGINE (VEGA)</button>
+        <button class="btn-action" onclick="executeCoreCommand('import kaartproviders')">LOAD GLOBAL MAPS</button>
+        <button class="btn-action" onclick="executeCoreCommand('plot sabic')" style="border-color:var(--alert-red); color:var(--alert-red);">PLOT SABIC PFBS</button>
+        <button class="btn-action" onclick="executeCoreCommand('plot mersenne')">PLOT MERSENNE HEXAGON</button>
+        <button class="btn-action" onclick="executeCoreCommand('clear')" style="margin-top:10px; border-color:var(--alert-red); color:var(--alert-red);">PURGE SYSTEM</button>
+    </div>
+
+    <div class="terminal-container">
+        <div class="terminal-output" id="termOut"></div>
+        <div class="terminal-input-wrapper">
+            <span style="color:var(--laser-cyan); margin-right:5px; font-weight:bold;">vtx@nexus:~#</span>
+            <input type="text" id="cliInput" autofocus autocomplete="off" placeholder="Typ 'help' voor de complete lijst...">
+        </div>
+    </div>
+</div>
+
+<script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec2 position; varying vec2 vUv;
+    void main() { vUv = position * 0.5 + 0.5; gl_Position = vec4(position, 0.0, 1.0); }
+</script>
+<script id="fragmentShader" type="x-shader/x-fragment">
+    precision highp float;
+    varying vec2 vUv; uniform float u_time; uniform int u_mode; 
+    uniform float u_heading; uniform float u_mirror; uniform float u_polar;
+
+    float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    float noise(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); vec2 u = f*f*(3.0-2.0*f); return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x), mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y); }
+
+    void main() {
+        vec2 uv = vUv; 
+        vec2 cuv = uv - 0.5; 
+        
+        // COMPASS DRIVEN ROTATION
+        float s = sin(u_heading); float c = cos(u_heading);
+        mat2 rot = mat2(c, -s, s, c);
+        cuv = rot * cuv;
+
+        // MIRROR & POLAR 
+        if (u_mirror > 0.5) cuv.x = -cuv.x;
+        float dist = length(cuv); float angle = atan(cuv.y, cuv.x);
+        if (u_polar > 0.5) { dist = 0.5 - dist; cuv = vec2(cos(angle), sin(angle)) * dist; }
+
+        vec3 color = vec3(0.0); 
+        if(u_mode == 0) { // Stratigraphy
+            float n = noise((cuv+0.5) * 10.0 + u_time * 0.1);
+            color = mix(vec3(0.1, 0.05, 0.02), vec3(0.0, 0.2, 0.4), step(0.5, (cuv.y+0.5) + n*0.1));
+        } else if(u_mode == 1) { // LiDAR
+            color = vec3(0.0, 1.0, 0.5) * step(0.97, fract((cuv.y+0.5) * 50.0 + sin((cuv.x+0.5) * 20.0 + u_time * 2.0)));
+        } else if(u_mode == 2) { // Nebula
+            float spiral = sin(angle * 3.0 + dist * 12.0 - u_time * 3.0);
+            color = vec3(1.0, 0.1, 0.1) * smoothstep(0.5, 0.0, length(cuv - vec2(-0.2, 0.0))) * abs(spiral) * 1.5;
+            color += vec3(0.0, 0.4, 1.0) * smoothstep(0.5, 0.0, length(cuv - vec2(0.2, 0.0))) * abs(spiral) * 1.5;
+        } else if(u_mode == 3) { // Cyclones
+            for(int i=0; i<6; i++) {
+                float t = float(i)*1.047 + u_time; vec2 center = vec2(cos(t), sin(t)) * 0.25;
+                float dDist = length(cuv - center);
+                float spiral = sin(atan((cuv.y - center.y), (cuv.x - center.x)) * 4.0 + dDist * 20.0 - u_time * 5.0);
+                color += vec3(0.1, 0.5, 1.0) * smoothstep(0.15, 0.0, dDist) * abs(spiral);
+            }
+        } else if(u_mode == 5) { // Droste
+            float iter = 2.0; float logR = log(dist + 0.01);
+            float spiral = sin(angle * iter + logR * 10.0 - u_time * 3.0);
+            color = vec3(0.3, 0.3, 0.8) * smoothstep(0.5, 0.0, dist) * abs(spiral) * 2.0;
+        } else if(u_mode == 6) { // Resonance
+            color = vec3(1.0, 0.6, 0.0) * smoothstep(0.1, 0.9, abs(sin(dist * 50.0 - u_time * 4.0)));
+        } else if (u_mode == 10) { // GeoAI Segmentation
+            float n = noise(uv * 15.0 - u_time * 2.0);
+            color = vec3(n, 0.1, 1.0-n) * 0.6;
+        }
+        
+        color -= vec3(0.1) * sin(uv.y * 200.0 - u_time * 10.0); // Scanlines
+        gl_FragColor = vec4(color, u_mode == 0 ? 0.0 : 0.8);
+    }
+</script>
+
+<script>
+    // --- 1. CORE & LOGGING ---
+    const myID = "VTX-" + Math.floor(Math.random()*10000).toString(16).toUpperCase();
+    document.getElementById('nodeLabel').innerText = `NODE: ${myID}`;
+    const term = document.getElementById('termOut');
+    const bus = new BroadcastChannel('vortex_v13_bridge');
+    
+    let pc, dc, role, isP2P = false, isRemoteSync = false;
+    let shaderMode = 0, mState = 0, pState = 0, astroActive = false, aiActive = false;
+    let iceQueue = [];
+
+    const log = (msg, type = 'sys', broadcast = true) => {
+        const c = { sys: '#8af', ok: '#0f4', err: '#f44', cmd: '#0ff', data: '#ffb000', math: '#f0f', ai: '#a020f0' }[type] || '#fff';
+        term.innerHTML += `<div><span style="color:#555;">[${new Date().toLocaleTimeString().split(' ')[0]}]</span> <span style="color:${c}">${msg}</span></div>`;
+        term.scrollTop = term.scrollHeight;
+        if (broadcast && isP2P && dc && dc.readyState === 'open') {
+            dc.send(JSON.stringify({ type: 'LOG', msg: msg, msgType: type, sender: myID }));
+        }
+    };
+
+    // --- 2. LEAFLET MAP & GEOJSON ---
+    const map = L.map('trackerMap', { zoomControl: false }).setView([51.481, 4.276], 12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    let targetLayer = L.layerGroup().addTo(map);
+    let layerControl = null;
+    
+    map.on('move', () => {
+        if(isP2P && dc && dc.readyState === 'open' && !isRemoteSync) {
+            dc.send(JSON.stringify({ type: 'SYNC_STATE', payload: getSystemState() }));
+        }
+    });
+
+    document.getElementById('geoJsonInput').addEventListener('change', (e) => {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                const geo = JSON.parse(ev.target.result);
+                L.geoJSON(geo, { style: {color: '#00ff41', weight: 2}, pointToLayer: (fd, latlng) => L.circleMarker(latlng, {radius:6, color:'#ffb000'}) }).addTo(targetLayer);
+                log(`GeoJSON [${file.name}] geladen.`, "data");
+            } catch(err) { log("Fout bij parsen GeoJSON.", "err"); }
+        };
+        reader.readAsText(file);
+    });
+
+    function exportGeoJSON() {
+        const c = map.getCenter();
+        const data = { type: "FeatureCollection", features: [ { type: "Feature", properties: { name: "Vortex Target", id: myID }, geometry: { type: "Point", coordinates: [c.lng, c.lat] } } ] };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `vortex_export_${myID}.geojson`; a.click();
+        log("GeoJSON export succesvol.", "ok");
+    }
+
+    // --- 3. ASTRO ENGINE OVERLAY ---
+    const astroCanvas = document.getElementById('astroCanvas');
+    const aCtx = astroCanvas.getContext('2d');
+    
+    function drawAstroEngine(headingDeg) {
+        if(!astroActive) { aCtx.clearRect(0,0, astroCanvas.width, astroCanvas.height); return; }
+        astroCanvas.width = astroCanvas.clientWidth; astroCanvas.height = astroCanvas.clientHeight;
+        const cx = astroCanvas.width / 2; const cy = astroCanvas.height / 2;
+        const radius = Math.min(cx, cy) * 0.8;
+
+        aCtx.clearRect(0,0, astroCanvas.width, astroCanvas.height);
+        aCtx.save(); aCtx.translate(cx, cy); aCtx.rotate(-headingDeg * (Math.PI / 180)); 
+
+        aCtx.beginPath(); aCtx.strokeStyle = "rgba(255, 170, 0, 0.4)"; aCtx.lineWidth = 1;
+        for (let i = 0; i <= 51; i++) {
+            let a = i * ((2 * Math.PI) / 51); let x = radius * Math.cos(a); let y = radius * Math.sin(a);
+            if (i === 0) aCtx.moveTo(x, y); else aCtx.lineTo(x, y);
+        }
+        aCtx.stroke();
+
+        const angle108 = 1.88496; 
+        aCtx.beginPath(); aCtx.strokeStyle = "rgba(0, 229, 255, 0.8)"; aCtx.lineWidth = 2;
+        aCtx.moveTo(0, 0); aCtx.lineTo(radius * Math.cos(0), radius * Math.sin(0));
+        aCtx.moveTo(0, 0); aCtx.lineTo(radius * Math.cos(angle108), radius * Math.sin(angle108));
+        aCtx.stroke();
+
+        aCtx.beginPath(); aCtx.fillStyle = "#ff00ff"; aCtx.shadowColor = "#ff00ff"; aCtx.shadowBlur = 15;
+        aCtx.arc(radius * Math.cos(angle108/2), radius * Math.sin(angle108/2), 6, 0, Math.PI * 2);
+        aCtx.fill(); aCtx.shadowBlur = 0;
+        
+        aCtx.restore();
+    }
+
+    // --- 4. WEBGL SHADER ---
+    const gl = document.getElementById('glCanvas').getContext('webgl');
+    const compile = (t, s) => { let sh = gl.createShader(t); gl.shaderSource(sh, s); gl.compileShader(sh); return sh; };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, document.getElementById('vertexShader').textContent));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, document.getElementById('fragmentShader').textContent));
+    gl.linkProgram(prog); gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
+    const pLoc = gl.getAttribLocation(prog, "position"); gl.enableVertexAttribArray(pLoc); gl.vertexAttribPointer(pLoc, 2, gl.FLOAT, 0, 0, 0);
+
+    let headingRad = 0; 
+    const uTime = gl.getUniformLocation(prog, "u_time"), uMode = gl.getUniformLocation(prog, "u_mode");
+    const uMirror = gl.getUniformLocation(prog, "u_mirror"), uPolar = gl.getUniformLocation(prog, "u_polar");
+    const uHeading = gl.getUniformLocation(prog, "u_heading");
+
+    function render() {
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.uniform1f(uTime, performance.now()/1000); gl.uniform1i(uMode, shaderMode);
+        gl.uniform1f(uMirror, mState); gl.uniform1f(uPolar, pState);
+        gl.uniform1f(uHeading, headingRad);
+        gl.drawArrays(gl.TRIANGLES, 0, 6); 
+        drawAstroEngine(headingRad * (180/Math.PI)); 
+        requestAnimationFrame(render);
+    }
+    render();
+
+    // --- 5. 13x4 MERSENNE GRID & AUDIO ---
+    const M_EXPONENTS = [2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,9941,11213,19937,21701,23209,44497,86243,110503,132049,216091,756839,859433,1257787,1398269,2976221,3021377,6972593,13466917,20996011,24036583,25964951,30402457,32582657,37156667,42643801,43112609,57885161,74207281,77232917,82589933,136279841];
+    const gortyn = "ΤΟΝΕΛΕΥΘΕΡΟΝΕΚΑΙΤΟΝΔΟΛΟΝΤΑΔΕΔΙΚΑΔΔΕΝΟΚΑΤΙΜΕΝΑΙΕΣΤΑΝΠ"; 
+    const cubeEls = [];
+    
+    function buildMersenneGrid() {
+        const grid = document.getElementById('mersenneGrid');
+        for(let i=0; i<52; i++) {
+            const cube = document.createElement('div'); cube.className = 'cube';
+            ['front','right'].forEach(f => {
+                const face = document.createElement('div'); face.className = f; face.innerText = (f === 'front') ? gortyn[i] : "1"; cube.appendChild(face);
+            });
+            grid.appendChild(cube); cubeEls.push(cube);
+        }
+    }
+    buildMersenneGrid();
+
+    let aCtx, oscillator, filter, engineRunning = false, stepIndex = 0;
+    function toggleAudioEngine() {
+        if(!engineRunning) {
+            if(!aCtx) {
+                aCtx = new (window.AudioContext || window.webkitAudioContext)();
+                oscillator = aCtx.createOscillator(); oscillator.type = 'square';
+                filter = aCtx.createBiquadFilter(); filter.type = 'bandpass'; filter.Q.value = 5;
+                oscillator.connect(filter); filter.connect(aCtx.destination);
+                oscillator.start();
+            } else if(aCtx.state === 'suspended') aCtx.resume();
+            engineRunning = true; document.getElementById('btnAudio').innerText = "▌▌ PAUZE 110HZ ENGINE"; runSequencer(); log("[AUDIO] 110Hz Resonance Engine Gestart.", "ok");
+        } else {
+            engineRunning = false; if(aCtx) aCtx.suspend(); document.getElementById('btnAudio').innerText = "▶ START 110HZ PUTUTU";
+        }
+    }
+
+    function runSequencer() {
+        if(!engineRunning) return;
+        cubeEls.forEach(c => { c.classList.remove('active-node', 'heavy-node'); c.style.transform = 'rotateY(0deg)'; });
+        let p = M_EXPONENTS[stepIndex]; let activeCube = cubeEls[stepIndex];
+        if (p > 1000000) activeCube.classList.add('heavy-node'); else activeCube.classList.add('active-node');
+        activeCube.classList.remove('audio-pulse'); void activeCube.offsetWidth; activeCube.classList.add('audio-pulse');
+        activeCube.style.transform = 'rotateY(-90deg)';
+
+        let freq = 110 + (Math.log10(p) * 20);
+        if(filter) filter.frequency.setValueAtTime(freq, aCtx.currentTime);
+
+        document.getElementById('lblExp').innerText = p; document.getElementById('lblFreq').innerText = freq.toFixed(1) + " Hz"; document.getElementById('lblGortyn').innerText = gortyn[stepIndex];
+        if(isP2P && dc && dc.readyState === 'open') dc.send(JSON.stringify({ type: 'SEQ', idx: stepIndex }));
+        stepIndex = (stepIndex + 1) % 52; setTimeout(runSequencer, 400);
+    }
+
+    // --- 6. AES CRYPTO ENGINE ---
+    let cryptoMode = '';
+    async function deriveKey(password, salt) {
+        const enc = new TextEncoder();
+        const keyMaterial = await window.crypto.subtle.importKey("raw", enc.encode(password), {name: "PBKDF2"}, false, ["deriveKey"]);
+        return window.crypto.subtle.deriveKey({ name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+    }
+
+    function triggerCrypto(mode) {
+        const pwd = document.getElementById('cryptoPassword').value;
+        if(!pwd) { log("[SEC] Voer eerst een AES wachtwoord in.", "err"); return; }
+        cryptoMode = mode; document.getElementById('cryptoFileInput').click();
+    }
+
+    document.getElementById('cryptoFileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0]; if(!file) return;
+        const pwd = document.getElementById('cryptoPassword').value;
+        if (cryptoMode === 'encrypt') {
+            log(`[CRYPTO] Encrypting: ${file.name}...`, "sys");
+            try {
+                const buffer = await file.arrayBuffer(); const salt = window.crypto.getRandomValues(new Uint8Array(16)); const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const key = await deriveKey(pwd, salt); const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, buffer);
+                const out = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+                out.set(salt, 0); out.set(iv, salt.length); out.set(new Uint8Array(encrypted), salt.length + iv.length);
+                const blob = new Blob([out], { type: 'application/octet-stream' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name.replace('.pdf', '') + '_encrypted.dat'; a.click();
+                log("[CRYPTO] Encryptie geslaagd.", "ok");
+            } catch(err) { log("[ERR] Encryptie gefaald.", "err"); }
+        } else if (cryptoMode === 'decrypt') {
+            log(`[CRYPTO] Decrypting: ${file.name}...`, "sys");
+            try {
+                const buffer = await file.arrayBuffer(); const data = new Uint8Array(buffer);
+                const salt = data.slice(0, 16); const iv = data.slice(16, 28); const encrypted = data.slice(28);
+                const key = await deriveKey(pwd, salt); const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, encrypted);
+                const blob = new Blob([decrypted], { type: 'application/pdf' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name.replace('.dat', '') + '_decrypted.pdf'; a.click();
+                log("[CRYPTO] Decryptie geslaagd.", "ok");
+            } catch (err) { log("[ERR] Fout wachtwoord of corrupt bestand.", "err"); }
+        }
+        e.target.value = '';
+    });
+
+    // --- 7. SENSORS & COMPASS ---
+    let streamActive = false;
+    function handleOrientation(e) {
+        let alpha = e.alpha || 0;
+        let head = e.webkitCompassHeading ? e.webkitCompassHeading : (360 - alpha);
+        
+        const dial = document.getElementById('compassDial');
+        const text = document.getElementById('compassHeading');
+        if(dial) dial.style.transform = `rotate(${-head}deg)`;
+        if(text) text.innerText = `${Math.round(head)}°`;
+
+        headingRad = head * (Math.PI / 180); 
+        document.getElementById('st-head').innerText = `${Math.round(head)}°`;
+
+        if(isP2P && dc && dc.readyState === 'open' && !isRemoteSync) {
+            if (Math.random() < 0.1) dc.send(JSON.stringify({ type: 'SYNC_STATE', payload: getSystemState() }));
+        }
+    }
+
+    async function initSensors() {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try { const perm = await DeviceOrientationEvent.requestPermission(); if (perm === 'granted') window.addEventListener('deviceorientation', handleOrientation, true); } catch(e) {}
+        } else window.addEventListener('deviceorientationabsolute', handleOrientation, true) || window.addEventListener('deviceorientation', handleOrientation, true);
+        
+        const vid = document.getElementById('sensorCam');
+        if(!streamActive) {
+            try { const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); vid.srcObject = stream; vid.style.display = 'block'; streamActive = true; log("Hardware Sensoren Actief.", "ok"); } catch(e) { log("Camera error.", "err"); }
+        } else { vid.srcObject.getTracks().forEach(t => t.stop()); vid.style.display = 'none'; streamActive = false; }
+    }
+
+    // --- 8. P2P WEBRTC ---
+    function executeCoreCommand(cmdRaw, fromPeer = false) {
+        let cmd = cmdRaw.toLowerCase().trim();
+        
+        // P2P Propagate
+        if(!fromPeer && isP2P && dc && dc.readyState === 'open' && !cmd.includes('connect p2p') && !cmd.includes('pdf') && !cmd.includes('geojson')) {
+            dc.send(JSON.stringify({ type: 'CMD', cmd: cmd }));
+        }
+
+        // Aliases
+        if (['minor', 'minor all', 'mirror'].includes(cmd)) cmd = 'mirror all';
+        if (['pollarflip', 'pollarflip all', 'polarflip'].includes(cmd)) cmd = 'polarflip all';
+        if (['lidar'].includes(cmd)) cmd = 'view lidar';
+        if (['herken patroon', 'scan patroon', 'analyze', 'run geoai'].includes(cmd)) cmd = 'ai scan';
+        if (['ai bridge'].includes(cmd)) cmd = 'init ai';
+        if (['request sensors'].includes(cmd)) cmd = 'enable sensors';
+        if (['view resonance'].includes(cmd)) cmd = 'view resonantie';
+        if (['maximize'].includes(cmd)) cmd = 'fullscreen on';
+        if (['minimize'].includes(cmd)) cmd = 'fullscreen off';
+        if (['decrypt dossier m_7'].includes(cmd)) cmd = 'decrypt pdf';
+        if (['plot hexagon'].includes(cmd)) cmd = 'plot mersenne';
+        if (['clear plotter'].includes(cmd)) cmd = 'clear';
+
+        switch(cmd) {
+            case 'help':
+                log("--- VORTEX OS OMNI-COMMANDS ---", "sys", false);
+                log("> MAPS: import kaartproviders, bodemkaart scan, import/export geojson", "cmd", false);
+                log("> PLOT: plot sabic, plot mersenne, plot target", "cmd", false);
+                log("> SHADER: view [lidar/cyclone/droste/resonantie/nebula]", "cmd", false);
+                log("> SENSORS: enable sensors, astro engine, mirror all, polarflip all, reset transforms", "cmd", false);
+                log("> AI & CRYPTO: init ai, ai scan, encrypt pdf, decrypt pdf", "cmd", false);
+                log("> SYSTEM: start audio, connect p2p, fullscreen on/off, encode gpcc, clear", "cmd", false);
+                break;
+            case 'view lidar': shaderMode = 1; document.getElementById('z-label').innerText = "Z-DOMAIN: LIDAR"; break;
+            case 'scan nebula': shaderMode = 2; document.getElementById('z-label').innerText = "Z-DOMAIN: NEBULA"; break;
+            case 'view cyclone': shaderMode = 3; document.getElementById('z-label').innerText = "Z-DOMAIN: CYCLONES"; break;
+            case 'view droste': shaderMode = 5; document.getElementById('z-label').innerText = "Z-DOMAIN: DROSTE"; break;
+            case 'view resonantie': shaderMode = 6; document.getElementById('z-label').innerText = "Z-DOMAIN: RESONANCE"; break;
+            case 'import kaartproviders':
+                if(!layerControl) {
+                    const gSat = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}');
+                    const waze = L.tileLayer('https://worldtiles3.waze.com/tiles/{z}/{x}/{y}.png');
+                    layerControl = L.control.layers({"Dark": baseTile, "Satellite": gSat, "Waze": waze}, null, {position:'topleft'}).addTo(map);
+                    log("Global Map Nexus geladen.", "ok");
+                }
+                break;
+            case 'bodemkaart scan': log("Bodemkaart WMS Toggle gesimuleerd.", "data"); break;
+            case 'import geojson': document.getElementById('geoJsonInput').click(); break;
+            case 'export geojson': exportGeoJSON(); break;
+            case 'encrypt pdf': triggerCrypto('encrypt'); break;
+            case 'decrypt pdf': triggerCrypto('decrypt'); break;
+            case 'plot sabic': 
+                map.flyTo([51.481, 4.276], 14); 
+                setTimeout(() => { L.circle([51.481, 4.276], {radius: 800, color: 'red'}).addTo(targetLayer).bindPopup("SABIC PFBS").openPopup(); log("SABIC geplot.", "data"); }, 1000); 
+                break;
+            case 'plot mersenne': 
+                L.circleMarker(map.getCenter(), {radius: 6, color: '#ffb000'}).addTo(targetLayer); log("Mersenne geplot.", "math"); 
+                break;
+            case 'plot target': 
+                L.circleMarker(map.getCenter(), {radius: 6, color: '#ff00ff'}).addTo(targetLayer); log("Target geplot.", "ok"); 
+                break;
+            case 'enable sensors': initSensors(); break;
+            case 'astro engine': 
+                astroActive = !astroActive; document.getElementById('astroCanvas').style.display = astroActive ? 'block' : 'none'; 
+                log(astroActive ? "Astro Engine Actief." : "Astro Inactief.", "math"); 
+                break;
+            case 'mirror all': mState = mState ? 0 : 1; document.getElementById('st-mir').innerText = mState ? "ACTIVE" : "OFF"; document.getElementById('st-mir').style.color = mState ? "var(--droste-purple)" : "#666"; break;
+            case 'polarflip all': pState = pState ? 0 : 1; document.getElementById('st-pol').innerText = pState ? "ACTIVE" : "OFF"; document.getElementById('st-pol').style.color = pState ? "var(--droste-purple)" : "#666"; break;
+            case 'reset transforms': mState = 0; pState = 0; document.getElementById('st-mir').innerText="OFF"; document.getElementById('st-pol').innerText="OFF"; break;
+            case 'init ai': aiActive = true; log("Neurale brug geactiveerd.", "ok"); break;
+            case 'ai scan': 
+                if(aiActive) { log("Scanning...", "sys"); setTimeout(() => { L.circle(map.getCenter(), {radius: 400, color: '#00ff41', dashArray: '5,5'}).addTo(targetLayer); log("GeoAI Anomaly Locked.", "ok"); }, 1000); } 
+                else log("Init AI first.", "err"); 
+                break;
+            case 'encode gpcc': log("G-PCC compressie: 83.3% reductie bereikt.", "math"); break;
+            case 'stream octree': log("Octree gestreamd over P2P.", "sys"); break;
+            case 'start audio': toggleAudioEngine(); break;
+            case 'connect p2p': initP2P(); break;
+            case 'fullscreen on': document.body.classList.add('viewport-maximized'); setTimeout(() => map.invalidateSize(), 400); break;
+            case 'fullscreen off': document.body.classList.remove('viewport-maximized'); setTimeout(() => map.invalidateSize(), 400); break;
+            case 'clear': 
+                targetLayer.clearLayers(); mersenneLayerGroup.clearLayers(); shaderMode = 0; mState = 0; pState = 0; 
+                document.getElementById('st-mir').innerText = "OFF"; document.getElementById('st-pol').innerText = "OFF";
+                document.getElementById('st-mir').style.color = "#666"; document.getElementById('st-pol').style.color = "#666";
+                document.getElementById('z-label').innerText = "Z-DOMAIN: STRATIGRAPHIE";
+                astroActive = false; document.getElementById('astroCanvas').style.display = 'none';
+                if(engineRunning) toggleAudioEngine();
+                log("Systeem gereinigd.", "sys"); 
+                break;
+            default: if(!fromPeer && cmd !== "") log(`Commando onbekend. Typ 'help'.`, 'err', false);
+        }
+
+        if (isP2P && dc && dc.readyState === 'open' && !fromPeer) {
+            applySystemState(getSystemState()); 
+            dc.send(JSON.stringify({ type: 'SYNC_STATE', payload: getSystemState() }));
+        }
+    }
+
+    function processCommand(input) { if(!input) return; log(`vortex@nexus:~# ${input}`, 'cmd', true); executeCoreCommand(input, false); }
+    document.getElementById('cliInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') { processCommand(e.target.value); e.target.value = ''; } });
+
+    // --- P2P WEBRTC BOILERPLATE ---
+    function initP2P() {
+        role = document.getElementById('roleSelect').value; log(`P2P Bus actief als ${role}.`, "sys", false);
+        document.getElementById('wsBadge').className = 'badge online'; setupWebRTC();
+        if (role === 'sender') document.getElementById('btnTunnel').disabled = false;
+    }
+    bus.onmessage = async (e) => {
+        const d = e.data; if (d.sid === myID) return;
+        if (d.type === 'offer' && role === 'receiver') { await pc.setRemoteDescription(new RTCSessionDescription(d.offer)); const ans = await pc.createAnswer(); await pc.setLocalDescription(ans); bus.postMessage({ type: 'answer', answer: ans, sid: myID }); while(iceQueue.length) await pc.addIceCandidate(iceQueue.shift()); } 
+        else if (d.type === 'answer' && role === 'sender') { await pc.setRemoteDescription(new RTCSessionDescription(d.answer)); while(iceQueue.length) await pc.addIceCandidate(iceQueue.shift()); } 
+        else if (d.type === 'candidate') { if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(d.candidate)); else iceQueue.push(d.candidate); }
+    };
+    function setupWebRTC() {
+        pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+        pc.onicecandidate = e => { if (e.candidate) bus.postMessage({ type: 'candidate', candidate: e.candidate, sid: myID }); };
+        pc.onconnectionstatechange = () => { const b = document.getElementById('p2pBadge'); if (pc.connectionState === 'connected') { b.className = 'badge online'; b.innerText = "TUNNEL ONLINE"; isP2P = true; log("P2P Verbonden.", "ok", false); } else { b.className = 'badge error'; b.innerText = "TUNNEL OFFLINE"; isP2P = false; } };
+        if (role === 'sender') { dc = pc.createDataChannel("vortex"); dc.onopen = () => log("Datakanaal operationeel.", "ok", false); dc.onmessage = e => handleDC(e.data); } else { pc.ondatachannel = e => { dc = e.channel; dc.onopen = () => log("Datakanaal operationeel.", "ok", false); dc.onmessage = ev => handleDC(ev.data); }; }
+    }
+    async function createOffer() { const off = await pc.createOffer(); await pc.setLocalDescription(off); bus.postMessage({ type: 'offer', offer: off, sid: myID }); }
+    function handleDC(data) {
+        const d = JSON.parse(data);
+        if (d.type === 'CMD') executeCoreCommand(d.cmd, true);
+        else if (d.type === 'SYNC_STATE') applySystemState(d.payload);
+        else if (d.type === 'LOG') log(d.msg, d.msgType, false);
+        else if (d.type === 'SEQ') { 
+            cubeEls.forEach(c => { c.classList.remove('active-node', 'heavy-node'); c.style.transform = 'rotateY(0deg)'; });
+            let p = M_EXPONENTS[d.idx]; let activeCube = cubeEls[d.idx];
+            if (p > 1000000) activeCube.classList.add('heavy-node'); else activeCube.classList.add('active-node');
+            activeCube.style.transform = 'rotateY(-90deg)'; document.getElementById('lblExp').innerText = p; document.getElementById('lblGortyn').innerText = gortyn[d.idx];
+        }
+    }
+    function getSystemState() { return { lat: map.getCenter().lat, lng: map.getCenter().lng, zoom: map.getZoom(), shaderMode: shaderMode, mirror: mState, polar: pState, astro: astroActive, heading: headingRad }; }
+    function applySystemState(s) {
+        isRemoteSync = true; map.setView([s.lat, s.lng], s.zoom, {animate: false}); shaderMode = s.shaderMode; mState = s.mirror; pState = s.polar; astroActive = s.astro; headingRad = s.heading;
+        document.getElementById('st-mir').innerText = mState ? "ACTIVE" : "OFF"; document.getElementById('st-mir').style.color = mState ? "var(--droste-purple)" : "#666";
+        document.getElementById('st-pol').innerText = pState ? "ACTIVE" : "OFF"; document.getElementById('st-pol').style.color = pState ? "var(--droste-purple)" : "#666";
+        setTimeout(() => { isRemoteSync = false; }, 50);
+    }
+
+    log(`VORTEX Omni-Core v13.0 (OMNI-COMMAND NEXUS) Opgestart. Typ 'help'`, 'ok', false);
+</script>
+</body>
+</html>
