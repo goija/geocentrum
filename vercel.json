@@ -7,14 +7,8 @@
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600, s-maxage=86400"
-        }
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=3600, s-maxage=86400" }
       ]
     }
   ],
@@ -25,7 +19,6 @@
     { "source": "/globe", "destination": "/cockpittools/mapglobe.html" },
     { "source": "/flower", "destination": "/cockpittools/modular_flower_layer.html" },
     { "source": "/update", "destination": "/systeemdiagnose/update/update.html" },
-    { "source": "/nebra", "destination": "/cockpittools/nebra_mapanalyst_vortex155.html" },
-    { "source": "/((?!assets/|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/vortex_omni_master_v158.html" }
+    { "source": "/nebra", "destination": "/cockpittools/nebra_mapanalyst_vortex155.html" }
   ]
 }

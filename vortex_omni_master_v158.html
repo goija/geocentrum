@@ -54,17 +54,19 @@
     }
     .nav-item {
       display: block;
-      padding: 6px 10px;
+      padding: 8px 12px;
       background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(0,229,255,0.2);
+      border: 1px solid rgba(0,229,255,0.25);
       border-radius: 4px;
       color: var(--cyan);
       text-decoration: none;
+      font-weight: 500;
       transition: all 0.2s ease;
     }
     .nav-item:hover {
       background: rgba(0,229,255,0.15);
       border-color: var(--cyan);
+      transform: translateX(2px);
     }
     .frame-container { 
       width: 100%; 
@@ -90,17 +92,19 @@
   <!-- Linker navigatiepaneel -->
   <section class="sidebar">
     <h3 style="color:var(--gold); margin-bottom:0.2rem;">🧭 NAVIGATION HUB</h3>
-    <a class="nav-item" href="./cockpittools/vortex_bipolar_precision_dashboard.html" target="viewport">🎯 Precision Cockpit (/bipolar)</a>
-    <a class="nav-item" href="./cockpittools/mapglobe.html" target="viewport">🌍 MapLibre 3D Globe (/globe)</a>
-    <a class="nav-item" href="./cockpittools/modular_flower_layer.html" target="viewport">🌸 k=7 Caustic Layer (/flower)</a>
-    <a class="nav-item" href="./vortex_clean_viewports_v158.html" target="viewport">🖥️ Clean Quad Grid (/clean)</a>
-    <a class="nav-item" href="./systeemdiagnose/update/update.html" target="viewport" style="color:var(--green); border-color:var(--green);">📡 OSINT Telemetrie (/update)</a>
-    <a class="nav-item" href="./vortex_geodetic_refraction_report-v2.pdf" target="viewport" style="color:var(--gold); border-color:var(--gold);">📄 PDF Audit Rapport v2</a>
+    <a class="nav-item" href="/bipolar" target="viewport">🎯 Precision Cockpit (/bipolar)</a>
+    <a class="nav-item" href="/globe" target="viewport">🌍 MapLibre 3D Globe (/globe)</a>
+    <a class="nav-item" href="/flower" target="viewport">🌸 k=7 Caustic Layer (/flower)</a>
+    <a class="nav-item" href="/clean" target="viewport">🖥️ Clean Quad Grid (/clean)</a>
+    <a class="nav-item" href="/update" target="viewport" style="color:var(--green); border-color:var(--green);">📡 OSINT Telemetrie (/update)</a>
+    <a class="nav-item" href="/nebra" target="viewport" style="color:var(--magenta); border-color:var(--magenta);">🌌 Nebra Pleiaden (/nebra)</a>
+    <a class="nav-item" href="/vortex_geodetic_refraction_report-v2.pdf" target="viewport" style="color:var(--gold); border-color:var(--gold);">📄 PDF Audit Rapport v2</a>
+    <a class="nav-item" href="/naamloos_dossier.pdf" target="viewport" style="color:var(--cyan); border-color:var(--cyan);">📄 Nieuw Dossier PDF</a>
   </section>
 
   <!-- Centrale dynamische viewport -->
   <section class="frame-container">
-    <iframe name="viewport" src="./cockpittools/vortex_bipolar_precision_dashboard.html"></iframe>
+    <iframe name="viewport" src="/bipolar"></iframe>
   </section>
 
   <!-- Rechter statuspaneel -->
