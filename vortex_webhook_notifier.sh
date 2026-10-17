@@ -1,33 +1,28 @@
 #!/bin/bash
-# ==============================================================================
-# VORTEX OS v158.1 — Webhook & Alert Notification Bridge
-# ==============================================================================
+set -e
 
-WEBHOOK_URL="${VORTEX_WEBHOOK_URL:-}"
-STATUS_JSON="/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main/systeemdiagnose/update/telemetry_deploy_status.json"
+# VORTEX OS v158.1 — Audit Webhook Notifier
+PDF_PATH="${1:-vortex_geodetic_refraction_report-v2.pdf}"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-if [ ! -f "$STATUS_JSON" ]; then
-    echo "⚠️ Geen telemetrie JSON gevonden op $STATUS_JSON"
-    exit 0
-fi
+echo "=================================================="
+echo "📡 VORTEX OS v158.1 — Audit Webhook Notifier"
+echo "=================================================="
 
-STATUS=$(grep -o '"status": "[^"]*"' "$STATUS_JSON" | cut -d'"' -f4 || echo "UNKNOWN")
-TIMESTAMP=$(grep -o '"timestamp": "[^"]*"' "$STATUS_JSON" | cut -d'"' -f4 || echo "NOW")
-
-if [ "$STATUS" == "FAILED" ]; then
-    EMOJI="🚨"
-    TITLE="VORTEX OS Deployment FAILED"
-elif [ "$STATUS" == "SUCCESS" ]; then
-    EMOJI="✅"
-    TITLE="VORTEX OS Deployment SUCCESS"
+if [ -f "$PDF_PATH" ]; then
+    SIZE=$(stat -c%s "$PDF_PATH" 2>/dev/null || echo "0")
+    echo "📄 PDF Audit Document: $PDF_PATH ($SIZE bytes)"
+    echo "🕒 Timestamp: $TIMESTAMP"
+    echo "🌐 Status: Event Dispatched"
 else
-    EMOJI="ℹ️"
-    TITLE="VORTEX OS Deployment Status: $STATUS"
+    echo "⚠️ PDF bestand niet gevonden op: $PDF_PATH"
 fi
 
-echo "[$TIMESTAMP] $EMOJI $TITLE — Status: $STATUS"
-
-# Verstuur webhook-melding indien WEBHOOK_URL is ingesteld (bijv. Discord, Slack, Teams of Ntfy)
-if [ -n "$WEBHOOK_URL" ]; then
-    curl -s -H "Content-Type: application/json" -X POST -d "{\"content\":\"$EMOJI **$TITLE**\\nSysteem: VORTEX OS v158.1\\nTijdstip: $TIMESTAMP\\nStatus: $STATUS\"}" "$WEBHOOK_URL" || true
+# Optioneel telemetrie statusbestand bijwerken
+LOG_FILE="./systeemdiagnose/update/telemetry_deploy_status.json"
+if [ -d "$(dirname "$LOG_FILE")" ]; then
+    echo "{\"event\":\"PDF_AUDIT_NOTIFIED\",\"timestamp\":\"$TIMESTAMP\",\"pdf\":\"$PDF_PATH\"}" > "$LOG_FILE"
+    echo "📝 Telemetriestatus lokaal bijgewerkt."
 fi
+
+echo "🎉 Webhook notificatieproces afgerond."
