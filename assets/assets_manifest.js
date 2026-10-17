@@ -5,15 +5,15 @@
 
 export const VORTEX_ASSETS_MANIFEST = {
   version: "1.58.0",
-  buildTimestamp: "2026-10-17T13:31:32Z",
+  buildTimestamp: "2026-10-17T15:56:38Z",
   structure: {
-    assets: [ "assets_manifest.js","build_geocentrum_desktop_assets.sh","breda-spiegel-west-noordwest-v8.png","cellarius-horizon-oost-overlay-v5.png","cellarius-raster-overlay-v2.png","cellarius-raster-overlay-v3.png","cellarius-raster-overlay-v4.png","nebra-pleiaden-precisie-overlay.png","Schermafdruk van 2026-10-08 21-53-38.png","vizierkerf.png","spatial_inventory.csv","vortex_duogram_matrix_widget.js","vortex_precision_tool_v158.js" ]
+    assets: [ "assets_manifest.js","vortex_planimeter_achtergrond.svg","build_geocentrum_desktop_assets.sh","breda-spiegel-west-noordwest-v8.png","cellarius-horizon-oost-overlay-v5.png","cellarius-raster-overlay-v2.png","cellarius-raster-overlay-v3.png","cellarius-raster-overlay-v4.png","nebra-pleiaden-precisie-overlay.png","Schermafdruk van 2026-10-08 21-53-38.png","vizierkerf.png","spatial_inventory.csv","vortex_duogram_matrix_widget.js","vortex_precision_tool_v158.js" ]
 ,
     cockpittools: [ "laastbewaard.html","mapglobe.html","modular_flower_ayer.html","nebra_mapanalyst_vortex155.html","Planimeter_Matrix.html","vortex_bipolar_precision_dashboard.html","vortex_eclipse_matrix_cockpit.html","vortex_geosint_layers.html","vortex_precision_tool_v155.html" ]
 ,
     images: [ "sagittarius_k7_3d_globe_preview.png","stier_taurus_uranus_sky_chart.png","taurus_mercurius_3d_globe_polarity.png","vortex_bipolar_visor_comparison.png","bredaspiegel.stl","breda-spiegel-west-noordwest-v8.png","cellarius-horizon-oost-overlay-v5.png","cellarius-raster-overlay-v2.png","cellarius-raster-overlay-v3.png","cellarius-raster-overlay-v4.png","images","nebra-pleiaden-precisie-overlay.png","Schermafdruk van 2026-10-08 21-53-38.png","131026CUL_2036500693_-.webp","Yoshitoshi_tsuki.jpg","vizierkerf.png" ]
 ,
-    systeemdiagnose: [ "16okt1557.html","3.4_5bsK_DEZA.17","all.min_5bsK_DEZA.css","cdn.min_5bsK_DEZA.js","css2_5bsK_DEZA.css","update.html" ]
+    systeemdiagnose: [ "16okt1557.html","3.4_5bsK_DEZA.17","all.min_5bsK_DEZA.css","cdn.min_5bsK_DEZA.js","css2_5bsK_DEZA.css","telemetry_deploy_status.json","update.html","vortex_audio_chime.js" ]
 ,
     txt: [ "geocentrum_manifest_build.log","vortex_ott573_laser_spectrum09082026.txt" ]
 

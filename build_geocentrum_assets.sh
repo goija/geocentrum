@@ -122,4 +122,3 @@ EOF
 echo "✓ Log updated: ${LOG_FILE}"
 echo "======================================================================"
 echo "Build complete!"
-EOF
