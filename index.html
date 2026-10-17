@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VORTEX OS v158.1 — Omni Master Interface</title>
+  <title>VORTEX OS v158.2 — Omni Master Interface</title>
   <script src="./assets/assets_manifest.js"></script>
   <style>
     :root { 
@@ -47,6 +47,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
+      overflow-y: auto;
     }
     .sidebar.right { 
       border-right: none; 
@@ -82,14 +83,13 @@
 </head>
 <body>
 <header>
-  <h1>🌀 VORTEX OS v158.1 OMNI MASTER</h1>
+  <h1>🌀 VORTEX OS v158.2 OMNI MASTER</h1>
   <div style="font-size: 0.72rem; color: #64748b; display:flex; gap:12px; align-items:center;">
     <span style="color:var(--green);">● DEPLOY: LIVE</span>
     <span>Gekoppeld aan Vercel Node Mathgeo-Seven</span>
   </div>
 </header>
 <main>
-  <!-- Linker navigatiepaneel -->
   <section class="sidebar">
     <h3 style="color:var(--gold); margin-bottom:0.2rem;">🧭 NAVIGATION HUB</h3>
     <a class="nav-item" href="/bipolar" target="viewport">🎯 Precision Cockpit (/bipolar)</a>
@@ -102,15 +102,13 @@
     <a class="nav-item" href="/naamloos_dossier.pdf" target="viewport" style="color:var(--cyan); border-color:var(--cyan);">📄 Nieuw Dossier PDF</a>
   </section>
 
-  <!-- Centrale dynamische viewport -->
   <section class="frame-container">
     <iframe name="viewport" src="/bipolar"></iframe>
   </section>
 
-  <!-- Rechter statuspaneel -->
   <section class="sidebar right">
     <h3 style="color:var(--gold); margin-bottom:0.5rem;">📊 SYSTEM STATUS</h3>
-    <p><strong>Manifest Versie:</strong> 158.1.0</p>
+    <p><strong>Manifest Versie:</strong> 158.2.0</p>
     <p><strong>Attractor N²:</strong> 010101 (Hex #21)</p>
     <p><strong>Snellius Δθ:</strong> -3,80° (Biskaje)</p>
     <p><strong>Laserlijn:</strong> 589,0 nm (D-line)</p>

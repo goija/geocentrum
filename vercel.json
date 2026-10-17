@@ -19,6 +19,8 @@
     { "source": "/globe", "destination": "/cockpittools/mapglobe.html" },
     { "source": "/flower", "destination": "/cockpittools/modular_flower_layer.html" },
     { "source": "/update", "destination": "/systeemdiagnose/update/update.html" },
-    { "source": "/nebra", "destination": "/cockpittools/nebra_mapanalyst_vortex155.html" }
+    { "source": "/nebra", "destination": "/cockpittools/nebra_mapanalyst_vortex155.html" },
+    { "source": "/naamloos_dossier.pdf", "destination": "/pdf/naamloos_dossier.pdf" },
+    { "source": "/vortex_geodetic_refraction_report-v2.pdf", "destination": "/pdf/vortex_geodetic_refraction_report-v2.pdf" }
   ]
 }
