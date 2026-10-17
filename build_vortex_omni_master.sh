@@ -1,0 +1,130 @@
+#!/bin/bash
+set -e
+
+echo "🌀 VORTEX OS v158.1 — Genereren van vortex_omni_master_v158.html & index.html..."
+
+TARGET_DIR="/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main"
+mkdir -p "$TARGET_DIR"
+
+cat << 'HTML' > "$TARGET_DIR/vortex_omni_master_v158.html"
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS v158.1 — Omni Master Interface</title>
+  <script src="./assets/assets_manifest.js"></script>
+  <style>
+    :root { 
+      --bg: #030712; 
+      --panel: rgba(15,23,42,0.95); 
+      --cyan: #00e5ff; 
+      --gold: #ffcc33; 
+      --magenta: #ff3385; 
+      --green: #00ff88;
+      --text: #f1f5f9; 
+      --font: 'Fira Code', monospace; 
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      font-family: var(--font); 
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+    }
+    header { 
+      background: #0f172a; 
+      padding: 0.6rem 1.2rem; 
+      border-bottom: 1px solid #1e293b; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+    }
+    h1 { font-size: 1.1rem; color: var(--cyan); }
+    main { 
+      display: grid; 
+      grid-template-columns: 320px 1fr 320px; 
+      flex: 1; 
+    }
+    .sidebar { 
+      background: var(--panel); 
+      border-right: 1px solid #1e293b; 
+      padding: 1rem; 
+      font-size: 0.75rem; 
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .sidebar.right { 
+      border-right: none; 
+      border-left: 1px solid #1e293b; 
+    }
+    .nav-item {
+      display: block;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 4px;
+      color: var(--cyan);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover {
+      background: rgba(0,229,255,0.15);
+      border-color: var(--cyan);
+    }
+    .frame-container { 
+      width: 100%; 
+      height: 100%; 
+      background: #02040a; 
+    }
+    iframe { 
+      width: 100%; 
+      height: 100%; 
+      border: none; 
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🌀 VORTEX OS v158.1 OMNI MASTER</h1>
+  <div style="font-size: 0.72rem; color: #64748b; display:flex; gap:12px; align-items:center;">
+    <span style="color:var(--green);">● DEPLOY: LIVE</span>
+    <span>Gekoppeld aan Vercel Node Mathgeo-Seven</span>
+  </div>
+</header>
+<main>
+  <!-- Linker navigatiepaneel -->
+  <section class="sidebar">
+    <h3 style="color:var(--gold); margin-bottom:0.2rem;">🧭 NAVIGATION HUB</h3>
+    <a class="nav-item" href="./cockpittools/vortex_bipolar_precision_dashboard.html" target="viewport">🎯 Precision Cockpit (/bipolar)</a>
+    <a class="nav-item" href="./cockpittools/mapglobe.html" target="viewport">🌍 MapLibre 3D Globe (/globe)</a>
+    <a class="nav-item" href="./cockpittools/modular_flower_layer.html" target="viewport">🌸 k=7 Caustic Layer (/flower)</a>
+    <a class="nav-item" href="./vortex_clean_viewports_v158.html" target="viewport">🖥️ Clean Quad Grid (/clean)</a>
+    <a class="nav-item" href="./systeemdiagnose/update/update.html" target="viewport" style="color:var(--green); border-color:var(--green);">📡 OSINT Telemetrie (/update)</a>
+    <a class="nav-item" href="./vortex_geodetic_refraction_report-v2.pdf" target="viewport" style="color:var(--gold); border-color:var(--gold);">📄 PDF Audit Rapport v2</a>
+  </section>
+
+  <!-- Centrale dynamische viewport -->
+  <section class="frame-container">
+    <iframe name="viewport" src="./cockpittools/vortex_bipolar_precision_dashboard.html"></iframe>
+  </section>
+
+  <!-- Rechter statuspaneel -->
+  <section class="sidebar right">
+    <h3 style="color:var(--gold); margin-bottom:0.5rem;">📊 SYSTEM STATUS</h3>
+    <p><strong>Manifest Versie:</strong> 158.1.0</p>
+    <p><strong>Attractor N²:</strong> 010101 (Hex #21)</p>
+    <p><strong>Snellius Δθ:</strong> -3,80° (Biskaje)</p>
+    <p><strong>Laserlijn:</strong> 589,0 nm (D-line)</p>
+    <p><strong>RD-Oorsprong:</strong> 155000, 463000</p>
+  </section>
+</main>
+</body>
+</html>
+HTML
+
+cp "$TARGET_DIR/vortex_omni_master_v158.html" "$TARGET_DIR/index.html"
+echo "✅ Geüpdatet: $TARGET_DIR/vortex_omni_master_v158.html & index.html"
