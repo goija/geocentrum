@@ -1,0 +1,59 @@
+{
+  "type": "FeatureCollection",
+  "name": "VORTEX_Refracted_Vector_EPSG28992_WGS84",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "RD_OORSPRONG",
+        "name": "Amersfoort RD Center Oorsprong",
+        "rd_x": 155000.0,
+        "rd_y": 463000.0,
+        "epsg": 28992
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.387206, 52.155174]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "BISKAJE_END_NODE",
+        "name": "Biskaje Vector Eindpunt (50km)",
+        "rd_x": 110807.31,
+        "rd_y": 439610.48,
+        "effective_azimuth_deg": 242.11,
+        "refraction_angle_deg": -3.8
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.740883, 51.944258]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "VECTOR_242_11",
+        "name": "VORTEX 245.91 Vector (Gecorrigeerd -3.80° Biskaje Snell Refractie)",
+        "base_azimuth_deg": 245.91,
+        "refraction_deg": -3.8,
+        "effective_azimuth_deg": 242.11,
+        "length_km": 50.0
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [5.387206, 52.155174],
+          [4.740883, 51.944258]
+        ]
+      }
+    }
+  ]
+}
