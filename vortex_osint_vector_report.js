@@ -51,10 +51,19 @@ const VortexOsintVectorReport = (() => {
         </tbody>
       </table>
 
-      <div style="margin-top:14px; padding:10px; background:rgba(0,0,0,0.4); border-radius:4px; font-size:10px; color:#a0b0c0; display:flex; justify-content:space-between;">
-        <span><strong>GeoJSON:</strong> <code>vortex_refracted_vector.geojson</code></span>
-        <span><strong>DXF CAD:</strong> <code>vortex_nodes_epsg28992.dxf</code></span>
-        <span><strong>Optische Golflengte:</strong> 589,0 nm (Fraunhofer D)</span>
+      <div style="margin-top:16px; padding:12px; background:rgba(0,0,0,0.5); border:1px solid rgba(0,229,255,0.2); border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <span style="font-size:11px; color:#ffcc00; font-weight:bold; display:block; margin-bottom:2px;">📥 DIRECTE EXPORT-DOWNLOADS</span>
+          <span style="font-size:10px; color:#a0b0c0;">Gekalibreerde vectorbestanden voor QGIS, MapLibre & CAD-software</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <a href="./vortex_refracted_vector.geojson" download="vortex_refracted_vector.geojson" style="background:rgba(0,229,255,0.15); color:#00e5ff; border:1px solid #00e5ff; padding:6px 12px; border-radius:4px; font-size:11px; text-decoration:none; font-weight:bold;">
+            🗺️ GEOJSON EXPORT
+          </a>
+          <a href="./vortex_nodes_epsg28992.dxf" download="vortex_nodes_epsg28992.dxf" style="background:rgba(255,204,0,0.15); color:#ffcc00; border:1px solid #ffcc00; padding:6px 12px; border-radius:4px; font-size:11px; text-decoration:none; font-weight:bold;">
+            📐 CAD DXF EXPORT
+          </a>
+        </div>
       </div>
     `;
   }
