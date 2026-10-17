@@ -21,6 +21,8 @@
     { "source": "/update", "destination": "/update.html" },
     { "source": "/nebra", "destination": "/nebra_mapanalyst_vortex155.html" },
     { "source": "/naamloos_dossier.pdf", "destination": "/naamloos_dossier.pdf" },
-    { "source": "/vortex_geodetic_refraction_report-v2.pdf", "destination": "/vortex_geodetic_refraction_report-v2.pdf" }
+    { "source": "/vortex_geodetic_refraction_report-v2.pdf", "destination": "/vortex_geodetic_refraction_report-v2.pdf" },
+    { "source": "/vortex_telemetry.log", "destination": "/vortex_telemetry.log" },
+    { "source": "/vortex_telemetry.txt", "destination": "/vortex_telemetry.txt" }
   ]
 }
