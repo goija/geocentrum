@@ -1,0 +1,42 @@
+{
+  "system": {
+    "name": "VORTEX_OS",
+    "environment": "SOVEREIGN_LOCALHOST",
+    "os": "Debian Bookworm",
+    "hardware": "Raspberry Pi / Bare-metal"
+  },
+  "services": {
+    "python_api": {
+      "port": 8000,
+      "status": "active",
+      "path": "./api/"
+    },
+    "rust_podcast": {
+      "port": 8081,
+      "status": "active",
+      "path": "./podcast-rss-server/"
+    },
+    "beheercentrum": {
+      "port": 8082,
+      "path": "./beheercentrum/"
+    },
+    "dns_bind9": {
+      "port": 53,
+      "protocol": "udp",
+      "trusted_acl": ["127.0.0.0/8", "192.168.1.0/24"]
+    },
+    "matrix_conduit": {
+      "federation_port": 8448,
+      "status": "secured"
+    }
+  },
+  "security": {
+    "finalcrypt_otp": true,
+    "firewall": "UFW Deny-All",
+    "ssh_auth": "Ed25519 keys only (PasswordAuthentication no)"
+  },
+  "storage": {
+    "tijdscapsule": "./rekencentrum/tijdscapsule/",
+    "blue_team_docs": "./docs/beheer/blue_team/"
+  }
+}

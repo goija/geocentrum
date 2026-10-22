@@ -1,0 +1,23 @@
+============================================================
+VORTEX OS - Beheercentrum Inventarisatierapport
+Gegenereerd op: do 22 okt 2026 11:48:50 CEST
+============================================================
+
+=== Inhoud van /home/ontwerp/VORTEX_OS/beheercentrum ===
+[408K] /home/ontwerp/VORTEX_OS/beheercentrum/actuele_structuur.md
+
+=== Inhoud van /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum ===
+[0] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/governance_metrics.json
+[4,0K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/changelog_vortex.md
+[4,0K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/historielog.md
+[24K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/simulatoren/pizzadisk_simulatie_hub.html
+[200K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/actuele_structuur.md
+[0] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/notion_rapport.md
+[4,0K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/git_status_dossier.md
+[0] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/.gitkeep
+[12K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/index.html
+[4,0K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/notion_export/Notion_Procesdossier_Rapport.md
+[4,0K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/notion_export/Beheercentrum_procesdossier.html
+[4,0K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/kalender_historie.md
+[4,0K] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/workload_dossier.md
+[0] /home/ontwerp/VORTEX_OS/geocentrum_core/geocentrum-main/beheercentrum/notion_beheercentrum.md
