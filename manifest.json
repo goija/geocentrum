@@ -1,0 +1,9 @@
+{
+  "name": "VORTEX OS Sovereign Center",
+  "short_name": "VORTEX_OS",
+  "start_url": "/beheercentrum/index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#00ffcc",
+  "orientation": "any"
+}
