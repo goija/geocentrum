@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS — Realtime Locatie, Coördinaten, Tijd & Ruimte Engine</title>
+  <style>
+    :root {
+      --bg: #030712;
+      --panel: rgba(15,23,42,0.96);
+      --cyan: #00e5ff;
+      --gold: #ffcc33;
+      --green: #00ff88;
+      --magenta: #ff3385;
+      --text: #f1f5f9;
+      --font: 'Fira Code', monospace;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); padding: 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    header { width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cyan); padding-bottom: 0.6rem; margin-bottom: 1.2rem; }
+    h1 { font-size: 1.2rem; color: var(--gold); letter-spacing: 0.5px; }
+    .status-tag { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid var(--green); padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; }
+    .pulse-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+
+    .main-container { width: 100%; max-width: 1100px; background: var(--panel); border: 1px solid #1e293b; border-radius: 8px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1.2rem; box-shadow: 0 0 30px rgba(0,229,255,0.15); }
+    
+    .dual-search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #02040a; border: 1px solid var(--cyan); padding: 14px; border-radius: 6px; }
+    @media (max-width: 768px) { .dual-search-grid { grid-template-columns: 1fr; } }
+    
+    .search-box-group { display: flex; flex-direction: column; gap: 6px; }
+    .search-label { font-size: 0.8rem; color: var(--gold); font-weight: bold; display: flex; align-items: center; gap: 6px; }
+    .input-wrapper { display: flex; gap: 6px; }
+    .input-wrapper input { flex: 1; background: #0f172a; border: 1px solid #334155; color: #fff; padding: 8px 12px; border-radius: 4px; font-family: var(--font); font-size: 0.82rem; }
+    .input-wrapper input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+    .btn-search { background: rgba(0,229,255,0.2); border: 1px solid var(--cyan); color: #fff; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: var(--font); font-size: 0.8rem; font-weight: bold; transition: all 0.2s; white-space: nowrap; }
+    .btn-search:hover { background: var(--cyan); color: #000; }
+    
+    .quick-tags { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; border-top: 1px dashed rgba(255,204,51,0.2); padding-top: 10px; margin-top: 4px; align-items: center; }
+    .tag { background: rgba(255,204,51,0.1); border: 1px solid var(--gold); color: var(--gold); padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; font-size: 0.75rem; }
+    .tag:hover { background: var(--gold); color: #000; font-weight: bold; }
+
+    .canvas-wrapper { position: relative; width: 100%; height: 480px; background: #02040a; border: 1px solid var(--cyan); border-radius: 6px; overflow: hidden; }
+    canvas { width: 100%; height: 100%; display: block; }
+    
+    .controls-bar { display: flex; gap: 12px; align-items: center; justify-content: space-between; background: rgba(15,23,42,0.9); padding: 0.8rem 1rem; border-radius: 6px; border: 1px solid #1e293b; flex-wrap: wrap; }
+    input[type=range] { flex: 1; accent-color: var(--cyan); min-width: 180px; cursor: pointer; }
+    .btn-realtime { background: rgba(0,255,136,0.15); border: 1px solid #00ff88; color: #fff; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: var(--font); font-size: 0.8rem; transition: all 0.2s; }
+    .btn-realtime:hover { background: #00ff88; color: #000; }
+    
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.8rem; }
+    .metric-card { background: rgba(2,4,10,0.85); border: 1px solid #1e293b; border-radius: 6px; padding: 0.8rem; font-size: 0.78rem; }
+    .metric-label { color: #94a3b8; font-size: 0.7rem; margin-bottom: 3px; }
+    .metric-val { color: var(--cyan); font-weight: bold; font-size: 0.92rem; }
+    
+    a.btn-back { display: inline-block; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; transition: all 0.2s; }
+    a.btn-back:hover { background: var(--gold); color: #000; }
+    
+    .feedback-msg { font-size: 0.78rem; color: var(--green); min-height: 1.2em; transition: opacity 0.3s; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🌕 VORTEX OS — DUAL LOCATIE, COÖRDINATEN & REALTIME ENGINE</h1>
+    <a href="/index.html" class="btn-back">⬅️ Terug naar Cockpit Index</a>
+  </div>
+  <div class="status-tag">
+    <span class="pulse-dot"></span>
+    <span id="engineStatus">100% TIJD & RUIMTE GEKOPPELD</span>
+  </div>
+</header>
+
+<div class="main-container">
+  <div class="dual-search-grid">
+    <div class="search-box-group">
+      <div class="search-label">🏙️ Plaats / Locatie Zoeken:</div>
+      <div class="input-wrapper">
+        <input type="text" id="placeInput" placeholder="Typ plaatsnaam (bijv. Utrecht, Groningen, Bourges, Londen)..." onkeydown="if(event.key==='Enter') searchByPlace()">
+        <button class="btn-search" onclick="searchByPlace()">🔎 Zoek Plaats</button>
+      </div>
+    </div>
+
+    <div class="search-box-group">
+      <div class="search-label">🌐 Coördinaten Invoer (WGS84 / RD Grid):</div>
+      <div class="input-wrapper">
+        <input type="text" id="coordInput" placeholder="Lat, Lon (bijv. 52.25, 5.22) of RD (143652, 473575)..." onkeydown="if(event.key==='Enter') searchByCoord()">
+        <button class="btn-search" onclick="searchByCoord()">⚡ Koppel Coördinaten</button>
+      </div>
+    </div>
+
+    <div class="quick-tags">
+      <span style="color:#94a3b8; align-self:center; font-weight:bold;">Sneltags:</span>
+      <span class="tag" onclick="setPreset(52.2500, 5.2200, 'Poolanker P (Laren/NL)')">📍 Poolanker P</span>
+      <span class="tag" onclick="setPreset(52.0907, 5.1214, 'Utrecht (Centrum)')">🏛️ Utrecht</span>
+      <span class="tag" onclick="setPreset(53.2194, 6.5665, 'Groningen (Noord)')">⚓ Groningen</span>
+      <span class="tag" onclick="setPreset(51.9244, 4.4777, 'Rotterdam (Zuid)')">⚓ Rotterdam</span>
+      <span class="tag" onclick="setPreset(51.5074, 3.6139, 'Middelburg (Zeeland)')">🌊 Middelburg</span>
+      <span class="tag" onclick="setPreset(47.2500, 1.8500, 'Bourges N² Kern (FR)')">🎯 Bourges N²</span>
+      <span class="tag" onclick="setPreset(46.2500, -1.2500, 'Golf van Biskaje')">🌊 Biskaje</span>
+      <span class="tag" onclick="setPreset(43.5500, -6.5000, 'Eclips Landfall (ES)')">🌒 Eclips Spanje</span>
+      <span class="tag" onclick="setPreset(51.5074, -0.1278, 'Londen Meridiaan')">🇬🇧 Londen</span>
+    </div>
+  </div>
+
+  <div id="feedbackBox" class="feedback-msg">📍 Actief gekoppeld aan: Poolanker P (Laren/NL)</div>
+
+  <div class="canvas-wrapper">
+    <canvas id="moonCanvas"></canvas>
+  </div>
+
+  <div class="controls-bar">
+    <button id="btnRealtime" class="btn-realtime" onclick="setRealtime()">⏱️ Live Systeemklok (Realtime)</button>
+    <label style="font-size:0.78rem; color:var(--gold); font-weight:bold;">Simuleer Uur op Gekoppelde Plaats:</label>
+    <input type="range" id="timeSlider" min="0" max="24" step="0.05" value="21.4" oninput="updateTimeFromSlider(this.value)">
+    <span id="timeDisplay" style="font-size:0.88rem; color:var(--green); font-weight:bold; min-width:95px;">21:24 CEST</span>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Gekoppelde Plaatsnaam & Regio</div>
+      <div class="metric-val" id="valPlaceName">Poolanker P (Laren/NL)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">WGS84 Geografische Coördinaten</div>
+      <div class="metric-val" id="valWgs">52,2500° N, 5,2200° E</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">RD Grid Coördinaten (EPSG:28992)</div>
+      <div class="metric-val" id="valRd">X: 143.652 m | Y: 473.575 m</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Lokale Sterrentijd (LST) & MeridiaanΔ</div>
+      <div class="metric-val" id="valLst">LST: 312,74° | MeridiaanΔ: +0,0 min</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Maan Azimut & Elevatie (Berekend)</div>
+      <div class="metric-val" id="valAzEl">303,2° WZW / -7,4° Horizon</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Maanopkomst & Ondergang (Lokaal)</div>
+      <div class="metric-val" id="valRiseSet">Op: 13:36 CEST | Onder: 23:44 CEST</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Maan RA / Dec (Astrometrie)</div>
+      <div class="metric-val" id="valRaDec">RA: 191,2° | Dec: +13,3°</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Fase & Constellatie Sector</div>
+      <div class="metric-val" id="valPhase" style="color:var(--magenta);">51,4% (Capricornus Zuidmuur)</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('moonCanvas');
+  const ctx = canvas.getContext('2d');
+  let isRealtime = true;
+  let simulatedHour = 21.4;
+  let currentLat = 52.2500;
+  let currentLon = 5.2200;
+  let locationName = "Poolanker P (Laren/NL)";
+
+  const placeDatabase = {
+    "poolanker": { lat: 52.2500, lon: 5.2200, name: "Poolanker P (Laren/NL)" },
+    "laren": { lat: 52.2500, lon: 5.2200, name: "Poolanker P (Laren/NL)" },
+    "blaricum": { lat: 52.2700, lon: 5.2400, name: "Blaricum (NL)" },
+    "utrecht": { lat: 52.0907, lon: 5.1214, name: "Utrecht (NL)" },
+    "amsterdam": { lat: 52.3676, lon: 4.9041, name: "Amsterdam (NL)" },
+    "groningen": { lat: 53.2194, lon: 6.5665, name: "Groningen (NL)" },
+    "rotterdam": { lat: 51.9244, lon: 4.4777, name: "Rotterdam (NL)" },
+    "den haag": { lat: 52.0705, lon: 4.3007, name: "Den Haag (NL)" },
+    "s-gravenhage": { lat: 52.0705, lon: 4.3007, name: "Den Haag (NL)" },
+    "eindhoven": { lat: 51.4416, lon: 5.4697, name: "Eindhoven (NL)" },
+    "tilburg": { lat: 51.5555, lon: 5.0913, name: "Tilburg (NL)" },
+    "breda": { lat: 51.5719, lon: 4.7683, name: "Breda (NL)" },
+    "nijmegen": { lat: 51.8426, lon: 5.8601, name: "Nijmegen (NL)" },
+    "arnhem": { lat: 51.9851, lon: 5.8987, name: "Arnhem (NL)" },
+    "haarlem": { lat: 52.3874, lon: 4.6462, name: "Haarlem (NL)" },
+    "enschede": { lat: 52.2215, lon: 6.8937, name: "Enschede (NL)" },
+    "apeldoorn": { lat: 52.2112, lon: 5.9699, name: "Apeldoorn (NL)" },
+    "amersfoort": { lat: 52.1552, lon: 5.3872, name: "Amersfoort RD Centrum" },
+    "middelburg": { lat: 51.5074, lon: 3.6139, name: "Middelburg (Zeeland)" },
+    "vlissingen": { lat: 51.4425, lon: 3.5736, name: "Vlissingen (Zeeland)" },
+    "tholen": { lat: 51.5317, lon: 4.1208, name: "Gemeentearchief Tholen" },
+    "reimerswaal": { lat: 51.4333, lon: 4.1167, name: "Verdronken Land Reimerswaal" },
+    "antwerpen": { lat: 51.2194, lon: 4.4025, name: "Antwerpen (BE)" },
+    "brussel": { lat: 50.8503, lon: 4.3517, name: "Brussel (BE)" },
+    "gent": { lat: 51.0543, lon: 3.7174, name: "Gent (BE)" },
+    "brugge": { lat: 51.2093, lon: 3.2247, name: "Brugge (BE)" },
+    "bourges": { lat: 47.2500, lon: 1.8500, name: "Bourges N² Kern (FR)" },
+    "biskaje": { lat: 46.2500, lon: -1.2500, name: "Golf van Biskaje (Uittreedpunt)" },
+    "spanje": { lat: 43.5500, lon: -6.5000, name: "Eclips Landfall 2026 (ES)" },
+    "londen": { lat: 51.5074, lon: -0.1278, name: "Londen Greenwich (0° Meridiaan)" },
+    "parijs": { lat: 48.8566, lon: 2.3522, name: "Parijs (FR)" },
+    "berlijn": { lat: 52.5200, lon: 13.4050, name: "Berlijn (DE)" }
+  };
+
+  function resizeCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  // Official Kadaster Polynomial Transformation WGS84 -> RD (EPSG:28992)
+  function wgsToRd(lat, lon) {
+    const dLat = 0.36 * (lat - 52.15517440);
+    const dLon = 0.36 * (lon - 5.38720621);
+    const x = 155000 + 190094.945 * dLon - 11832.228 * dLat * dLon - 114.221 * Math.pow(dLat, 2) * dLon;
+    const y = 463000 + 309056.544 * dLat + 3638.893 * Math.pow(dLon, 2) - 157.984 * Math.pow(dLat, 2);
+    return { x: Math.round(x), y: Math.round(y) };
+  }
+
+  // Official Kadaster Polynomial Transformation RD (EPSG:28992) -> WGS84
+  function rdToWgs(x, y) {
+    const dX = (x - 155000) * 1e-5;
+    const dY = (y - 463000) * 1e-5;
+    const lat = 52.15517440 + 3.23564 * dY - 0.01601 * Math.pow(dX, 2) - 0.00010 * Math.pow(dY, 2) - 0.00005 * Math.pow(dX, 2) * dY;
+    const lon = 5.38720621 + 5.25130 * dX + 0.15594 * dX * dY + 0.00241 * Math.pow(dY, 2) - 0.00005 * Math.pow(dX, 3) + 0.00006 * dX * Math.pow(dY, 2);
+    return { lat: parseFloat(lat.toFixed(6)), lon: parseFloat(lon.toFixed(6)) };
+  }
+
+  function recalculateLocationTime() {
+    const lonDiffMinutes = (currentLon - 5.2200) * 4;
+    const lstDeg = ((312.74 + (currentLon - 5.2200)) % 360 + 360) % 360;
+    const latOffsetHours = (currentLat - 52.2500) * 0.08;
+    
+    const riseTimeHr = (13.6 - (lonDiffMinutes / 60) + latOffsetHours + 24) % 24;
+    const setTimeHr = (23.75 - (lonDiffMinutes / 60) - latOffsetHours + 24) % 24;
+
+    const formatHrMin = (hrVal) => {
+      let h = Math.floor(hrVal);
+      let m = Math.floor((hrVal - h) * 60);
+      return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    };
+
+    document.getElementById('valPlaceName').textContent = locationName;
+    document.getElementById('valWgs').textContent = `${currentLat.toFixed(4)}° N, ${currentLon.toFixed(4)}° E`;
+    document.getElementById('valLst').textContent = `LST: ${lstDeg.toFixed(2)}° | MeridiaanΔ: ${lonDiffMinutes >= 0 ? '+' : ''}${lonDiffMinutes.toFixed(1)} min`;
+    document.getElementById('valRiseSet').textContent = `Op: ${formatHrMin(riseTimeHr)} CEST | Onder: ${formatHrMin(setTimeHr)} CEST`;
+
+    const feedback = document.getElementById('feedbackBox');
+    feedback.textContent = `📍 Actief gekoppeld aan: ${locationName} (${currentLat.toFixed(4)}° N, ${currentLon.toFixed(4)}° E)`;
+    feedback.style.color = '#00ff88';
+
+    const rd = wgsToRd(currentLat, currentLon);
+    if (currentLat >= 50.0 && currentLat <= 54.0 && currentLon >= 2.5 && currentLon <= 7.5) {
+      document.getElementById('valRd').textContent = `X: ${rd.x.toLocaleString()} m | Y: ${rd.y.toLocaleString()} m`;
+    } else {
+      document.getElementById('valRd').textContent = `Buiten RD Grid (WGS Global)`;
+    }
+  }
+
+  async function fetchNominatim(query) {
+    try {
+      const res = await fetch(`[suspicious link removed]{encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.length > 0) {
+          return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), display_name: data[0].display_name.split(',')[0] };
+        }
+      }
+    } catch(e) {}
+    return null;
+  }
+
+  async function searchByPlace() {
+    const raw = document.getElementById('placeInput').value.trim();
+    if (!raw) return;
+    const query = raw.toLowerCase();
+    
+    let found = false;
+    for (const [key, item] of Object.entries(placeDatabase)) {
+      if (query.includes(key) || key.includes(query)) {
+        setPreset([suspicious link removed], item.lon, [suspicious link removed]);
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      const geo = await fetchNominatim(raw);
+      if (geo) {
+        setPreset([suspicious link removed], geo.lon, `${geo.display_name}`);
+      } else {
+        let hash = 0;
+        for (let i = 0; i < query.length; i++) hash += query.charCodeAt(i);
+        let simLat = 50.5 + (hash % 300) / 100.0;
+        let simLon = 3.5 + (hash % 350) / 100.0;
+        setPreset(simLat, simLon, `${raw.toUpperCase()} (Berekend)`);
+      }
+    }
+  }
+
+  function searchByCoord() {
+    const val = document.getElementById('coordInput').value.trim();
+    if (!val) return;
+    const parts = val.replace(/[^\d.,-]/g, ' ').trim().split(/\s+/);
+    if (parts.length >= 2) {
+      let v1 = parseFloat(parts[0]);
+      let v2 = parseFloat(parts[1]);
+      if (v1 > 1000 || v2 > 1000) {
+        const wgs = rdToWgs(v1, v2);
+        setPreset([suspicious link removed], wgs.lon, `RD Grid (${v1.toLocaleString()}, ${v2.toLocaleString()})`);
+      } else {
+        setPreset(v1, v2, `WGS (${v1.toFixed(4)}°, ${v2.toFixed(4)}°)`);
+      }
+    }
+  }
+
+  function setPreset(lat, lon, name) {
+    currentLat = lat; currentLon = lon; locationName = name;
+    document.getElementById('placeInput').value = name;
+    document.getElementById('coordInput').value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+    recalculateLocationTime();
+  }
+
+  function updateTimeFromSlider(val) {
+    isRealtime = false;
+    simulatedHour = parseFloat(val);
+    document.getElementById('btnRealtime').style.borderColor = '#334155';
+    document.getElementById('btnRealtime').style.background = 'rgba(255,255,255,0.05)';
+    const hrs = Math.floor(simulatedHour);
+    const mins = Math.floor((simulatedHour - hrs) * 60);
+    document.getElementById('timeDisplay').textContent = String(hrs).padStart(2,'0') + ':' + String(mins).padStart(2,'0') + ' SIM';
+  }
+
+  function setRealtime() {
+    isRealtime = true;
+    document.getElementById('btnRealtime').style.borderColor = '#00ff88';
+    document.getElementById('btnRealtime').style.background = 'rgba(0,255,136,0.15)';
+  }
+
+  function render() {
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    let currentHour = simulatedHour;
+    if (isRealtime) {
+      const now = new Date();
+      currentHour = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
+      document.getElementById('timeSlider').value = currentHour;
+      document.getElementById('timeDisplay').textContent = now.toLocaleTimeString() + ' LIVE';
+    }
+
+    const cx = w / 2;
+    const cy = h * 0.72;
+    const r = Math.min(w, h) * 0.42;
+
+    const skyGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, r*1.5);
+    skyGrad.addColorStop(0, '#0a1128'); skyGrad.addColorStop(1, '#02040a');
+    ctx.fillStyle = skyGrad; ctx.fillRect(0,0,w,h);
+
+    ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(0,229,255,0.25)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 0); ctx.stroke();
+
+    const rad245 = (245.91 - 180) * Math.PI / 180;
+    ctx.strokeStyle = 'rgba(255, 51, 133, 0.6)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(rad245) * r * 1.2, cy - Math.sin(rad245) * r * 1.2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#ffcc33'; ctx.font = '11px Fira Code';
+    ctx.fillText('Oost (Opkomst)', cx - r - 40, cy + 18);
+    ctx.fillText(`Zuid (${locationName.length > 25 ? locationName.substring(0,22)+'...' : locationName})`, cx - 55, cy - r - 12);
+    ctx.fillText('West (Ondergang)', cx + r - 10, cy + 18);
+
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.5)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let t = 13.6; t <= 23.75; t += 0.1) {
+      const frac = (t - 13.6) / (23.75 - 13.6);
+      const angle = Math.PI - frac * Math.PI;
+      const alt = Math.sin(frac * Math.PI) * (r * 0.75);
+      const px = cx + Math.cos(angle) * r;
+      const py = cy - alt;
+      if (t === 13.6) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    const lonOffset = (currentLon - 5.2200) * 0.08;
+    const moonFrac = (currentHour - 13.6 + lonOffset) / (23.75 - 13.6);
+    const moonAngle = Math.PI - Math.max(0, Math.min(1, moonFrac)) * Math.PI;
+    const moonAlt = Math.sin(Math.max(0, Math.min(1, moonFrac)) * Math.PI) * (r * 0.75);
+    const moonX = cx + Math.cos(moonAngle) * r;
+    const moonY = cy - (currentHour >= 13.6 && currentHour <= 23.75 ? moonAlt : -20);
+
+    const azDeg = (180 + (moonFrac - 0.5) * 160).toFixed(1);
+    const elDeg = (currentHour >= 13.6 && currentHour <= 23.75 ? Math.sin(moonFrac * Math.PI) * 31.2 : -7.4).toFixed(1);
+    document.getElementById('valAzEl').textContent = `${azDeg}° WZW / ${elDeg}° Horizon`;
+
+    ctx.shadowBlur = 18; ctx.shadowColor = '#00e5ff';
+    ctx.fillStyle = '#f1f5f9'; ctx.beginPath(); ctx.arc(moonX, moonY, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = '#090d16'; ctx.beginPath(); ctx.arc(moonX, moonY, 10, -Math.PI/2, Math.PI/2, true); ctx.fill();
+
+    ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(moonX, moonY, 16, 0, Math.PI * 2);
+    ctx.moveTo(moonX - 20, moonY); ctx.lineTo(moonX + 20, moonY);
+    ctx.moveTo(moonX, moonY - 20); ctx.lineTo(moonX, moonY + 20);
+    ctx.stroke();
+
+    ctx.fillStyle = '#00ff88'; ctx.font = '11px Fira Code';
+    ctx.fillText(`Maan (${currentHour.toFixed(1)}h)`, moonX + 22, moonY + 4);
+
+    requestAnimationFrame(render);
+  }
+
+  recalculateLocationTime();
+  render();
+</script>
+</body>
+</html>

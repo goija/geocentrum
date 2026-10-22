@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Tijdscapsule (18 okt 17:52 & Snapshot 8)</title>
+    <style>
+        :root {
+            --bg-color: #030712;
+            --panel-bg: rgba(15, 23, 42, 0.95);
+            --border-color: rgba(0, 229, 255, 0.3);
+            --text-main: #f1f5f9;
+            --accent: #00e5ff;
+            --gold: #ffcc33;
+            --green: #00ff88;
+        }
+        body {
+            margin: 0; padding: 20px;
+            background: var(--bg-color); color: var(--text-main);
+            font-family: 'Fira Code', monospace, sans-serif;
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header {
+            border-bottom: 2px solid var(--accent); padding-bottom: 15px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        h1 { color: var(--accent); margin: 0; font-size: 1.5rem; }
+        .card {
+            background: var(--panel-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0,229,255,0.1);
+        }
+        h2 { color: var(--gold); font-size: 1.1rem; border-bottom: 1px dashed rgba(255,204,51,0.3); padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th, td { border: 1px solid rgba(255,255,255,0.1); padding: 8px; text-align: left; }
+        th { color: var(--gold); }
+        .btn {
+            background: var(--accent); color: #030712; border: none;
+            padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            text-decoration: none; display: inline-block; margin-top: 10px;
+        }
+        .btn:hover { background: #90e0ef; }
+        .back-link { color: var(--accent); text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 15px; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Terug naar Systeem Index Dashboard</a>
+        <header>
+            <h1>⏳ VORTEX OS - Tijdscapsule (18 okt 17:52)</h1>
+            <span style="color: var(--green); font-size: 0.8rem;">● SECURE CHRONO-VAULT ACTIVE</span>
+        </header>
+
+        <div class="card">
+            <h2>📦 Inhoud Tijdscapsule: Snapshot 8 & Geodetische Matrix</h2>
+            <p>Deze tijdscapsule bewaart de exacte status van de telemetrie, de A. Ott Nr. 573 planimeterconstanten en de Tzolk'in-gradenvectoren zoals vastgelegd op 18 oktober 2026.</p>
+            <ul>
+                <li><strong>Actief Meetpunt:</strong> Ashkelon (Oost-Mediterraan) op 31.6801° N, 34.5666° E</li>
+                <li><strong>Poolarm (R) / Rijarm (L):</strong> 15,00 cm / 16,67 cm</li>
+                <li><strong>Optische Padlengte:</strong> 16,675 cm (Fraunhofer D-lijn 589 nm)</li>
+                <li><strong>Nonius Aflezing & Stramien:</strong> 10.604 — 38,350 km²</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>📐 Geodetische Vectoren & Stramien</h2>
+            <table>
+                <thead>
+                    <tr><th>Vector-Hoek</th><th>Eindcoördinaat (300 km)</th><th>Betekenis in VORTEX OS</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>22,00°</td><td>54,71° N, 6,87° E</td><td>Planimeter Normandië & Kompas</td></tr>
+                    <tr><td>29,00°</td><td>54,58° N, 7,46° E</td><td>Trans-Atlantische Zichtlijn (NYC)</td></tr>
+                    <tr><td>91,00°</td><td>52,20° N, 9,62° E</td><td>Pömmelte Equinox Oost-Vector</td></tr>
+                    <tr><td>97,00°</td><td>51,88° N, 9,58° E</td><td>Snellius Refractie Kustlijn (Biskaje)</td></tr>
+                    <tr><td>122,00°</td><td>50,81° N, 8,92° E</td><td>Caustische k=7 Resonantie (Saturnus)</td></tr>
+                    <tr><td>331,00°</td><td>49,90° N, 2,97° E</td><td>CRT Modulaire Attractor</td></tr>
+                </tbody>
+            </table>
+            <a href="tzolkin_vectors.geojson" class="btn" download>📥 Download tzolkin_vectors.geojson</a>
+        </div>
+    </div>
+</body>
+</html>

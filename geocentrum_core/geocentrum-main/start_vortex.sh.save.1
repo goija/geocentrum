@@ -1,0 +1,28 @@
+/bin/bash
+
+# Forceer de werkmap naar de exacte VORTEX OS locatie
+WORK_DIR="/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main"
+cd "$WORK_DIR" || { echo "❌ Map niet gevonden: $WORK_DIR"; exit 1; }
+
+echo "[1/3] Oude processen afsluiten (Poort 8000 & 8080)..."
+sudo fuser -k 8000/tcp 2>/dev/null
+sudo fuser -k 8080/tcp 2>/dev/null
+sleep 2
+
+echo "[2/3] Python API Backend starten (Poort 8000)..."
+python3 server_api.py &
+sleep 2
+
+echo "[3/3] Statische Webserver starten (Poort 8080)..."
+python3 -m http.server 8080 &
+sleep 2
+
+echo "🗺️ VORTEX OS openen in je browser..."
+if command -v xdg-open &> /dev/null; then
+    xdg-open http://localhost:8080
+else
+    echo "👉 Open handmatig je browser en ga naar http://localhost:8080"
+fi
+
+echo "✅ Systeem is online. Sluit dit venster of druk op CTRL+C om te stoppen."
+wait

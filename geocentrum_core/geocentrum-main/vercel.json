@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "name": "geocentrum-vortex-os",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/vortex_omni_master_v158.html" },
+    { "source": "/clean", "destination": "/vortex_clean_viewports_v158.html" },
+    { "source": "/maanpad", "destination": "/cockpittools/vortex_maanpad_canvas.html" },
+    { "source": "/bipolar", "destination": "/cockpittools/vortex_bipolar_precision_dashboard.html" },
+    { "source": "/globe", "destination": "/cockpittools/mapglobe.html" },
+    { "source": "/flower", "destination": "/cockpittools/modular_flower_layer.html" },
+    { "source": "/update", "destination": "/systeemdiagnose/update/update.html" },
+    { "source": "/nebra", "destination": "/cockpittools/nebra_mapanalyst_vortex155.html" },
+    { "source": "/rekencentrum/tijdscapsule/tijdscapsule_index", "destination": "/rekencentrum/tijdscapsule/tijdscapsule_index.html" },
+    { "source": "/rekencentrum/tijdscapsule/tijdscapsule_data.json", "destination": "/rekencentrum/tijdscapsule/tijdscapsule_data.json" },
+    { "source": "/vortex_processed_points.geojson", "destination": "/cockpittools/vortex_processed_points.geojson" },
+    { "source": "/tzolkin_vectors.geojson", "destination": "/cockpittools/tzolkin_vectors.geojson" },
+    { "source": "/vortex_telemetry.log", "destination": "/vortex_telemetry.log" }
+  ]
+}

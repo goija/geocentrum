@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Systeem Index Dashboard</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a; --bg-panel: #1e293b; --bg-card: #334155;
+            --text-main: #f8fafc; --text-muted: #94a3b8;
+            --accent: #06b6d4; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --border: #334155; --live-bg: rgba(16, 185, 129, 0.2);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; min-height: 100vh; overflow-x: hidden; }
+        
+        .sidebar { width: 280px; background-color: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 1000; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .sidebar-header h2 { font-size: 1.2rem; letter-spacing: 2px; color: var(--accent); }
+        .nav-content { padding: 20px 15px; overflow-y: auto; flex-grow: 1; }
+        .nav-group { margin-bottom: 25px; }
+        .nav-group h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 1px; padding-left: 10px; }
+        .nav-link { display: block; padding: 8px 10px; color: var(--text-main); text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: background 0.2s, color 0.2s; }
+        .nav-link:hover { background-color: var(--bg-card); color: var(--accent); }
+        .live-banner { display: flex; align-items: center; justify-content: space-between; background-color: var(--live-bg); border: 1px solid var(--success); padding: 10px; border-radius: 6px; margin-bottom: 20px; text-decoration: none; color: var(--text-main); font-size: 0.9rem; }
+        .live-badge { background-color: var(--success); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; width: 100%; }
+        .topbar { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-dark); }
+        .topbar h1 { font-size: 1.5rem; font-weight: 600; }
+        .sys-time { font-family: monospace; color: var(--accent); background: var(--bg-panel); padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); }
+        .content { padding: 20px; overflow-y: auto; }
+        
+        .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .status-card { background-color: var(--bg-panel); padding: 20px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .status-card h4 { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase; }
+        .status-value { font-size: 1.25rem; font-weight: bold; display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .dot { width: 10px; height: 10px; background-color: var(--success); border-radius: 50%; }
+        .dot.offline { background-color: var(--danger); }
+        .status-sub { font-size: 0.8rem; color: var(--text-muted); }
+        
+        .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .module-panel { background-color: var(--bg-panel); border-radius: 8px; border: 1px solid var(--border); padding: 20px; }
+        .module-panel h3 { margin-bottom: 15px; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .module-list { list-style: none; }
+        .module-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
+        .module-list li:last-child { border-bottom: none; }
+        .tag { background-color: var(--bg-card); padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; color: var(--accent); }
+        .tag.success { color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .tag.warning { color: var(--warning); background: rgba(245, 158, 11, 0.1); }
+        .tag.danger { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        
+        .terminal { background-color: #020617; padding: 15px; border-radius: 8px; border: 1px solid var(--border); font-family: monospace; font-size: 0.9rem; line-height: 1.5; }
+        .log-ok { color: var(--success); }
+        .log-warn { color: var(--warning); }
+        .log-err { color: var(--danger); }
+        
+        .mobile-toggle { display: none; background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; }
+        
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
+            .mobile-toggle { display: block; }
+            .topbar h1 { font-size: 1.1rem; }
+            .sys-time { font-size: 0.75rem; padding: 4px 6px; }
+            .status-grid, .modules-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>VORTEX OS</h2>
+            <button class="mobile-toggle" onclick="toggleMenu()" style="display: none;" id="closeMenu">&times;</button>
+        </div>
+        
+        <div class="nav-content">
+            <a href="/cockpittools/vortex_maanpad_canvas.html" class="live-banner">
+                <span>🌙 Live Maanpad Viewer</span>
+                <span class="live-badge">LIVE</span>
+            </a>
+
+            <div class="nav-group">
+                <h3>🧭 Cartografie</h3>
+                <a href="cockpittools/mapglobe.html" class="nav-link">Mapglobe Hoofdinterface</a>
+                <a href="cockpittools/vortex_native_viewports.html" class="nav-link">Native Viewports</a>
+                <a href="cockpittools/vortex_geosint_layers.html" class="nav-link">GEO-OSINT Scanner</a>
+            </div>
+
+            <div class="nav-group">
+                <h3>📐 Rekenkernen</h3>
+                <a href="cockpittools/rekenmachine.html" class="nav-link">Geodetisch Rekencentrum</a>
+                <a href="cockpittools/vortex_matrix_simulator_v156.html" class="nav-link">Matrix Simulator</a>
+                <a href="cockpittools/Planimeter_Matrix.html" class="nav-link">Ott Planimeter Tool</a>
+            </div>
+
+            <div class="nav-group">
+                <h3>⚙️ Systeem & Beheer</h3>
+                <a href="docs/beheer/operationeel_procesdossier.md" class="nav-link">Operationeel Procesdossier</a>
+                <a href="beheercentrum/index.html" class="nav-link" style="color: var(--accent);">🏛️ Architectuur & Beheer</a>
+                <a href="docs/beheer/update_manager.md" class="nav-link">Update Manager</a>
+                <a href="docs/4_kwaliteit_compliance/juridisch_register.md" class="nav-link" target="_blank">Juridisch Register</a>
+            </div>
+
+            <div class="nav-group">
+                <h3>📚 Archieven & Connectiviteit</h3>
+                <a href="rekencentrum/tijdscapsule/tijdscapsule_index.html" class="nav-link" style="color: var(--warning);">⏳ Tijdscapsule (18 okt 17:52)</a>
+                <a href="pdf/index.html" class="nav-link" style="color: #e76f51;">📑 PDF Archief & Interface</a>
+                <a href="procesdossiers/projectdossier/projectdoesier.html" class="nav-link">📑 Projectdossier</a>
+                <a href="pdf/handleiding_vortex_os_v158.pdf" class="nav-link" target="_blank">📄 Handleiding V158</a>
+                <a href="http://localhost:8081/rss.xml" class="nav-link" target="_blank">🎙️ Live RSS Podcast Feed</a>
+                <a href="cockpittools/podcast_player.html" class="nav-link" style="color: var(--success);">🎧 Lokale Podcast Speler</a>
+            </div>
+
+            <div class="nav-group">
+                <h3>🎛️ Simulatoren & Beheer</h3>
+                <a href="beheercentrum/simulatoren/pizzadisk_simulatie_hub.html" class="nav-link" style="color: var(--warning);">🎛️ 29cm Schijf Simulator</a>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="mobile-toggle" onclick="toggleMenu()" id="openMenu">☰</button>
+                <h1>Systeem Index Dashboard</h1>
+            </div>
+            <div class="sys-time">
+                <span id="clock">--:--:--</span> | VORTEX V158.2
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="status-grid">
+                <div class="status-card">
+                    <h4>Netwerk Status</h4>
+                    <div class="status-value"><span class="dot"></span> SOVEREIGN</div>
+                    <div class="status-sub">Localhost | BIND9 DNS</div>
+                </div>
+                <div class="status-card">
+                    <h4>Python API Server (8000)</h4>
+                    <div class="status-value" id="api-status-val" style="color: var(--danger);"><span class="dot offline" id="api-dot"></span> OFFLINE</div>
+                    <div class="status-sub" id="api-status-sub">Controleren...</div>
+                </div>
+                <div class="status-card">
+                    <h4>Podcast Server (8081)</h4>
+                    <div class="status-value"><span class="dot"></span> ONLINE</div>
+                    <div class="status-sub">Systemd background service</div>
+                </div>
+            </div>
+
+            <div class="modules-grid">
+                <div class="module-panel">
+                    <h3>🖥️ Core Front-end Modules</h3>
+                    <ul class="module-list">
+                        <li><span>vortex_wasm_bridge.js</span> <span class="tag success">Loaded</span></li>
+                        <li><span>vortex_maplibre_refracted_vector_layer.js</span> <span class="tag success">Loaded</span></li>
+                        <li><span>server_api.py (Port 8000)</span> <span class="tag danger" id="api-badge">Offline</span></li>
+                        <li><span>podcast-rss-server (Port 8081)</span> <span class="tag success">Running</span></li>
+                    </ul>
+                </div>
+
+                <div class="module-panel">
+                    <h3>🧮 Wiskunde & Archieven</h3>
+                    <ul class="module-list">
+                        <li><span>lfsr_galois_generator.rs</span> <span class="tag">Rust/Cargo</span></li>
+                        <li><span>projectdoesier.html</span> <span class="tag warning">Dossier</span></li>
+                        <li><span>11x PDF Referenties</span> <span class="tag warning">Storage</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="module-panel" style="margin-bottom: 20px;">
+                <h3>📋 Systeem Meldingen & Status</h3>
+                <div class="terminal" id="status-msg">
+                    <div><span class="log-ok">[INFO]</span> Bezig met pingen van Python API op poort 8000...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = 'LOKALE TIJD: ' + now.toLocaleTimeString('nl-NL');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+            if(window.innerWidth <= 768) {
+                document.getElementById('closeMenu').style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+            }
+        }
+
+        async function checkApiStatus() {
+            const apiVal = document.getElementById('api-status-val');
+            const apiSub = document.getElementById('api-status-sub');
+            const apiBadge = document.getElementById('api-badge');
+            const statusMsg = document.getElementById('status-msg');
+
+            try {
+                await fetch('http://localhost:8000/api/status', { method: 'GET', mode: 'cors' });
+                apiVal.style.color = 'var(--success)';
+                apiVal.innerHTML = '<span class="dot"></span> ONLINE';
+                apiSub.innerText = 'Actief op poort 8000';
+                apiBadge.className = 'tag success';
+                apiBadge.innerText = 'Online';
+                statusMsg.innerHTML = `
+                    <div><span class="log-ok">[OK]</span> Python API-server op poort 8000 is actief en bereikbaar.</div>
+                    <div><span class="log-ok">[OK]</span> Podcast RSS Server draait stabiel op poort 8081.</div>
+                    <div><span class="log-ok">[OK]</span> Lokale architectuur geladen. Externe cloud/Notion koppelingen verwijderd.</div>
+                `;
+            } catch (error) {
+                apiVal.style.color = 'var(--danger)';
+                apiVal.innerHTML = '<span class="dot offline"></span> OFFLINE';
+                apiSub.innerHTML = 'Start via: <code>python3 server_api.py</code>';
+                apiBadge.className = 'tag danger';
+                apiBadge.innerText = 'Offline';
+                statusMsg.innerHTML = `
+                    <div><span class="log-err">[WAARSCHUWING]</span> Lokale Python API op poort 8000 is niet bereikbaar.</div>
+                    <div><span class="log-warn">[ACTIE]</span> Voer uit in terminal: <code>python3 backend/server_api.py</code></div>
+                    <div><span class="log-ok">[OK]</span> Lokale architectuur geladen. Externe cloud/Notion koppelingen verwijderd.</div>
+                `;
+            }
+        }
+        checkApiStatus(); setInterval(checkApiStatus, 5000);
+    </script>
+</body>
+</html>

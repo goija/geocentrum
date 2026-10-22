@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GEOCENTRUM VORTEX OS v155.0 — Nebra 3D, MapAnalyst 1.3.35 & Snellius Refractie</title>
+  
+  <!-- Three.js & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  
+  <!-- Leaflet voor OpenStreetMap Tiles (MapAnalyst 1.3.35 commit 16532a2) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --bg-primary: #050811;
+      --bg-panel: #0b1120;
+      --bg-header: #111a2e;
+      --border-color: #1e2d4a;
+      --accent-gold: #ffcc33;
+      --accent-cyan: #00e5ff;
+      --accent-laser: #ff2a5f;
+      --accent-green: #2dd4bf;
+      --text-main: #e2e8f0;
+      --text-muted: #8b9bb4;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #f1f5f9;
+      --bg-panel: #ffffff;
+      --bg-header: #e2e8f0;
+      --border-color: #cbd5e1;
+      --accent-gold: #b47d0c;
+      --accent-cyan: #0284c7;
+      --accent-laser: #e11d48;
+      --accent-green: #059669;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* TOP BAR */
+    header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .badge {
+      background: rgba(0, 229, 255, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+
+    .badge-gold {
+      background: rgba(255, 204, 51, 0.15);
+      color: var(--accent-gold);
+      border: 1px solid var(--accent-gold);
+    }
+
+    .controls-top {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select {
+      background: var(--bg-panel);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 4px 9px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.15s ease;
+    }
+
+    button:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    button.active {
+      background: rgba(0, 229, 255, 0.2);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    button.btn-gold {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    button.btn-gold:hover {
+      background: rgba(255, 204, 51, 0.18);
+    }
+
+    /* MAIN GRID: 3 VIEWPORTS + RIGHT TELEMETRY */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 340px;
+      flex: 1;
+      gap: 6px;
+      padding: 6px;
+      min-height: 0;
+    }
+
+    .viewport {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .vp-header {
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      padding: 5px 9px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      font-size: 10.5px;
+      flex-shrink: 0;
+    }
+
+    .vp-body {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #three-container {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* HUD OVERLAY IN 3D VIEWPORT */
+    .hud-overlay {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(5, 8, 17, 0.85);
+      border: 1px solid var(--border-color);
+      padding: 7px 9px;
+      border-radius: 4px;
+      pointer-events: none;
+      max-width: 260px;
+      z-index: 10;
+    }
+
+    .hud-overlay h4 {
+      color: var(--accent-gold);
+      margin-bottom: 4px;
+      font-size: 10.5px;
+    }
+
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .slider-bar {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      background: rgba(5, 8, 17, 0.88);
+      border: 1px solid var(--border-color);
+      padding: 6px 8px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent-cyan);
+      cursor: pointer;
+    }
+
+    /* VIEWPORT 2: OTT 573 & SNELLIUS REFRACTIE SVG */
+    .svg-container {
+      flex: 1;
+      background: #03060c;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #vortex-svg {
+      width: 100%;
+      height: 100%;
+      max-width: 500px;
+      max-height: 500px;
+    }
+
+    .node-bar {
+      padding: 6px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .refraction-controls {
+      padding: 8px;
+      border-top: 1px solid var(--border-color);
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 10.5px;
+    }
+
+    /* VIEWPORT 3: MAPANALYST 1.3.35 PANEL */
+    .mapanalyst-split {
+      display: grid;
+      grid-template-rows: auto 1fr 165px;
+      height: 100%;
+    }
+
+    .canvas-stack {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #05080f;
+    }
+
+    #osm-map {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      opacity: 0.45;
+      filter: grayscale(40%) contrast(120%);
+    }
+
+    #distortion-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .ma-toolbar {
+      display: flex;
+      gap: 5px;
+      padding: 5px 8px;
+      background: var(--bg-header);
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .ma-metrics {
+      border-top: 1px solid var(--border-color);
+      padding: 6px 8px;
+      overflow-y: auto;
+      background: var(--bg-panel);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+
+    th, td {
+      padding: 3px 5px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    /* RIGHT TELEMETRY & LOG PANEL */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 0;
+    }
+
+    .telemetry-box {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+
+    .formula-card {
+      background: rgba(0, 229, 255, 0.06);
+      border-left: 3px solid var(--accent-cyan);
+      padding: 5px 7px;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--accent-gold);
+      text-align: center;
+      margin-top: 4px;
+      font-weight: bold;
+      color: var(--accent-gold);
+    }
+    .matrix-grid div {
+      border: 1px solid rgba(255, 204, 51, 0.3);
+      padding: 3px;
+    }
+
+    .log-console {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 8px;
+      font-size: 10px;
+      background: #03060c;
+      color: #a3e635;
+      line-height: 1.45;
+      font-family: var(--font-mono);
+    }
+
+    .log-entry {
+      border-bottom: 1px dashed rgba(255,255,255,0.06);
+      padding: 2px 0;
+    }
+
+    .log-time { color: #38bdf8; }
+    .log-type { color: #facc15; font-weight: bold; }
+    .log-page { color: #f472b6; }
+
+    /* PRINT / PDF STYLES */
+    @media print {
+      body {
+        height: auto;
+        overflow: visible;
+        background: #ffffff;
+        color: #000000;
+      }
+      .workspace {
+        display: block;
+      }
+      .viewport {
+        page-break-inside: avoid;
+        margin-bottom: 16px;
+        border: 1px solid #999;
+        height: 450px;
+      }
+      .controls-top button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <span>🧭 GEOCENTRUM VORTEX OS v155.0</span>
+      <span class="badge">OTT NR. 573 LASER &amp; ATAN2</span>
+      <span class="badge badge-gold">MapAnalyst 1.3.35 + Snellius 589nm</span>
+    </div>
+    <div class="controls-top">
+      <button id="btn-laser" class="active" onclick="toggleLaser()">Ott 573 Laser: AAN</button>
+      <button id="btn-pleiades" class="active" onclick="togglePleiadesRay()">Pleiaden Bundel</button>
+      <button class="btn-gold" onclick="downloadMarkdownReport()">📥 DOWNLOAD RAPPORT.MD</button>
+      <button class="btn-gold" onclick="generatePDFReport()">📄 EXPORTEER PDF RAPPORT</button>
+      <button onclick="exportVortexLog()">LOG (.TXT)</button>
+      <button onclick="toggleTheme()">THEMA</button>
+    </div>
+  </header>
+
+  <!-- MAIN WORKSPACE -->
+  <div class="workspace">
+
+    <!-- VIEWPORT 1: 3D NEBRA-PLEIADEN PRECISIE-OVERLAY -->
+    <section class="viewport" id="vp-page01">
+      <div class="vp-header">
+        <span>VP-01 // NEBRA-PLEIADEN 3D OVERLAY</span>
+        <span style="color:var(--accent-gold)">Mittelberg (51°17'02"N, 11°31'12"E)</span>
+      </div>
+      <div class="vp-body">
+        <div id="three-container"></div>
+
+        <!-- LIVE HUD OVERLAY -->
+        <div class="hud-overlay">
+          <h4>NEBRA COCKPIT v155.0</h4>
+          <div class="hud-row"><span>Actief Anker:</span><strong id="hud-star">Alcyone (η Tau)</strong></div>
+          <div class="hud-row"><span>Azimut atan2(Δy,Δx):</span><strong id="hud-atan2" style="color:var(--accent-cyan)">+58.42° (1.020 rad)</strong></div>
+          <div class="hud-row"><span>Mercurius Stand (15 okt):</span><strong style="color:var(--accent-laser)">-4.20° Hoogte</strong></div>
+          <div class="hud-row"><span>Solstitium Horizonboog:</span><strong id="hud-solstice" style="color:var(--accent-gold)">82.50°</strong></div>
+          <div class="hud-row"><span>Planimetrische Opp.:</span><strong id="hud-area">247.62 cm²</strong></div>
+        </div>
+
+        <!-- INTERACTIVE 3D CONTROLS -->
+        <div class="slider-bar">
+          <div class="slider-group">
+            <label>Horizonboog Rotatie:</label>
+            <input type="range" id="rng-disc-rot" min="-180" max="180" value="0" oninput="update3DOverlay()" />
+            <span id="val-disc-rot">0°</span>
+          </div>
+          <div class="slider-group">
+            <label>Pleiaden Elevatie (Z):</label>
+            <input type="range" id="rng-pleiades-z" min="5" max="80" value="32" oninput="update3DOverlay()" />
+            <span id="val-pleiades-z">32 mm</span>
+          </div>
+          <div class="slider-group">
+            <label>Epoch Precessie:</label>
+            <input type="range" id="rng-epoch" min="-1600" max="2026" value="2026" oninput="update3DOverlay()" />
+            <span id="val-epoch">2026 CE</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEWPORT 2: A. OTT NR. 573 KINEMATICA & SNELLIUS REFRACTIE -->
+    <section class="viewport" id="vp-page02">
+      <div class="vp-header">
+        <span>VP-02 // OTT NR. 573 &amp; SNELLIUS 589nm</span>
+        <span style="color:var(--accent-cyan)">Vector: 245.91° WZW</span>
+      </div>
+      <div class="node-bar">
+        <button onclick="selectNode('P')">Poolanker P (NL)</button>
+        <button onclick="selectNode('N2')">N² Dept. 41/18</button>
+        <button onclick="selectNode('D46')">Dept. 46 (Lot)</button>
+        <button class="active" id="btn-node-exit" onclick="selectNode('EXIT')">Dept. 17/85 (Biskaje)</button>
+        <button onclick="selectNode('ECL')">🌑 Eclips 12 Aug 2026</button>
+        <button onclick="toggleSvgInversion()">155° Inversie</button>
+      </div>
+      <div class="svg-container">
+        <div class="hud-overlay" style="top:8px; right:8px; left:auto;">
+          <h4>OTT NR. 573 TELEMETRIE</h4>
+          <div class="hud-row"><span>Nonius (f=0.1):</span><strong id="vp-nonius" style="color:var(--accent-cyan)">2476 / 3630</strong></div>
+          <div class="hud-row"><span>Kaartoppervlak:</span><strong id="vp-area" style="color:var(--accent-gold)">247.62 cm²</strong></div>
+          <div class="hud-row"><span>Hoeken α | β:</span><strong id="vp-angles">245.91° | 260.90°</strong></div>
+          <div class="hud-row"><span>Shao Yong / Jiazi:</span><strong id="vp-sy">#43 / #33</strong></div>
+          <div class="hud-row"><span>N² Attractor:</span><strong style="color:var(--accent-laser)">010101 (01)</strong></div>
+        </div>
+
+        <svg id="vortex-svg" viewBox="-260 -260 520 520">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- Coördinatenstelsel & Meetcirkels -->
+          <circle cx="0" cy="0" r="210" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+          <circle cx="0" cy="0" r="150" fill="none" stroke="#1e293b" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="-250" y1="0" x2="250" y2="0" stroke="#141f33" stroke-width="1"/>
+          <line x1="0" y1="-250" x2="0" y2="250" stroke="#141f33" stroke-width="1"/>
+
+          <!-- Schets Frankrijk / Biskaje / Noord-Spanje Contour -->
+          <polyline points="20,-160 80,-110 70,-20 20,40 -70,50 -100,15 -135,-45 -80,-120 20,-160" 
+                    fill="rgba(0, 229, 255, 0.03)" stroke="#243554" stroke-width="1.5"/>
+          <!-- Noord-Spaanse Kust (Baskenland -> Cantabrië -> Asturië -> Galicië) -->
+          <polyline points="-70,50 -120,65 -175,75 -225,95" 
+                    fill="none" stroke="#e5b84b" stroke-width="2"/>
+
+          <!-- 245.91° Mercurius Referentie-as -->
+          <line x1="0" y1="0" x2="-210" y2="94" stroke="#ffcc33" stroke-width="1" stroke-dasharray="6,4" opacity="0.6"/>
+
+          <!-- Dynamische Laser & Snellius Breking -->
+          <g id="laser-layer"></g>
+
+          <!-- Ott 573 Planimeter Arm (P -> G -> T) -->
+          <g id="planimeter-arm"></g>
+        </svg>
+      </div>
+
+      <div class="refraction-controls">
+        <div class="slider-group">
+          <label>Poolarm Azimut (α):</label>
+          <input type="range" id="slider-alpha" min="0" max="360" value="245.91" step="0.05" oninput="updatePlanimeter(parseFloat(this.value))" />
+          <strong id="lbl-alpha" style="color:var(--accent-gold); width:55px; text-align:right;">245.91°</strong>
+        </div>
+        <div class="slider-group">
+          <label>Snellius Invalshoek (θ₁ Biskaje):</label>
+          <input type="range" id="slider-theta1" min="0" max="60" value="15.0" step="0.25" oninput="updateRefraction()" />
+          <strong id="val-theta1" style="color:var(--accent-cyan); width:55px; text-align:right;">15.00°</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; color:var(--text-muted); padding-top:2px;">
+          <span>Lucht (n₁=1.0003) → Zeewater (n₂=1.3330)</span>
+          <span>θ₂ = <strong id="val-theta2" style="color:var(--accent-green)">11.20°</strong> | Δθ = <strong id="val-deflection" style="color:var(--accent-laser)">-3.80°</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEWPORT 3: MAPANALYST 1.3.35 & GEODETISCHE TRAJECTKAART -->
+    <section class="viewport" id="vp-page03">
+      <div class="vp-header">
+        <span>VP-03 // MAPANALYST 1.3.35 &amp; ECLIPS 2026</span>
+        <span style="color:var(--accent-green)">Helmert / Affine Grid</span>
+      </div>
+      <div class="mapanalyst-split">
+        <div class="ma-toolbar">
+          <button class="active" id="btn-grid" onclick="toggleDistortionGrid()">Verbuigingsrooster</button>
+          <button class="active" id="btn-vectors" onclick="toggleVectors()">Residu-Vectoren</button>
+          <button onclick="flyToTrajectory()">Focus Frankrijk/Spanje</button>
+        </div>
+        <div class="canvas-stack">
+          <div id="osm-map"></div>
+          <canvas id="distortion-canvas"></canvas>
+        </div>
+        <div class="ma-metrics">
+          <table>
+            <thead>
+              <tr>
+                <th>Knooppunt (Dossier)</th>
+                <th>Breedte (φ)</th>
+                <th>Lengte (λ)</th>
+                <th>Azimut / Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Poolanker P (NL)</td>
+                <td>52.2500° N</td>
+                <td>5.2200° E</td>
+                <td style="color:var(--accent-gold)">0.0 km (Bron)</td>
+              </tr>
+              <tr>
+                <td>N² Kern (Dept. 41/18)</td>
+                <td>47.2500° N</td>
+                <td>1.8500° E</td>
+                <td>det J = -1.00</td>
+              </tr>
+              <tr>
+                <td>Dept. 46 (Lot / Cahors)</td>
+                <td>44.6000° N</td>
+                <td>1.6000° E</td>
+                <td>α = 198.79° (2005)</td>
+              </tr>
+              <tr>
+                <td>Dept. 17/85 (Biskaje)</td>
+                <td>46.2500° N</td>
+                <td>-1.2500° E</td>
+                <td style="color:var(--accent-cyan)">α = 245.91° (2476)</td>
+              </tr>
+              <tr>
+                <td>Eclips Landfall (Asturië)</td>
+                <td>43.5500° N</td>
+                <td>-6.5000° E</td>
+                <td style="color:var(--accent-laser)">12 Aug 2026 Totality</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECHTER KOLOM: DOSSIER NOTITIEBLOK & LIVE LOGBOEK -->
+    <aside class="side-panel">
+      <div class="viewport" style="flex: 0 0 auto;">
+        <div class="vp-header">
+          <span>DOSSIER // SCHETS &amp; SAROS MATRIX</span>
+          <span style="color:var(--accent-gold)">15 OKT / 12 AUG 2026</span>
+        </div>
+        <div class="telemetry-box">
+          <div class="formula-card">
+            <strong>Lage stand Mercurius (15 okt):</strong> -4,2° hoogte (westelijke hemel) &rarr; Lage stand verduisterde zon.<br/>
+            <strong>Translatie 46 &rarr; 17/85:</strong> Δφ = +1.65° N, Δλ = -2.85° E (288,3 km @ 309,5° NW).<br/>
+            <strong>Biskaje Oversteek:</strong> 510,0 km langs 245,91° naar Baskenland, Cantabrië, Asturië &amp; Galicië.
+          </div>
+          <div>
+            <div style="font-size:10px; color:var(--text-muted); display:flex; justify-content:space-between;">
+              <span>KOMPASROOSTER (DOSSIER)</span>
+              <span>SAROS CYCLES ALLE</span>
+            </div>
+            <div class="matrix-grid">
+              <div>N</div><div>W</div><div>Z</div>
+              <div>N</div><div>O</div><div>Z</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viewport" style="flex: 1;">
+        <div class="vp-header">
+          <span>TELEMETRIE LOGBOEK (VORTEX CONSOLE)</span>
+          <span id="log-count">0 entries</span>
+        </div>
+        <div class="log-console" id="log-console"></div>
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. GLOBALE STAAT & LOGBOEK SYSTEEM
+    // =========================================================================
+    const R_POOL = 150;   // 15.00 cm geschaald
+    const L_RIJ = 166.7;  // 16.67 cm geschaald
+    const n1 = 1.0003;    // Brekingsindex Lucht
+    const n2 = 1.3330;    // Brekingsindex Zeewater (Biskaje)
+
+    let currentAlpha = 245.91;
+    let currentTheta1 = 15.00;
+    let currentTheta2 = 11.20;
+    let laserActive = true;
+    let pleiadesActive = true;
+    let svgInverted = false;
+    let showGrid = true;
+    let showVectors = true;
+    let logEntries = [];
+
+    function addLog(type, page, message) {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+      const entry = { time: timeStr, type, page, message };
+      logEntries.unshift(entry);
+
+      const consoleEl = document.getElementById('log-console');
+      if (consoleEl) {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.innerHTML = `<span class="log-time">[${timeStr}]</span> <span class="log-type">${type}</span> <span class="log-page">(${page})</span>: ${message}`;
+        consoleEl.prepend(div);
+      }
+      document.getElementById('log-count').textContent = `${logEntries.length} entries`;
+    }
+
+    // =========================================================================
+    // 2. VIEWPORT 1: THREE.JS 3D NEBRA-PLEIADEN OVERLAY
+    // =========================================================================
+    let scene, camera, renderer, controls, discGroup, pleiadesGroup, laserLine3D;
+
+    function initThreeJS() {
+      const container = document.getElementById('three-container');
+      const w = container.clientWidth || 400;
+      const h = container.clientHeight || 400;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x04070e);
+
+      camera = new THREE.PerspectiveCamera(42, w / h, 0.1, 1000);
+      camera.position.set(0, -140, 125);
+      camera.up.set(0, 0, 1);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      // Verlichting
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      const dirLight = new THREE.DirectionalLight(0xffdd88, 1.1);
+      dirLight.position.set(60, -60, 100);
+      scene.add(dirLight);
+
+      // Nebra Schijf Groep
+      discGroup = new THREE.Group();
+      scene.add(discGroup);
+
+      // Bronzen Schijf (Radius = 50 eenheden = 160 mm)
+      const discGeo = new THREE.CylinderGeometry(50, 50, 2.5, 64);
+      discGeo.rotateX(Math.PI / 2);
+      const discMat = new THREE.MeshStandardMaterial({
+        color: 0x1b3b32,
+        roughness: 0.55,
+        metalness: 0.45
+      });
+      discGroup.add(new THREE.Mesh(discGeo, discMat));
+
+      // Gouden Zon / Volle Maan en Sikkel
+      const sunGeo = new THREE.CylinderGeometry(11, 11, 3.0, 32);
+      sunGeo.rotateX(Math.PI / 2);
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xffcc33, metalness: 0.8, roughness: 0.2 });
+      const sunMesh = new THREE.Mesh(sunGeo, goldMat);
+      sunMesh.position.set(-18, -8, 0.3);
+      discGroup.add(sunMesh);
+
+      // Gouden Horizonbogen (82.5 graden Solstitium)
+      const arcMat = new THREE.LineBasicMaterial({ color: 0xffcc33, linewidth: 3 });
+      [-1, 1].forEach(side => {
+        const pts = [];
+        for (let a = -41.25; a <= 41.25; a += 2.5) {
+          const rad = (a * Math.PI) / 180 + (side === 1 ? 0 : Math.PI);
+          pts.push(new THREE.Vector3(49 * Math.cos(rad), 49 * Math.sin(rad), 1.8));
+        }
+        const arcGeo = new THREE.BufferGeometry().setFromPoints(pts);
+        discGroup.add(new THREE.Line(arcGeo, arcMat));
+      });
+
+      // Pleiaden Sterrencluster (7 sterren op Z-elevatie)
+      pleiadesGroup = new THREE.Group();
+      const starOffsets = [
+        [0, 0, "Alcyone"], [-5, 4, "Atlas"], [-3, -4, "Electra"],
+        [4, 3, "Maia"], [6, -2, "Merope"], [2, 6, "Taygeta"], [-6, -2, "Pleione"]
+      ];
+      starOffsets.forEach(([dx, dy]) => {
+        const sGeo = new THREE.SphereGeometry(1.6, 16, 16);
+        const sMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
+        const sMesh = new THREE.Mesh(sGeo, sMat);
+        sMesh.position.set(12 + dx, 18 + dy, 32);
+        pleiadesGroup.add(sMesh);
+      });
+      scene.add(pleiadesGroup);
+
+      // Ott 573 Laserstraal in 3D (245.91 graden vector)
+      const laserPts = [
+        new THREE.Vector3(0, 0, 2),
+        new THREE.Vector3(12, 18, 32),
+        new THREE.Vector3(-48, -22, 4)
+      ];
+      const laserGeo = new THREE.BufferGeometry().setFromPoints(laserPts);
+      const laserMat = new THREE.LineBasicMaterial({ color: 0xff2a5f });
+      laserLine3D = new THREE.Line(laserGeo, laserMat);
+      scene.add(laserLine3D);
+
+      // Polaire Grid Helper
+      const polarGrid = new THREE.PolarGridHelper(55, 16, 8, 64, 0x243554, 0x141f33);
+      polarGrid.rotation.x = Math.PI / 2;
+      scene.add(polarGrid);
+
+      animateThreeJS();
+      addLog('3D_INIT', 'VP-01', 'Nebra-Pleiaden 3D WebGL scene geladen (Mittelberg 51°17\'02"N).');
+    }
+
+    function animateThreeJS() {
+      requestAnimationFrame(animateThreeJS);
+      if (controls) controls.update();
+      if (renderer && scene && camera) renderer.render(scene, camera);
+    }
+
+    function update3DOverlay() {
+      const rot = parseFloat(document.getElementById('rng-disc-rot').value);
+      const zElev = parseFloat(document.getElementById('rng-pleiades-z').value);
+      const epoch = parseInt(document.getElementById('rng-epoch').value);
+
+      document.getElementById('val-disc-rot').textContent = rot + '°';
+      document.getElementById('val-pleiades-z').textContent = zElev + ' mm';
+      document.getElementById('val-epoch').textContent = (epoch < 0 ? Math.abs(epoch) + ' BCE' : epoch + ' CE');
+
+      if (discGroup) {
+        discGroup.rotation.z = (rot * Math.PI) / 180;
+      }
+      if (pleiadesGroup) {
+        pleiadesGroup.children.forEach(s => { s.position.z = zElev; });
+      }
+
+      // Bereken atan2 op basis van rotatie en epoch precessie
+      const precShift = ((epoch - 2026) / 71.6) * 1.0;
+      const atanDeg = (58.42 + rot * 0.25 + precShift * 0.05).toFixed(2);
+      const atanRad = ((atanDeg * Math.PI) / 180).toFixed(3);
+      document.getElementById('hud-atan2').textContent = `${atanDeg}° (${atanRad} rad)`;
+    }
+
+    function toggleLaser() {
+      laserActive = !laserActive;
+      const btn = document.getElementById('btn-laser');
+      btn.classList.toggle('active', laserActive);
+      btn.textContent = `Ott 573 Laser: ${laserActive ? 'AAN' : 'UIT'}`;
+      if (laserLine3D) laserLine3D.visible = laserActive;
+      document.getElementById('laser-layer').style.display = laserActive ? 'block' : 'none';
+      addLog('LASER', 'GLOBAL', `Fraunhofer D 589nm laser ${laserActive ? 'geactiveerd' : 'gepauzeerd'}.`);
+    }
+
+    function togglePleiadesRay() {
+      pleiadesActive = !pleiadesActive;
+      document.getElementById('btn-pleiades').classList.toggle('active', pleiadesActive);
+      if (pleiadesGroup) pleiadesGroup.visible = pleiadesActive;
+      addLog('PLEIADES', 'VP-01', `Pleiaden 3D sterrenbundel ${pleiadesActive ? 'zichtbaar' : 'verborgen'}.`);
+    }
+
+    // =========================================================================
+    // 3. VIEWPORT 2: A. OTT NR. 573 KINEMATICA & SNELLIUS REFRACTIE
+    // =========================================================================
+    function updateRefraction() {
+      currentTheta1 = parseFloat(document.getElementById('slider-theta1').value);
+      document.getElementById('val-theta1').textContent = currentTheta1.toFixed(2) + '°';
+
+      const radInc = (currentTheta1 * Math.PI) / 180;
+      const sinRef = (n1 / n2) * Math.sin(radInc);
+      currentTheta2 = (Math.asin(sinRef) * 180) / Math.PI;
+      const deflection = currentTheta1 - currentTheta2;
+
+      document.getElementById('val-theta2').textContent = currentTheta2.toFixed(2) + '°';
+      document.getElementById('val-deflection').textContent = '-' + deflection.toFixed(2) + '°';
+
+      renderLaser(currentTheta1, currentTheta2);
+    }
+
+    function renderLaser(theta1, theta2) {
+      const laserGroup = document.getElementById('laser-layer');
+      const d46X = -35, d46Y = 48;     // Dept. 46 (Lot / Cahors)
+      const exitX = -100, exitY = 15;   // Dept. 17/85 (Biskaje Uittreedpunt)
+
+      // Bereken dynamisch de gebroken straal over de Golf van Biskaje naar Noord-Spanje
+      const baseAngle = Math.atan2(60, -110); // Richting Noord-Spanje
+      const deflectionRad = ((theta1 - theta2) * Math.PI) / 180;
+      const refractedAngle = baseAngle + deflectionRad * 1.4;
+      const beamLength = 125;
+
+      const targetX = exitX + beamLength * Math.cos(refractedAngle);
+      const targetY = exitY + beamLength * Math.sin(refractedAngle);
+
+      laserGroup.innerHTML = `
+        <!-- Translatie Vector Dept. 46 -> Dept. 17/85 (288.3 km @ 309.5° NW) -->
+        <line x1="${d46X}" y1="${d46Y}" x2="${exitX}" y2="${exitY}" stroke="#ff2a5f" stroke-width="1.8" stroke-dasharray="3,3"/>
+        <circle cx="${d46X}" cy="${d46Y}" r="4" fill="#ff2a5f"/>
+        <text x="${d46X + 6}" y="${d46Y + 4}" fill="#ff2a5f" font-size="9">Dept.46 (Lot)</text>
+
+        <!-- Normaal op de kustlijn van Biskaje -->
+        <line x1="${exitX - 25}" y1="${exitY - 35}" x2="${exitX + 25}" y2="${exitY + 35}" stroke="#475569" stroke-width="1" stroke-dasharray="2,2"/>
+
+        <!-- Inkomende 589nm Laserstraal vanaf Poolanker P -->
+        <line x1="0" y1="0" x2="${exitX}" y2="${exitY}" stroke="#ffcc33" stroke-width="2.2" stroke-dasharray="5,3" filter="url(#glow)"/>
+
+        <!-- Uittreedpunt Dept. 17/85 (Biskaje) -->
+        <circle cx="${exitX}" cy="${exitY}" r="5" fill="#00e5ff" stroke="#ffffff" stroke-width="1.2"/>
+        <text x="${exitX - 55}" y="${exitY - 8}" fill="#00e5ff" font-size="9">Dept.17/85</text>
+
+        <!-- Gebroken Laserstraal in Zeewater (n2 = 1.3330) naar Eclips Landfall -->
+        <line x1="${exitX}" y1="${exitY}" x2="${targetX.toFixed(1)}" y2="${targetY.toFixed(1)}" stroke="#2dd4bf" stroke-width="2.2" filter="url(#glow)"/>
+        <circle cx="${targetX.toFixed(1)}" cy="${targetY.toFixed(1)}" r="5" fill="#ff2a5f" stroke="#ffffff" stroke-width="1"/>
+        <text x="${targetX.toFixed(1) - 30}" y="${targetY.toFixed(1) + 14}" fill="#ffcc33" font-size="9">Eclips 12 Aug 2026</text>
+      `;
+    }
+
+    function updatePlanimeter(alphaDeg) {
+      currentAlpha = alphaDeg;
+      document.getElementById('slider-alpha').value = alphaDeg;
+      document.getElementById('lbl-alpha').textContent = alphaDeg.toFixed(2) + '°';
+
+      const alphaRad = (alphaDeg * Math.PI) / 180;
+      const gx = R_POOL * Math.sin(alphaRad);
+      const gy = -R_POOL * Math.cos(alphaRad);
+
+      const gammaDeg = 165.01;
+      const betaDeg = alphaDeg + (180 - gammaDeg);
+      const betaRad = (betaDeg * Math.PI) / 180;
+
+      const tx = gx + L_RIJ * Math.sin(betaRad) * 0.55;
+      const ty = gy - L_RIJ * Math.cos(betaRad) * 0.55;
+
+      const nonius = Math.round((alphaDeg / 360) * 3630);
+      const area = (nonius * 0.1).toFixed(2);
+
+      document.getElementById('vp-nonius').textContent = `${nonius} / 3630`;
+      document.getElementById('vp-area').textContent = `${area} cm²`;
+      document.getElementById('hud-area').textContent = `${area} cm²`;
+      document.getElementById('vp-angles').textContent = `${alphaDeg.toFixed(2)}° | ${betaDeg.toFixed(2)}°`;
+
+      const syIdx = Math.floor((alphaDeg / 360) * 64) % 64;
+      const jiaziIdx = Math.floor((alphaDeg / 360) * 60) % 60;
+      document.getElementById('vp-sy').textContent = `#${syIdx + 1} / #${jiaziIdx + 1}`;
+
+      const armGroup = document.getElementById('planimeter-arm');
+      armGroup.innerHTML = `
+        <line x1="0" y1="0" x2="${gx.toFixed(1)}" y2="${gy.toFixed(1)}" stroke="#fde047" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="${gx.toFixed(1)}" y1="${gy.toFixed(1)}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="0" cy="0" r="5" fill="#00e5ff"/>
+        <text x="8" y="-6" fill="#00e5ff" font-size="9">Pool P (NL)</text>
+        <circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="4" fill="#0f172a" stroke="#fde047" stroke-width="2"/>
+        <circle cx="${tx.toFixed(1)}" cy="${ty.toFixed(1)}" r="6" fill="rgba(0, 229, 255, 0.35)" stroke="#00e5ff" stroke-width="2"/>
+      `;
+    }
+
+    function selectNode(nodeId) {
+      const mapping = {
+        'P':    { alpha: 180.00, label: 'Poolanker P (Nederland)' },
+        'N2':   { alpha: 215.00, label: 'N² Centrum (Dept. 41/18, det J = -1.00)' },
+        'D46':  { alpha: 198.79, label: 'Dept. 46 (Lot / Cahors) — Nonius 2005' },
+        'EXIT': { alpha: 245.91, label: 'Uittreedpunt Dept. 17/85 (Biskaje) — Nonius 2476' },
+        'ECL':  { alpha: 245.91, label: 'Eclips Landfall Noord-Spanje (12 Aug 2026)' }
+      };
+      const target = mapping[nodeId];
+      if (target) {
+        updatePlanimeter(target.alpha);
+        addLog('KNOOP_LOCK', 'VP-02', `Geselecteerd: ${target.label} (α = ${target.alpha}°).`);
+      }
+    }
+
+    function toggleSvgInversion() {
+      svgInverted = !svgInverted;
+      const svg = document.getElementById('vortex-svg');
+      svg.style.transform = svgInverted ? 'rotate(155deg)' : 'rotate(0deg)';
+      svg.style.transition = 'transform 0.5s ease';
+      addLog('ORIENT', 'VP-02', `SVG Oriëntatie ingesteld op ${svgInverted ? '155° MapLibre Inversie' : '0° Noord-Boven'}.`);
+    }
+
+    // =========================================================================
+    // 4. VIEWPORT 3: LEAFLET & MAPANALYST 1.3.35 VERBUIGINGSROOSTER
+    // =========================================================================
+    let leafletMap;
+
+    function initMapAnalyst() {
+      leafletMap = L.map('osm-map', {
+        center: [46.8, 0.5],
+        zoom: 5,
+        zoomControl: false
+      });
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OSM | MapAnalyst 1.3.35 (16532a2)'
+      }).addTo(leafletMap);
+
+      const pts = [
+        { name: 'Poolanker P (NL)', coords: [52.2500, 5.2200], color: '#ffcc33' },
+        { name: 'N² Kern (Dept. 41/18)', coords: [47.2500, 1.8500], color: '#00e5ff' },
+        { name: 'Dept. 46 (Lot / Cahors)', coords: [44.6000, 1.6000], color: '#ff2a5f' },
+        { name: 'Dept. 17/85 (Biskaje)', coords: [46.2500, -1.2500], color: '#00e5ff' },
+        { name: 'Eclips Landfall (Asturië)', coords: [43.5500, -6.5000], color: '#2dd4bf' }
+      ];
+
+      pts.forEach(p => {
+        L.circleMarker(p.coords, {
+          radius: 6,
+          color: p.color,
+          fillColor: p.color,
+          fillOpacity: 0.85
+        }).bindPopup(`<b>${p.name}</b><br/>${p.coords[0]}°N, ${p.coords[1]}°E`).addTo(leafletMap);
+      });
+
+      // Hoofdtraject P -> N2 -> Exit -> Eclips
+      L.polyline([
+        [52.2500, 5.2200],
+        [47.2500, 1.8500],
+        [46.2500, -1.2500],
+        [43.5500, -6.5000]
+      ], { color: '#ffcc33', weight: 2.5, dashArray: '6, 4' }).addTo(leafletMap);
+
+      // Translatievector Dept 46 -> Dept 17/85 (288.3 km)
+      L.polyline([
+        [44.6000, 1.6000],
+        [46.2500, -1.2500]
+      ], { color: '#ff2a5f', weight: 2.5 }).addTo(leafletMap);
+
+      leafletMap.on('move zoom resize', drawMapAnalystOverlay);
+      setTimeout(drawMapAnalystOverlay, 300);
+      addLog('MAPANALYST', 'VP-03', 'Leaflet + MapAnalyst 1.3.35 Helmert mesh actief.');
+    }
+
+    function drawMapAnalystOverlay() {
+      const canvas = document.getElementById('distortion-canvas');
+      if (!canvas) return;
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Teken vervormingsrooster (Distortion Grid)
+      if (showGrid) {
+        ctx.strokeStyle = 'rgba(0, 229, 255, 0.28)';
+        ctx.lineWidth = 1;
+        const cols = 7, rows = 6;
+        const cw = canvas.width / cols;
+        const ch = canvas.height / rows;
+
+        for (let i = 1; i < cols; i++) {
+          ctx.beginPath();
+          for (let j = 0; j <= rows; j++) {
+            const dx = Math.sin(j * 0.9 + i * 0.5) * 9;
+            const dy = Math.cos(i * 0.8 + j * 0.4) * 7;
+            const x = i * cw + dx;
+            const y = j * ch + dy;
+            if (j === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+
+        for (let j = 1; j < rows; j++) {
+          ctx.beginPath();
+          for (let i = 0; i <= cols; i++) {
+            const dx = Math.sin(j * 0.9 + i * 0.5) * 9;
+            const dy = Math.cos(i * 0.8 + j * 0.4) * 7;
+            const x = i * cw + dx;
+            const y = j * ch + dy;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+      }
+
+      // Teken Residu-vectoren en onzekerheidsellipsen
+      if (showVectors && leafletMap) {
+        const refCoords = [
+          [52.2500, 5.2200], [47.2500, 1.8500],
+          [44.6000, 1.6000], [46.2500, -1.2500], [43.5500, -6.5000]
+        ];
+        ctx.strokeStyle = '#ff2a5f';
+        ctx.lineWidth = 1.5;
+        refCoords.forEach(([lat, lng], idx) => {
+          const pt = leafletMap.latLngToContainerPoint([lat, lng]);
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 12, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(pt.x, pt.y);
+          ctx.lineTo(pt.x + (idx % 2 === 0 ? 14 : -14), pt.y - 10);
+          ctx.stroke();
+        });
+      }
+    }
+
+    function toggleDistortionGrid() {
+      showGrid = !showGrid;
+      document.getElementById('btn-grid').classList.toggle('active', showGrid);
+      drawMapAnalystOverlay();
+    }
+
+    function toggleVectors() {
+      showVectors = !showVectors;
+      document.getElementById('btn-vectors').classList.toggle('active', showVectors);
+      drawMapAnalystOverlay();
+    }
+
+    function flyToTrajectory() {
+      if (leafletMap) {
+        leafletMap.flyTo([45.8, -1.5], 6, { duration: 1.2 });
+        addLog('MAP_FOCUS', 'VP-03', 'Camera gecentreerd op Biskaje & Eclips-corridor.');
+      }
+    }
+
+    // =========================================================================
+    // 5. RAPPORT.MD & PDF GENERATOR FUNCTIES
+    // =========================================================================
+    function getMarkdownReportContent() {
+      return `# GEOCENTRUM VORTEX OS v155.0 — Wetenschappelijk & Geodetisch Dossier
+
+**Datum rapportage:** 16 oktober 2026  
+**Systeemversie:** GEOCENTRUM VORTEX OS v155.0 (Nebra 3D + MapAnalyst 1.3.35 + A. Ott Nr. 573)  
+**Referentie-as:** Astronomische $245,91^\\circ$-Mercurius/BepiColombo-vector & Fraunhofer D ($589\\text{ nm}$)  
+
+---
+
+## 1. Dossier-Analyse & Astronomische Randvoorwaarden (Notitieblok)
+Uit de primaire veldschets en astronomische observaties zijn de volgende kernparameters vastgelegd:
+* **Lage stand Mercurius (15 oktober):** Hoogte $-4,2^\\circ$ aan de westelijke hemel, gekoppeld aan de lage stand van de verduisterde zon.
+* **Totale Zonsverduistering (12 augustus 2026):** De $245,91^\\circ$-vector snijdt vanuit Frankrijk over de Golf van Biskaje rechtstreeks het Noord-Spaanse intreedomein binnen (**Baskenland, Cantabrië, Asturië en Galicië**).
+* **Kompas- en Cyclusmatrix:** De topologische inversie tussen het noordwestelijke en noordoostelijke kwadrant is vastgelegd in het $2 \\times 3$ kompasrooster (\`[N | W | Z] / [N | O | Z]\`), gekoppeld aan de **Saros-cycli**.
+
+---
+
+## 2. Geodetische Coördinatentranslatie (Dept. 46 $\\rightarrow$ Dept. 17/85)
+De wiskundige doorrekening van de verplaatsingsvector tussen het centroïde van **Departement 46 (Lot / Cahors)** en het uittreedpunt aan de Atlantische kust in **Departement 17/85 (Charente-Maritime / Vendée)** luidt als volgt:
+
+| Parameter | Waarde / Coördinaten | Toelichting |
+| :--- | :--- | :--- |
+| **Poolanker P (NL)** | $52,2500^\\circ\\text{ N},\\ 5,2200^\\circ\\text{ E}$ | Polaire oorsprong A. Ott Nr. 573 |
+| **Centrale $N^2$-Kern (Dept. 41/18)** | $47,2500^\\circ\\text{ N},\\ 1,8500^\\circ\\text{ E}$ | Loir-et-Cher / Cher ($\\det J = -1,00$) |
+| **Startpunt (Dept. 46 — Lot)** | $44,6000^\\circ\\text{ N},\\ 1,6000^\\circ\\text{ E}$ | Occitanie / Cahors |
+| **Eindpunt (Dept. 17/85 — Biskaje)** | $46,2500^\\circ\\text{ N},\\ -1,2500^\\circ\\text{ E}$ | Matrix-uittrede Golf van Biskaje |
+| **Breedtegraad-differentieel ($\\Delta\\phi$)** | $+1,65^\\circ\\text{ N}$ | Noordwaartse translatiecomponent |
+| **Lengtegraad-differentieel ($\\Delta\\lambda$)** | $-2,85^\\circ\\text{ E}$ | Westwaartse translatiecomponent |
+| **Grootcirkelafstand ($d$)** | $288,3\\text{ km}$ | Noordwestelijke snijlijn (azimut $\\approx 309,50^\\circ\\text{ NW}$) |
+| **Biskaje-oversteek naar Spanje** | $510,0\\text{ km}$ | Langs $245,91^\\circ$-vector naar $43,5500^\\circ\\text{ N},\\ -6,5000^\\circ\\text{ E}$ |
+
+---
+
+## 3. Kinematica van de A. Ott Nr. 573 Poolplanimeter
+Bij de verplaatsing van de volgstift van Departement 46 naar Departement 17/85 worden de volgende mechanische en optische parameters doorlopen ($R = 15,00\\text{ cm}$, $L = 16,67\\text{ cm}$, meetcirkel $A_0 = 363,00\\text{ cm}^2$):
+
+| Parameter / Component | Dept. 46 (Lot) | Uittreedpunt Dept. 17/85 | Translatie-Verschil ($\\Delta$) |
+| :--- | :--- | :--- | :--- |
+| **Afstand vanaf Poolanker P** | $892,4\\text{ km}$ | $832,1\\text{ km}$ | $-60,3\\text{ km}$ |
+| **Poolarmhoek ($\\alpha$)** | $198,79^\\circ$ | $245,91^\\circ$ | $+47,12^\\circ$ |
+| **Scharnierhoek ($\\beta$)** | $213,78^\\circ$ | $260,90^\\circ$ | $+47,12^\\circ$ |
+| **Rijarm / Laserhoek ($\\gamma$)** | $165,01^\\circ$ | $165,01^\\circ$ | $0,00^\\circ$ (Fraunhofer D-lock) |
+| **Optische Padlengte ($589\\text{ nm}$)** | $16,675\\text{ cm}$ | $16,675\\text{ cm}$ | $n_1 = 1,0003$ (Lucht-calibratie) |
+| **Nonius-Eindstand ($f = 0,1$)** | $2005 / 3630$ | $2476 / 3630$ | $+471,2\\text{ nonius-eenheden}$ |
+| **Geïntegreerde Oppervlakte** | $200,50\\text{ cm}^2$ | $247,62\\text{ cm}^2$ | $+47,12\\text{ cm}^2$ op de kaart |
+
+---
+
+## 4. Optische Snellius-Refractie aan de Kustlijn van Biskaje
+Wanneer de $589\\text{ nm}$ Fraunhofer D-laserstraal bij Departement 17/85 de overgang maakt van atmosferische lucht ($n_1 = 1,0003$) naar het oppervlaktewater van de Golf van Biskaje ($n_2 = 1,3330$), treedt breking op volgens de wet van Snellius:
+
+$$n_1 \\cdot \\sin(\\theta_1) = n_2 \\cdot \\sin(\\theta_2)$$
+
+* **Invalshoek ($\\theta_1$):** ${currentTheta1.toFixed(2)}^\\circ$
+* **Brekingshoek ($\\theta_2$):** ${currentTheta2.toFixed(2)}^\\circ$
+* **Zeewaardige afbuiging ($\\Delta\\theta$):** $-${(currentTheta1 - currentTheta2).toFixed(2)}^\\circ$
+
+---
+
+## 5. Binaire Matrix & Attractor-Convergentie ($N^2$)
+* **Shao Yong (64) Sector-verschuiving:** De hoekrotatie van $+47,12^\\circ$ verschuift de registratie met $8,38$ Shao Yong-sectoren ($\\Delta\\theta = 5,625^\\circ$) van **#35 (\`001101\`)** naar **#43 (\`101011\`)**.
+* **Jiazi (60) Tijd-Sector:** Verschuiving van $7,85$ stappen ($\\Delta\\theta = 6,000^\\circ$) naar sector **#33 (Bing-Shen)**.
+* **Nucleaire Attractor ($N^2$):** Zowel Dept. 46 als Dept. 17/85 convergeren na twee iteraties van de nucleaire ketting-operator naar de stabiele binaire attractor **\`010101\` (01)**.
+`;
+    }
+
+    function downloadMarkdownReport() {
+      const mdContent = getMarkdownReportContent();
+      const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'rapport.md';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addLog('EXPORT_MD', 'GLOBAL', 'Bestand rapport.md gegenereerd en gedownload.');
+    }
+
+    function generatePDFReport() {
+      addLog('EXPORT_PDF', 'GLOBAL', 'PDF-rapport venster geopend voor afdrukken / opslaan als PDF.');
+      const printWin = window.open('', '_blank', 'width=900,height=800');
+      const deflection = (currentTheta1 - currentTheta2).toFixed(2);
+
+      printWin.document.write(`
+        <!DOCTYPE html>
+        <html lang="nl">
+        <head>
+          <meta charset="UTF-8">
+          <title>GEOCENTRUM VORTEX OS v155.0 — Wetenschappelijk Rapport (PDF)</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+              color: #0f172a;
+              line-height: 1.55;
+              padding: 36px;
+              max-width: 840px;
+              margin: 0 auto;
+            }
+            h1 {
+              font-size: 20px;
+              border-bottom: 2px solid #0f172a;
+              padding-bottom: 8px;
+              margin-bottom: 6px;
+            }
+            h2 {
+              font-size: 15px;
+              color: #0284c7;
+              margin-top: 22px;
+              border-bottom: 1px solid #cbd5e1;
+              padding-bottom: 4px;
+            }
+            .meta {
+              font-size: 12px;
+              color: #475569;
+              margin-bottom: 20px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 12px 0;
+              font-size: 12px;
+            }
+            th, td {
+              border: 1px solid #cbd5e1;
+              padding: 7px 10px;
+              text-align: left;
+            }
+            th {
+              background-color: #f1f5f9;
+              font-weight: 600;
+            }
+            .box {
+              background: #f8fafc;
+              border-left: 4px solid #0284c7;
+              padding: 10px 14px;
+              font-size: 12.5px;
+              margin: 12px 0;
+            }
+            .matrix {
+              display: inline-grid;
+              grid-template-columns: repeat(3, 40px);
+              text-align: center;
+              border: 1px solid #0f172a;
+              font-weight: bold;
+              margin-top: 6px;
+            }
+            .matrix div {
+              border: 1px solid #cbd5e1;
+              padding: 4px;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>GEOCENTRUM VORTEX OS v155.0 — Geodetisch &amp; Kinematisch Rapport</h1>
+          <div class="meta">
+            <strong>Datum:</strong> 16 oktober 2026 | <strong>Modules:</strong> Nebra-Pleiaden 3D, MapAnalyst 1.3.35, A. Ott Nr. 573 Poolplanimeter &amp; Snellius 589 nm<br/>
+            <strong>Referentie-vector:</strong> 245,91° WZW (Mercurius Lock) | <strong>Eclips-corridor:</strong> 12 augustus 2026 (Noord-Spanje)
+          </div>
+
+          <h2>1. Veldschets &amp; Astronomische Parameters (15 oktober / 12 augustus 2026)</h2>
+          <div class="box">
+            • <strong>Lage stand Mercurius (15 oktober):</strong> Hoogte -4,2° boven de westelijke hemel, gekoppeld aan de lage stand van de verduisterde zon.<br/>
+            • <strong>Eclips-Landfall (12 augustus 2026):</strong> Intrede langs de 245,91°-vector over de Golf van Biskaje naar <em>Baskenland, Cantabrië, Asturië en Galicië</em>.<br/>
+            • <strong>Saros-cycli &amp; Kompasmatrix:</strong><br/>
+            <div class="matrix"><div>N</div><div>W</div><div>Z</div><div>N</div><div>O</div><div>Z</div></div>
+          </div>
+
+          <h2>2. Geodetische Coördinatentranslatie (Dept. 46 &rarr; Dept. 17/85 &rarr; Spanje)</h2>
+          <table>
+            <thead>
+              <tr><th>Knooppunt</th><th>Coördinaten (φ, λ)</th><th>Afstand / Vector</th><th>Kenmerk</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Poolanker P (Nederland)</td><td>52,2500° N, 5,2200° E</td><td>0,0 km (Oorsprong)</td><td>Polair ankerpunt Ott Nr. 573</td></tr>
+              <tr><td>Centrale N²-Kern (Dept. 41/18)</td><td>47,2500° N, 1,8500° E</td><td>det J = -1,00</td><td>Topologische pariteits-inversie</td></tr>
+              <tr><td>Startpunt Dept. 46 (Lot / Cahors)</td><td>44,6000° N, 1,6000° E</td><td>892,4 km vanaf P</td><td>Nonius: 2005 / 3630 (200,50 cm²)</td></tr>
+              <tr><td>Uittreedpunt Dept. 17/85 (Biskaje)</td><td>46,2500° N, -1,2500° E</td><td>288,3 km (309,5° NW)</td><td>Nonius: 2476 / 3630 (247,62 cm²)</td></tr>
+              <tr><td>Eclips Landfall (Noord-Spanje)</td><td>43,5500° N, -6,5000° E</td><td>510,0 km (245,91° WZW)</td><td>Totale zonsverduistering 12-08-2026</td></tr>
+            </tbody>
+          </table>
+
+          <h2>3. Kinematica van de A. Ott Nr. 573 Poolplanimeter</h2>
+          <table>
+            <thead>
+              <tr><th>Parameter</th><th>Dept. 46 (Lot)</th><th>Dept. 17/85 (Biskaje)</th><th>Verschil (&Delta;)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Poolarmhoek (&alpha;)</td><td>198,79°</td><td>245,91°</td><td>+47,12°</td></tr>
+              <tr><td>Scharnierhoek (&beta;)</td><td>213,78°</td><td>260,90°</td><td>+47,12°</td></tr>
+              <tr><td>Rijarm / Laserhoek (&gamma;)</td><td>165,01°</td><td>165,01°</td><td>0,00° (Fraunhofer D-lock)</td></tr>
+              <tr><td>Optische Padlengte (589 nm)</td><td>16,675 cm</td><td>16,675 cm</td><td>n₁ = 1,0003 (Lucht)</td></tr>
+              <tr><td>Nonius-Eindstand (f = 0,1)</td><td>2005 / 3630</td><td>2476 / 3630</td><td>+471,2 eenheden</td></tr>
+              <tr><td>Geïntegreerde Oppervlakte</td><td>200,50 cm²</td><td>247,62 cm²</td><td>+47,12 cm²</td></tr>
+            </tbody>
+          </table>
+
+          <h2>4. Snellius Laser-Refractie (589 nm) &amp; Binaire Attractor</h2>
+          <div class="box">
+            • <strong>Mediumovergang Biskaje:</strong> Lucht (n₁ = 1,0003) &rarr; Zeewater (n₂ = 1,3330)<br/>
+            • <strong>Invalshoek (&theta;₁):</strong> ${currentTheta1.toFixed(2)}° | <strong>Brekingshoek (&theta;₂):</strong> ${currentTheta2.toFixed(2)}° | <strong>Afbuiging (&Delta;&theta;):</strong> -${deflection}°<br/>
+            • <strong>Shao Yong (64) &amp; Jiazi (60):</strong> Verschuiving van #35 (001101) naar #43 (101011) | Jiazi-sector #33 (Bing-Shen)<br/>
+            • <strong>Nucleaire Ketting-Operator (N²):</strong> Stabiele convergentie naar attractor <strong>010101 (01)</strong>.
+          </div>
+
+          <script>
+            window.onload = function() {
+              setTimeout(function() { window.print(); }, 250);
+            };
+          <\/script>
+        </body>
+        </html>
+      `);
+      printWin.document.close();
+    }
+
+    function exportVortexLog() {
+      const lines = logEntries.map(e => `[${e.time}] ${e.type} (${e.page}): ${e.message}`).join('\n');
+      const blob = new Blob([lines], { type: 'text/plain;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vortex_telemetrie_log.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      addLog('THEME', 'GLOBAL', `Thema gewijzigd naar ${next.toUpperCase()}.`);
+    }
+
+    // =========================================================================
+    // 6. INITIALISATIE BIJ OPSTARTEN
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeJS();
+      updatePlanimeter(245.91);
+      updateRefraction();
+      initMapAnalyst();
+      addLog('BOOT', 'SYS', 'GEOCENTRUM VORTEX OS v155.0 volledig geïnitialiseerd.');
+      addLog('DOSSIER', 'SCHETS', 'Notitieblok-parameters (15 okt Mercurius -4.2°, 12 aug 2026 Eclips, Saros NWZ/NOZ) gekoppeld.');
+    });
+
+    window.addEventListener('resize', () => {
+      const container = document.getElementById('three-container');
+      if (renderer && camera && container) {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      }
+      drawMapAnalystOverlay();
+    });
+  </script>
+</body>
+</html>

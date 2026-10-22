@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Planimeter Studio & Robuuste Downloads</title>
+    <style>
+        :root {
+            --bg-color: #03070d;
+            --panel-bg: rgba(15, 23, 42, 0.9);
+            --border-color: rgba(0, 180, 216, 0.4);
+            --text-main: #e0e1dd;
+            --accent: #00b4d8;
+            --success: #2a9d8f;
+            --warning: #f4a261;
+            --danger: #e76f51;
+        }
+        body {
+            margin: 0; padding: 0;
+            background: var(--bg-color); color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            width: 100vw; height: 100vh; overflow: hidden; box-sizing: border-box;
+        }
+        .cockpit-layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            grid-template-rows: 40px 1fr;
+            width: 100vw; height: 100vh;
+        }
+        header {
+            grid-column: 1 / -1;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--panel-bg); border-bottom: 1px solid var(--border-color);
+            padding: 0 15px; z-index: 100;
+        }
+        header h1 { font-size: 1rem; color: var(--accent); margin: 0; }
+        .sidebar {
+            background: var(--panel-bg); border-right: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: 8px;
+            overflow-y: auto; padding: 10px; box-sizing: border-box;
+        }
+        .viewport-main {
+            position: relative; width: 100%; height: 100%; overflow: hidden; background: #000;
+        }
+        .canvas-container {
+            position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+        }
+        video#webcam {
+            position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0.5; z-index: 1;
+        }
+        canvas#studioCanvas {
+            position: absolute; width: 100%; height: 100%; z-index: 2; cursor: crosshair;
+        }
+        .card-panel {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px; padding: 8px;
+        }
+        .card-panel h3 {
+            margin: 0 0 6px 0; font-size: 0.8rem; color: var(--accent);
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+        }
+        .card-content { display: flex; flex-direction: column; gap: 6px; }
+        .card-content.collapsed { display: none; }
+        .btn {
+            background: var(--accent); color: #0d1b2a; border: none;
+            padding: 5px 10px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            font-size: 0.75rem; transition: background 0.2s;
+        }
+        .btn:hover { background: #90e0ef; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: #0d1b2a; }
+        .btn-danger { background: var(--danger); color: white; }
+        .param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .param-item { display: flex; flex-direction: column; gap: 2px; font-size: 0.7rem; }
+        input[type="number"], input[type="range"] {
+            padding: 3px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.5); color: white; width: 100%; font-size: 0.75rem; box-sizing: border-box;
+        }
+        .output-box {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
+            padding: 6px; border-radius: 4px; font-size: 0.7rem; line-height: 1.3; font-family: monospace;
+        }
+        .back-link { color: var(--accent); text-decoration: none; font-size: 0.75rem; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="cockpit-layout">
+        <!-- HEADER -->
+        <header>
+            <a href="../../index.html" class="back-link">← Dashboard</a>
+            <h1>🌐 VORTEX OS - Planimeter Studio (Robuuste Downloads)</h1>
+            <span style="font-size: 0.75rem; opacity: 0.8;">Janna van Vrijberghe</span>
+        </header>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="card-panel">
+                <h3 onclick="togglePanel('panel-params')">⚙️ Calibratie & Zichtbaarheid <span>▼</span></h3>
+                <div class="card-content" id="content-panel-params">
+                    <div class="param-grid">
+                        <div class="param-item">
+                            <label>Diameter (cm):</label>
+                            <input type="number" id="inputDiameter" value="29.0" step="0.5" min="1" oninput="tekenStudio()">
+                        </div>
+                        <div class="param-item">
+                            <label>Azimut (°):</label>
+                            <input type="number" id="startAzimut" value="108.0" step="1" oninput="tekenStudio()">
+                        </div>
+                    </div>
+                    <div class="param-item" style="margin-top: 4px;">
+                        <label>Zoom (<span id="zoom-val">1.0</span>x):</label>
+                        <input type="range" id="zoomScale" min="0.5" max="3.0" step="0.1" value="1.0" oninput="tekenStudio()">
+                    </div>
+                    <div class="param-item" style="margin-top: 4px;">
+                        <label>Transparantie Achtergrond (<span id="alpha-val">0.0</span>):</label>
+                        <input type="range" id="bgAlpha" min="0.0" max="1.0" step="0.05" value="0.0" oninput="tekenStudio()">
+                    </div>
+                    <div style="display: flex; gap: 4px; margin-top: 4px;">
+                        <button class="btn btn-success" style="flex:1;" onclick="startWebRTC()">📷 Cam</button>
+                        <button class="btn btn-danger" style="flex:1;" onclick="stopWebRTC()">Stop</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ONAFHANKELIJKE RINGEN -->
+            <div class="card-panel">
+                <h3 onclick="togglePanel('panel-rings')">🔄 Onafhankelijke Ringen <span>▼</span></h3>
+                <div class="card-content" id="content-panel-rings">
+                    <div style="border-left: 3px solid #00b4d8; padding-left: 4px; margin-bottom: 3px;">
+                        <strong>Ring 1 (Buiten + Zeshoek):</strong>
+                        <div class="param-grid">
+                            <div class="param-item"><label>Rot (<span id="r1-rot-val">0</span>°):</label><input type="range" id="r1-rot" min="0" max="360" value="0" oninput="tekenStudio()"></div>
+                            <div class="param-item"><label>Tilt (<span id="r1-tilt-val">0</span>°):</label><input type="range" id="r1-tilt" min="-90" max="90" value="0" oninput="tekenStudio()"></div>
+                        </div>
+                    </div>
+                    <div style="border-left: 3px solid #f4a261; padding-left: 4px; margin-bottom: 3px;">
+                        <strong>Ring 2 (Midden):</strong>
+                        <div class="param-grid">
+                            <div class="param-item"><label>Rot (<span id="r2-rot-val">0</span>°):</label><input type="range" id="r2-rot" min="0" max="360" value="0" oninput="tekenStudio()"></div>
+                            <div class="param-item"><label>Tilt (<span id="r2-tilt-val">0</span>°):</label><input type="range" id="r2-tilt" min="-90" max="90" value="0" oninput="tekenStudio()"></div>
+                        </div>
+                    </div>
+                    <div style="border-left: 3px solid #2a9d8f; padding-left: 4px;">
+                        <strong>Ring 3 (Binnen):</strong>
+                        <div class="param-grid">
+                            <div class="param-item"><label>Rot (<span id="r3-rot-val">0</span>°):</label><input type="range" id="r3-rot" min="0" max="360" value="0" oninput="tekenStudio()"></div>
+                            <div class="param-item"><label>Tilt (<span id="r3-tilt-val">0</span>°):</label><input type="range" id="r3-tilt" min="-90" max="90" value="0" oninput="tekenStudio()"></div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 4px; margin-top: 4px;">
+                        <button class="btn btn-warning" onclick="resetRingen()">Reset (R)</button>
+                        <button class="btn btn-danger" onclick="kantel180()">180°</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-panel">
+                <h3 onclick="togglePanel('panel-telemetry')">🔬 Robuuste Exporters <span>▼</span></h3>
+                <div class="card-content" id="content-panel-telemetry">
+                    <button class="btn btn-success" onclick="exportRScript()">📊 Exporteer R-Script</button>
+                    <button class="btn btn-warning" onclick="genereerLogboekBestand()">💾 Exporteer Log.txt</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN VIEWPORT -->
+        <div class="viewport-main">
+            <div class="canvas-container">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="studioCanvas"></canvas>
+            </div>
+            <div style="position: absolute; bottom: 15px; right: 20px; display: flex; gap: 6px; z-index: 10;">
+                <button class="btn btn-success" onclick="exportGeoJSON()">🌍 GeoJSON</button>
+                <button class="btn btn-success" onclick="exportKML()">📍 KML</button>
+                <button class="btn btn-success" onclick="downloadAfbeelding('png')">📥 PNG</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gezettePunten = [];
+
+        function togglePanel(panelId) {
+            const content = document.getElementById('content-' + panelId);
+            content.classList.toggle('collapsed');
+        }
+
+        function downloadBestand(inhoud, bestandsnaam, mimeType) {
+            const blob = new Blob([inhoud], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = bestandsnaam;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        }
+
+        function startWebRTC() {
+            const video = document.getElementById('webcam');
+            navigator.mediaDevices.getUserMedia({ video: { width: 1920, height: 1080 }, audio: false })
+                .then(stream => { video.srcObject = stream; })
+                .catch(err => { alert("Camera weigering of niet beschikbaar."); });
+        }
+
+        function stopWebRTC() {
+            const video = document.getElementById('webcam');
+            if (video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.srcObject = null; }
+        }
+
+        function resetRingen() {
+            document.getElementById('inputDiameter').value = 29.0;
+            document.getElementById('startAzimut').value = 108.0;
+            document.getElementById('zoomScale').value = 1.0;
+            document.getElementById('bgAlpha').value = 0.0;
+            document.getElementById('r1-rot').value = 0; document.getElementById('r1-tilt').value = 0;
+            document.getElementById('r2-rot').value = 0; document.getElementById('r2-tilt').value = 0;
+            document.getElementById('r3-rot').value = 0; document.getElementById('r3-tilt').value = 0;
+            tekenStudio();
+        }
+
+        function kantel180() {
+            const r1 = document.getElementById('r1-rot');
+            r1.value = (parseInt(r1.value) + 180) % 360;
+            tekenStudio();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('studioCanvas');
+            
+            function resizeCanvas() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                tekenStudio();
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const clientX = (e.clientX - rect.left) * scaleX;
+                const clientY = (e.clientY - rect.top) * scaleY;
+                const centerW = canvas.width / 2;
+                const centerH = canvas.height / 2;
+                
+                const zoom = parseFloat(document.getElementById('zoomScale').value) || 1.0;
+                const D = parseFloat(document.getElementById('inputDiameter').value) || 29.0;
+                const R = D / 2.0;
+                const pxRadius = (Math.min(canvas.width, canvas.height) * 0.4) * zoom;
+                
+                const dx = clientX - centerW;
+                const dy = clientY - centerH;
+                const afstandCm = (Math.sqrt(dx * dx + dy * dy) / pxRadius) * R;
+                const hoekDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+                
+                gezettePunten.push({ x: dx.toFixed(1), y: dy.toFixed(1), cm: afstandCm.toFixed(2), hoek: hoekDeg.toFixed(1), label: `P${gezettePunten.length + 1}` });
+                tekenStudio();
+            });
+        });
+
+        function tekenStudio() {
+            const canvas = document.getElementById('studioCanvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerW = width / 2;
+            const centerH = height / 2;
+
+            const D = parseFloat(document.getElementById('inputDiameter').value) || 29.0;
+            const startAzimut = parseFloat(document.getElementById('startAzimut').value) || 108.0;
+            const zoom = parseFloat(document.getElementById('zoomScale').value) || 1.0;
+            const alpha = parseFloat(document.getElementById('bgAlpha').value) || 0.0;
+            
+            document.getElementById('zoom-val').innerText = zoom.toFixed(1);
+            document.getElementById('alpha-val').innerText = alpha.toFixed(2);
+
+            const r1Rot = parseFloat(document.getElementById('r1-rot').value) || 0;
+            const r1Tilt = parseFloat(document.getElementById('r1-tilt').value) || 0;
+            const r2Rot = parseFloat(document.getElementById('r2-rot').value) || 0;
+            const r2Tilt = parseFloat(document.getElementById('r2-tilt').value) || 0;
+            const r3Rot = parseFloat(document.getElementById('r3-rot').value) || 0;
+            const r3Tilt = parseFloat(document.getElementById('r3-tilt').value) || 0;
+
+            document.getElementById('r1-rot-val').innerText = r1Rot; document.getElementById('r1-tilt-val').innerText = r1Tilt;
+            document.getElementById('r2-rot-val').innerText = r2Rot; document.getElementById('r2-tilt-val').innerText = r2Tilt;
+            document.getElementById('r3-rot-val').innerText = r3Rot; document.getElementById('r3-tilt-val').innerText = r3Tilt;
+
+            ctx.clearRect(0, 0, width, height);
+            if(alpha > 0) {
+                ctx.fillStyle = `rgba(3, 7, 13, ${alpha})`;
+                ctx.fillRect(0, 0, width, height);
+            }
+
+            const baseRadius = (Math.min(width, height) * 0.4) * zoom;
+
+            // Raster
+            ctx.strokeStyle = "rgba(0, 180, 216, 0.25)";
+            ctx.lineWidth = 1;
+            for (let r = 0.33; r <= 1.0; r += 0.33) {
+                ctx.beginPath(); ctx.arc(centerW, centerH, baseRadius * r, 0, 2 * Math.PI); ctx.stroke();
+            }
+            for (let i = 0; i < 6; i++) {
+                const angle = (startAzimut + i * 60) * (Math.PI / 180);
+                ctx.strokeStyle = i === 0 ? "#e76f51" : "rgba(0, 180, 216, 0.35)";
+                ctx.beginPath(); ctx.moveTo(centerW, centerH);
+                ctx.lineTo(centerW + baseRadius * Math.cos(angle), centerH + baseRadius * Math.sin(angle));
+                ctx.stroke();
+            }
+
+            // --- RING 3 ---
+            ctx.save(); ctx.translate(centerW, centerH);
+            ctx.rotate((startAzimut + r3Rot) * (Math.PI / 180));
+            ctx.scale(1.0, Math.cos(r3Tilt * (Math.PI / 180)));
+            ctx.strokeStyle = "#2a9d8f"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(0, 0, baseRadius * 0.33, 0, 2 * Math.PI); ctx.stroke();
+            ctx.restore();
+
+            // --- RING 2 ---
+            ctx.save(); ctx.translate(centerW, centerH);
+            ctx.rotate((startAzimut + r2Rot) * (Math.PI / 180));
+            ctx.scale(1.0, Math.cos(r2Tilt * (Math.PI / 180)));
+            ctx.strokeStyle = "#f4a261"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(0, 0, baseRadius * 0.66, 0, 2 * Math.PI); ctx.stroke();
+            ctx.restore();
+
+            // --- RING 1 ---
+            ctx.save(); ctx.translate(centerW, centerH);
+            ctx.rotate((startAzimut + r1Rot) * (Math.PI / 180));
+            ctx.scale(1.0, Math.cos(r1Tilt * (Math.PI / 180)));
+            
+            ctx.strokeStyle = "#00b4d8"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(0, 0, baseRadius, 0, 2 * Math.PI); ctx.stroke();
+
+            ctx.strokeStyle = "#f4a261"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * 60) * (Math.PI / 180);
+                const x = baseRadius * Math.cos(angle);
+                const y = baseRadius * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.closePath(); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+
+            gezettePunten.forEach((p) => {
+                const px = centerW + parseFloat(p.x);
+                const py = centerH + parseFloat(p.y);
+                ctx.fillStyle = "#e76f51";
+                ctx.beginPath(); ctx.arc(px, py, 5, 0, 2 * Math.PI); ctx.fill();
+                ctx.strokeStyle = "white"; ctx.lineWidth = 1.5; ctx.stroke();
+
+                ctx.fillStyle = "#00b4d8";
+                ctx.font = "11px sans-serif";
+                ctx.fillText(p.label, px + 8, py + 4);
+            });
+
+            ctx.fillStyle = "#e76f51";
+            ctx.beginPath(); ctx.arc(centerW, centerH, 4, 0, 2 * Math.PI); ctx.fill();
+        }
+
+        function exportRScript() {
+            const rCode = `# VORTEX OS - R-Script Export\ndiameter_cm <- ${document.getElementById('inputDiameter').value}\nstart_azimut <- ${document.getElementById('startAzimut').value}\n`;
+            downloadBestand(rCode, "vortex_output.R", "text/plain;charset=utf-8");
+        }
+
+        function exportGeoJSON() {
+            const features = gezettePunten.map((p, idx) => ({
+                type: "Feature",
+                geometry: { type: "Point", coordinates: [parseFloat(p.x), parseFloat(p.y)] },
+                properties: { id: idx+1, distance_cm: p.cm, azimuth_deg: p.hoek, label: p.label }
+            }));
+            const geojson = { type: "FeatureCollection", features: features };
+            downloadBestand(JSON.stringify(geojson, null, 2), "calibratie_punten.geojson", "application/json");
+        }
+
+        function exportKML() {
+            let kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>Calibratie Points</name>\n`;
+            gezettePunten.forEach((p) => {
+                kml += `<Placemark>\n<name>${p.label}</name>\n<description>Distance: ${p.cm}cm, Angle: ${p.hoek}°</description>\n<Point><coordinates>${p.x},${p.y},0</coordinates></Point>\n</Placemark>\n`;
+            });
+            kml += `</Document>\n</kml>`;
+            downloadBestand(kml, "calibratie_punten.kml", "application/vnd.google-earth.kml+xml");
+        }
+
+        function downloadAfbeelding(formaat) {
+            const canvas = document.getElementById('studioCanvas');
+            const url = canvas.toDataURL(`image/${formaat}`, 0.9);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calibratie_export.${formaat}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function genereerLogboekBestand() {
+            const logText = `VORTEX OS Logboek - ${new Date().toISOString()}\nGezette punten: ${gezettePunten.length}`;
+            downloadBestand(logText, "logboek.txt", "text/plain;charset=utf-8");
+        }
+    </script>
+</body>
+</html>

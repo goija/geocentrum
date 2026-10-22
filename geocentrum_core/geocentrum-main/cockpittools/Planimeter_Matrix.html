@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>VORTEX 245,91° // 7 Meetpunten & Planimeter Matrix (15-10-2026 20:15 CEST)</title>
+  <style>
+    :root {
+      --bg: #050811;
+      --panel: #0b1324;
+      --border: #1e293b;
+      --cyan: #00e5ff;
+      --gold: #ffcc33;
+      --magenta: #ff3385;
+      --green: #50ffb0;
+      --text: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Courier New', monospace;
+      display: grid; grid-template-columns: 370px 1fr 360px;
+      height: 100vh; overflow: hidden;
+    }
+    .sidebar {
+      background: var(--panel); border-right: 1px solid var(--border);
+      padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+    }
+    .sidebar-right { border-right: none; border-left: 1px solid var(--border); }
+    .card {
+      background: rgba(5, 8, 17, 0.75); border: 1px solid var(--border);
+      border-radius: 5px; padding: 10px;
+    }
+    .card h3 {
+      font-size: 0.78rem; color: var(--gold); text-transform: uppercase;
+      border-bottom: 1px solid var(--border); padding-bottom: 5px; margin-bottom: 8px;
+      display: flex; justify-content: space-between;
+    }
+    .kv { display: flex; justify-content: space-between; font-size: 0.72rem; padding: 2.5px 0; }
+    .kv span:first-child { color: #94a3b8; }
+    .kv b { color: var(--cyan); }
+    .btn-list { display: flex; flex-direction: column; gap: 5px; }
+    .mp-btn {
+      background: #111c33; color: var(--text); border: 1px solid #334155;
+      padding: 7px 9px; border-radius: 4px; cursor: pointer; text-align: left;
+      font-family: inherit; font-size: 0.72rem; transition: 0.15s;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .mp-btn:hover, .mp-btn.active {
+      border-color: var(--cyan); background: rgba(0, 229, 255, 0.14); color: #fff;
+    }
+    .mp-btn .badge {
+      background: #1e293b; color: var(--gold); padding: 1px 6px; border-radius: 3px; font-size: 0.66rem;
+    }
+    #viewport {
+      position: relative; display: flex; flex-direction: column;
+      background: radial-gradient(circle at center, #0f1b33 0%, #050811 100%);
+    }
+    #svg-canvas { width: 100%; height: 100%; }
+    .watermark {
+      position: absolute; bottom: 12px; left: 18px;
+      color: rgba(148, 163, 184, 0.45); font-style: italic; font-size: 0.85rem; pointer-events: none;
+    }
+    .top-banner {
+      position: absolute; top: 10px; left: 16px; right: 16px;
+      display: flex; justify-content: space-between; pointer-events: none;
+      font-size: 0.75rem; color: var(--gold);
+    }
+    table.planet-tbl { width: 100%; border-collapse: collapse; font-size: 0.68rem; margin-top: 4px; }
+    table.planet-tbl th, table.planet-tbl td {
+      padding: 3px 4px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    table.planet-tbl th { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- LINKER KOLOM: KNOOPPUNTEN & 7 SNAPSHOT SELECTIE -->
+  <aside class="sidebar">
+    <div class="card">
+      <h3><span>🧭 VORTEX 245,91° & Knooppunten</span><span>589 nm</span></h3>
+      <div class="kv"><span>Tijdstempel Lock:</span><b>15-10-2026 20:15 CEST</b></div>
+      <div class="kv"><span>Vastgezet Azimut:</span><b style="color:var(--gold)">245,91° WZW (-4,2°)</b></div>
+      <div class="kv"><span>P: Poolanker NL:</span><b>52.25°N, 5.22°E</b></div>
+      <div class="kv"><span>N²: Dept. 41/18 Kern:</span><b>47.25°N, 1.85°E</b></div>
+      <div class="kv"><span>Uittreedpunt 17/85:</span><b>46.25°N, 1.25°W</b></div>
+      <div class="kv"><span>Eclips Landfall (12/08):</span><b style="color:var(--magenta)">43.55°N, 6.50°W</b></div>
+    </div>
+
+    <div class="card">
+      <h3><span>📍 7 Geregistreerde Meetpunten</span><span>Toets 1-7</span></h3>
+      <div class="btn-list" id="mp-buttons"></div>
+    </div>
+
+    <div class="card">
+      <h3><span>📐 A. Ott Nr. 573 Constanten</span><span>Staat: 010101</span></h3>
+      <div class="kv"><span>Poolarm R / Rijarm L:</span><b>15,00 cm / 16,67 cm</b></div>
+      <div class="kv"><span>Optisch Pad (Fraunhofer D):</span><b style="color:var(--gold)">16,675 cm (589 nm)</b></div>
+      <div class="kv"><span>Meetcirkel (A₀):</span><b>363,00 cm² (r=10,75 cm)</b></div>
+      <div class="kv"><span>Hoek-Identiteit:</span><b style="color:var(--green)">β - α = 180° - γ</b></div>
+    </div>
+  </aside>
+
+  <!-- CENTRALE SVG VIEWPORT (WERELDPROJECTIE + POLAIRE PLANIMETER) -->
+  <main id="viewport">
+    <div class="top-banner">
+      <span id="banner-coord">ACTIEF COÖRDINAAT: --</span>
+      <span>⚡ 245,91° VORTEX SYNTHESE & MATRIX [AAN] | 🔄 157° INVERSIE</span>
+    </div>
+    <svg id="svg-canvas" viewBox="0 0 1000 820" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="watermark">Ceci n'est pas une carte.</div>
+  </main>
+
+  <!-- RECHTER KOLOM: ACTUELE PLANIMETER & HEMEL RESONANTIE -->
+  <aside class="sidebar sidebar-right">
+    <div class="card">
+      <h3><span>⚙️ Actuele Planimeter Analyse</span><span id="hud-mp-id">#1</span></h3>
+      <div class="kv"><span>Hoek α (Poolarm):</span><b id="hud-alpha">--</b></div>
+      <div class="kv"><span>Hoek β (Rijarm):</span><b id="hud-beta">--</b></div>
+      <div class="kv"><span>Hoek γ (Tussenhoek):</span><b id="hud-gamma">--</b></div>
+      <div class="kv"><span>Verschil (β - α):</span><b style="color:var(--green)" id="hud-diff">--</b></div>
+      <div class="kv"><span>Koorde P→T Afstand:</span><b id="hud-chord">--</b></div>
+      <div class="kv"><span>Nonius Aflezing:</span><b style="color:var(--gold)" id="hud-nonius">--</b></div>
+      <div class="kv"><span>Actueel Stramien ∬ dA:</span><b style="color:var(--magenta)" id="hud-stramien">--</b></div>
+      <div class="kv"><span>Shao Yong (64) / Jiazi (60):</span><b id="hud-sy">--</b></div>
+    </div>
+
+    <div class="card">
+      <h3><span>☀️ Zon & Maan (15-10-2026 CEST)</span><span id="hud-region">--</span></h3>
+      <div class="kv"><span>Zon (Op / Onder):</span><b id="hud-sun">--</b></div>
+      <div class="kv"><span>Maan (Op / Onder):</span><b id="hud-moon">--</b></div>
+      <div class="kv"><span>Grootcirkel vanaf P (NL):</span><b id="hud-gcdist">--</b></div>
+      <div class="kv"><span>Aanvangs-Azimut vanaf P:</span><b id="hud-gcbearing">--</b></div>
+    </div>
+
+    <div class="card">
+      <h3><span>🪐 Planeten (15 okt 2026 Lock)</span><span>20:15 CEST</span></h3>
+      <table class="planet-tbl">
+        <thead>
+          <tr><th>Planeet</th><th>Azimut</th><th>Hoogte</th><th>Sterrenbeeld</th></tr>
+        </thead>
+        <tbody id="planet-tbody"></tbody>
+      </table>
+    </div>
+  </aside>
+
+<script>
+const KNOOPPUNTEN = [
+  { id: "P",  naam: "Poolanker NL",     lat: 52.25, lon: 5.22 },
+  { id: "N²", naam: "Dept. 41/18 Kern", lat: 47.25, lon: 1.85 },
+  { id: "U",  naam: "Dept. 17/85",      lat: 46.25, lon: -1.25 },
+  { id: "E",  naam: "Eclips Landfall",  lat: 43.55, lon: -6.50 }
+];
+
+const SNAPSHOTS = [
+  {
+    key: "1", nr: "1 & 2", naam: "West-Atlantisch (Initieel)", lat: 45.7000, lon: -67.5000,
+    zon: "13:08 / 00:14", maan: "18:30 / 02:11",
+    alpha: 284.80, beta: 299.79, gamma: 165.01, nonius: "10.604", stramien: "38.350 km²",
+    planeten: [
+      ["Mercurius", 180.71, 27.5, "Weegschaal"],
+      ["Venus", 194.43, 25.8, "Maagd"],
+      ["Mars", 285.15, 11.7, "Kreeft"],
+      ["Jupiter", 274.26, 17.5, "Leeuw"],
+      ["Saturnus", 43.57, -36.0, "Cetus"],
+      ["Uranus", 340.64, -23.6, "Stier"]
+    ]
+  },
+  {
+    key: "2", nr: "3", naam: "Normandië (Frankrijk)", lat: 49.0184, lon: 0.6205,
+    zon: "08:18 / 19:10", maan: "13:55 / 21:16",
+    alpha: 130.11, beta: 287.75, gamma: 22.36, nonius: "2.146", stramien: "14.596.028 km²",
+    planeten: [
+      ["Mercurius", 245.82, -5.0, "Weegschaal"],
+      ["Venus", 254.99, -13.5, "Maagd"],
+      ["Mars", 345.62, -20.4, "Kreeft"],
+      ["Jupiter", 332.77, -21.7, "Leeuw"],
+      ["Saturnus", 102.73, 13.0, "Cetus"],
+      ["Uranus", 50.39, -3.8, "Stier"]
+    ]
+  },
+  {
+    key: "3", nr: "4", naam: "Tokio (Japan)", lat: 35.7251, lon: 139.7630,
+    zon: "22:48 / 10:06", maan: "03:16 / 12:43",
+    alpha: 27.72, beta: 42.72, gamma: 165.01, nonius: "10.604", stramien: "38.350 km²",
+    planeten: [
+      ["Mercurius", 71.33, -56.0, "Weegschaal"],
+      ["Venus", 82.65, -45.7, "Maagd"],
+      ["Mars", 93.88, 39.0, "Kreeft"],
+      ["Jupiter", 90.99, 27.3, "Leeuw"],
+      ["Saturnus", 257.55, 19.4, "Cetus"],
+      ["Uranus", 224.68, 70.6, "Stier"]
+    ]
+  },
+  {
+    key: "4", nr: "5", naam: "Xi'an (China)", lat: 34.5412, lon: 108.9237,
+    zon: "00:51 / 12:11", maan: "05:20 / 14:55",
+    alpha: 50.04, beta: 65.03, gamma: 165.01, nonius: "10.604", stramien: "38.350 km²",
+    planeten: [
+      ["Mercurius", 12.00, -75.0, "Weegschaal"],
+      ["Venus", 49.94, -69.6, "Maagd"],
+      ["Mars", 76.34, 13.9, "Kreeft"],
+      ["Jupiter", 73.54, 2.4, "Leeuw"],
+      ["Saturnus", 233.81, 42.8, "Cetus"],
+      ["Uranus", 129.00, 70.3, "Stier"]
+    ]
+  },
+  {
+    key: "5", nr: "6", naam: "Zacatecas (Mexico)", lat: 23.6585, lon: -102.0077,
+    zon: "14:46 / 02:23", maan: "19:23 / 05:10",
+    alpha: 289.85, beta: 304.84, gamma: 165.01, nonius: "10.604", stramien: "38.350 km²",
+    planeten: [
+      ["Mercurius", 145.95, 38.8, "Weegschaal"],
+      ["Venus", 161.05, 43.8, "Maagd"],
+      ["Mars", 278.51, 31.4, "Kreeft"],
+      ["Jupiter", 269.33, 40.9, "Leeuw"],
+      ["Saturnus", 12.45, -64.0, "Cetus"],
+      ["Uranus", 310.36, -25.4, "Stier"]
+    ]
+  },
+  {
+    key: "6", nr: "7", naam: "Noord-Groenland IJskap", lat: 77.6192, lon: -42.8126,
+    zon: "13:09 / 20:07", maan: "--:-- / --:--",
+    alpha: 333.90, beta: 348.89, gamma: 165.01, nonius: "10.604", stramien: "38.350 km²",
+    planeten: [
+      ["Mercurius", 209.87, -8.7, "Weegschaal"],
+      ["Venus", 222.28, -10.8, "Maagd"],
+      ["Mars", 305.23, 12.1, "Kreeft"],
+      ["Jupiter", 293.13, 10.2, "Leeuw"],
+      ["Saturnus", 64.79, -3.0, "Cetus"],
+      ["Uranus", 11.27, 9.0, "Stier"]
+    ]
+  },
+  {
+    key: "7", nr: "8", naam: "Ashkelon (Oost-Mediterraan)", lat: 31.6801, lon: 34.5666,
+    zon: "05:45 / 17:11", maan: "10:20 / 20:11",
+    alpha: 114.54, beta: 129.53, gamma: 165.01, nonius: "10.604", stramien: "38.350 km²",
+    planeten: [
+      ["Mercurius", 261.69, -25.5, "Weegschaal"],
+      ["Venus", 267.51, -37.0, "Maagd"],
+      ["Mars", 23.24, -35.5, "Kreeft"],
+      ["Jupiter", 10.55, -42.6, "Leeuw"],
+      ["Saturnus", 122.29, 43.3, "Cetus"],
+      ["Uranus", 71.57, 10.4, "Stier"]
+    ]
+  }
+];
+
+let activeIdx = 1; // Start op Snapshot 3 (Normandië - Continentale Integratie & Mercurius 245,82° Lock)
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const toRad = d => d * Math.PI / 180;
+  const p1 = toRad(lat1), l1 = toRad(lon1), p2 = toRad(lat2), l2 = toRad(lon2);
+  const dp = p2 - p1, dl = l2 - l1;
+  const a = Math.sin(dp/2)**2 + Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;
+  const dist = 6371.0 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1-a)));
+  const y = Math.sin(dl) * Math.cos(p2);
+  const x = Math.cos(p1)*Math.sin(p2) - Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+  const brng = (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+  return { dist, brng };
+}
+
+function mapProj(lat, lon) {
+  // Equirectangulaire projectie in bovenste paneel (x: 40..960, y: 35..345)
+  const x = 40 + ((lon + 180) / 360) * 920;
+  const y = 345 - ((lat + 10) / 100) * 310;
+  return { x, y };
+}
+
+function renderButtons() {
+  const container = document.getElementById("mp-buttons");
+  container.innerHTML = SNAPSHOTS.map((s, idx) => `
+    <button class="mp-btn ${idx === activeIdx ? 'active' : ''}" onclick="selectSnapshot(${idx})">
+      <span><b>[${s.nr}]</b> ${s.naam}</span>
+      <span class="badge">α=${s.alpha}°</span>
+    </button>
+  `).join("");
+}
+
+function selectSnapshot(idx) {
+  activeIdx = idx;
+  renderButtons();
+  const s = SNAPSHOTS[idx];
+  const p = KNOOPPUNTEN[0];
+  const gc = haversine(p.lat, p.lon, s.lat, s.lon);
+
+  const R = 15.0, L = 16.67;
+  const gRad = s.gamma * Math.PI / 180;
+  const chord = Math.sqrt(R*R + L*L - 2*R*L*Math.cos(gRad));
+  const diffAB = ((s.beta - s.alpha) % 360 + 360) % 360;
+  const syIdx = Math.floor((s.alpha % 360) / 5.625) % 64;
+  const jiaziIdx = Math.floor((s.alpha % 360) / 6.0) % 60;
+
+  document.getElementById("banner-coord").textContent =
+    `ACTIEF MEETPUNT [${s.nr}]: ${s.naam} (${s.lat.toFixed(4)}° N, ${s.lon.toFixed(4)}° E)`;
+  document.getElementById("hud-mp-id").textContent = `SNAPSHOT ${s.nr}`;
+  document.getElementById("hud-alpha").textContent = `${s.alpha.toFixed(2)}°`;
+  document.getElementById("hud-beta").textContent = `${s.beta.toFixed(2)}°`;
+  document.getElementById("hud-gamma").textContent = `${s.gamma.toFixed(2)}°`;
+  document.getElementById("hud-diff").textContent = `${diffAB.toFixed(2)}° (= 180° - γ)`;
+  document.getElementById("hud-chord").textContent = `${chord.toFixed(2)} cm`;
+  document.getElementById("hud-nonius").textContent = s.nonius;
+  document.getElementById("hud-stramien").textContent = s.stramien;
+  document.getElementById("hud-sy").textContent = `SY #${syIdx} | Jiazi #${jiaziIdx}`;
+  document.getElementById("hud-region").textContent = `${s.lat.toFixed(2)}°N`;
+  document.getElementById("hud-sun").textContent = s.zon;
+  document.getElementById("hud-moon").textContent = s.maan;
+  document.getElementById("hud-gcdist").textContent = `${gc.dist.toFixed(1)} km`;
+  document.getElementById("hud-gcbearing").textContent = `${gc.brng.toFixed(2)}°`;
+
+  document.getElementById("planet-tbody").innerHTML = s.planeten.map(pl => {
+    const isMercLock = pl[0] === "Mercurius" && Math.abs(pl[1] - 245.91) < 1.0;
+    const style = isMercLock ? 'style="color:#ffcc33;font-weight:bold;"' : '';
+    return `<tr ${style}><td>${pl[0]}</td><td>${pl[1].toFixed(2)}°</td><td>${pl[2].toFixed(1)}°</td><td>${pl[3]}</td></tr>`;
+  }).join("");
+
+  drawSVG(s);
+}
+
+function drawSVG(s) {
+  const svg = document.getElementById("svg-canvas");
+  let html = "";
+
+  // --- BOVENSTE PANEEL: GEODETISCHE WERELDPROJECTIE (Y: 35..345) ---
+  html += `<rect x="40" y="35" width="920" height="310" fill="rgba(11,19,36,0.75)" stroke="#1e293b" stroke-width="1.2"/>`;
+  for (let lon = -150; lon <= 150; lon += 30) {
+    const { x } = mapProj(0, lon);
+    html += `<line x1="${x}" y1="35" x2="${x}" y2="345" stroke="#1e293b" stroke-dasharray="3,3"/>`;
+    html += `<text x="${x}" y="340" fill="#475569" font-size="9" text-anchor="middle">${lon}°</text>`;
+  }
+  for (let lat = 0; lat <= 80; lat += 20) {
+    const { y } = mapProj(lat, 0);
+    html += `<line x1="40" y1="${y}" x2="960" y2="${y}" stroke="#1e293b" stroke-dasharray="3,3"/>`;
+    html += `<text x="45" y="${y - 3}" fill="#475569" font-size="9">${lat}°N</text>`;
+  }
+
+  const pPt = mapProj(KNOOPPUNTEN[0].lat, KNOOPPUNTEN[0].lon);
+
+  // Verbind Poolanker P met de 4 vaste 245,91° Knooppunten
+  let kpPath = `M ${pPt.x} ${pPt.y}`;
+  KNOOPPUNTEN.forEach(kp => {
+    const pt = mapProj(kp.lat, kp.lon);
+    kpPath += ` L ${pt.x} ${pt.y}`;
+    html += `<circle cx="${pt.x}" cy="${pt.y}" r="4" fill="#ff3385" stroke="#fff" stroke-width="1"/>`;
+  });
+  html += `<path d="${kpPath}" fill="none" stroke="#ffcc33" stroke-width="2.2"/>`;
+
+  // Teken alle 7 Meetpunten op de wereldkaart
+  SNAPSHOTS.forEach((mp, idx) => {
+    const pt = mapProj(mp.lat, mp.lon);
+    const isAct = (mp.nr === s.nr);
+    const col = isAct ? "#50ffb0" : "#00e5ff";
+    html += `<line x1="${pPt.x}" y1="${pPt.y}" x2="${pt.x}" y2="${pt.y}" stroke="${col}" stroke-width="${isAct ? 2 : 0.9}" stroke-dasharray="${isAct ? 'none' : '4,4'}" opacity="${isAct ? 0.95 : 0.45}"/>`;
+    html += `<circle cx="${pt.x}" cy="${pt.y}" r="${isAct ? 7 : 4.5}" fill="${col}" stroke="#fff" stroke-width="1.5" style="cursor:pointer" onclick="selectSnapshot(${idx})"/>`;
+    html += `<text x="${pt.x + 9}" y="${pt.y + 3}" fill="${col}" font-size="${isAct ? 11 : 9.5}" font-weight="${isAct ? 'bold' : 'normal'}">[${mp.nr}] ${mp.naam}</text>`;
+  });
+
+  // --- ONDERSTE PANEEL: POLAIRE OTT NR. 573 PLANIMETER & HEMEL-VECTOREN (CX=500, CY=585) ---
+  const cx = 500, cy = 585, scale = 6.5; // 1 cm = 6.5 px
+  const rKompas = Math.sqrt(363.0 / Math.PI) * scale; // 10.749 cm * 6.5 = 69.87 px
+  const rPool = 15.0 * scale;                         // 97.5 px
+  const rMax = 31.67 * scale;                         // 205.8 px
+
+  // 64 Shao Yong Sectoren op de buitenste kompasring
+  for (let i = 0; i < 64; i++) {
+    const aRad = (i * 5.625 - 90) * Math.PI / 180;
+    const x1 = cx + Math.cos(aRad) * (rMax - 12);
+    const y1 = cy + Math.sin(aRad) * (rMax - 12);
+    const x2 = cx + Math.cos(aRad) * rMax;
+    const y2 = cy + Math.sin(aRad) * rMax;
+    html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1e40af" stroke-width="0.9"/>`;
+  }
+
+  // Concentrische Horizon- & Kalibratieringen
+  html += `<circle cx="${cx}" cy="${cy}" r="${rMax}" fill="rgba(0, 229, 255, 0.03)" stroke="#00e5ff" stroke-width="1.5"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="${rPool}" fill="none" stroke="#64748b" stroke-dasharray="4,4" stroke-width="1"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="${rKompas}" fill="rgba(255, 204, 51, 0.04)" stroke="#ffcc33" stroke-width="1.2"/>`;
+
+  // Vastgezet 245,91° VORTEX Azimut & 157° Inversie-lijn
+  const vRad = (245.91 - 90) * Math.PI / 180;
+  const invRad = (157.0 - 90) * Math.PI / 180;
+  html += `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(vRad)*rMax}" y2="${cy + Math.sin(vRad)*rMax}" stroke="#ffcc33" stroke-width="2" stroke-dasharray="6,3"/>`;
+  html += `<text x="${cx + Math.cos(vRad)*(rMax+16)}" y="${cy + Math.sin(vRad)*(rMax+16)}" fill="#ffcc33" font-size="10" font-weight="bold" text-anchor="middle">245,91° LOCK (589 nm)</text>`;
+  html += `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(invRad)*rMax}" y2="${cy + Math.sin(invRad)*rMax}" stroke="#ff3385" stroke-width="1.3" stroke-dasharray="3,3"/>`;
+
+  // Planeten-vectoren voor het geselecteerde meetpunt
+  s.planeten.forEach(pl => {
+    const pRad = (pl[1] - 90) * Math.PI / 180;
+    const px = cx + Math.cos(pRad) * (rMax - 22);
+    const py = cy + Math.sin(pRad) * (rMax - 22);
+    const isMerc = pl[0] === "Mercurius";
+    const pCol = isMerc ? "#50ffb0" : "rgba(148,163,184,0.55)";
+    html += `<line x1="${cx}" y1="${cy}" x2="${px}" y2="${py}" stroke="${pCol}" stroke-width="${isMerc ? 1.8 : 0.9}" stroke-dasharray="2,3"/>`;
+    html += `<circle cx="${px}" cy="${py}" r="${isMerc ? 4.5 : 2.5}" fill="${pCol}"/>`;
+    html += `<text x="${px + 6}" y="${py + 3}" fill="${pCol}" font-size="9">${pl[0]} (${pl[1]}°)</text>`;
+  });
+
+  // Teken de A. Ott Nr. 573 Planimeter-armen: Poolanker P(cx,cy) -> Scharnier G (α, R=15) -> Volgstift T (β, L=16.67)
+  const aRad = (s.alpha - 90) * Math.PI / 180;
+  const bRad = (s.beta - 90) * Math.PI / 180;
+  const gx = cx + Math.cos(aRad) * (15.0 * scale);
+  const gy = cy + Math.sin(aRad) * (15.0 * scale);
+  const tx = gx + Math.cos(bRad) * (16.67 * scale);
+  const ty = gy + Math.sin(bRad) * (16.67 * scale);
+
+  // Koorde P -> T (sluit de driehoek met tussenhoek γ)
+  html += `<line x1="${cx}" y1="${cy}" x2="${tx}" y2="${ty}" stroke="rgba(80,255,176,0.4)" stroke-width="1.2" stroke-dasharray="4,4"/>`;
+  // Poolarm P -> G (R = 15,00 cm)
+  html += `<line x1="${cx}" y1="${cy}" x2="${gx}" y2="${gy}" stroke="#00e5ff" stroke-width="5" stroke-linecap="round"/>`;
+  // Rijarm G -> T (L = 16,67 cm / Optisch Pad 16,675 cm @ 589 nm)
+  html += `<line x1="${gx}" y1="${gy}" x2="${tx}" y2="${ty}" stroke="#ffcc33" stroke-width="4" stroke-linecap="round"/>`;
+
+  // Knooppunten P, G en T
+  html += `<circle cx="${cx}" cy="${cy}" r="6" fill="#ff3385" stroke="#fff" stroke-width="2"/>`;
+  html += `<circle cx="${gx}" cy="${gy}" r="6" fill="#0b1324" stroke="#00e5ff" stroke-width="2.5"/>`;
+  html += `<text x="${gx + 10}" y="${gy - 6}" fill="#00e5ff" font-size="10" font-weight="bold">G (α=${s.alpha}° | γ=${s.gamma}°)</text>`;
+  html += `<circle cx="${tx}" cy="${ty}" r="7" fill="rgba(80,255,176,0.3)" stroke="#50ffb0" stroke-width="2.5"/>`;
+  html += `<circle cx="${tx}" cy="${ty}" r="2.5" fill="#fff"/>`;
+  html += `<text x="${tx + 10}" y="${ty + 4}" fill="#50ffb0" font-size="10.5" font-weight="bold">T (β=${s.beta}° | Nonius ${s.nonius})</text>`;
+
+  svg.innerHTML = html;
+}
+
+window.addEventListener("keydown", e => {
+  if (e.key >= "1" && e.key <= "7") {
+    selectSnapshot(parseInt(e.key, 10) - 1);
+  }
+});
+
+renderButtons();
+selectSnapshot(1);
+</script>
+</body>
+</html>

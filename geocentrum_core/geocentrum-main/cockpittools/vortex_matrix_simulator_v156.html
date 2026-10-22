@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Matrix Simulator v156</title>
+    <style>
+        :root { --bg-color: #0d1b2a; --panel-bg: rgba(0, 0, 0, 0.6); --text-main: #00ffcc; --accent: #00b4d8; }
+        body { margin: 0; padding: 20px; background: var(--bg-color); color: var(--text-main); font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        h1 { text-transform: uppercase; letter-spacing: 5px; border-bottom: 2px solid var(--accent); padding-bottom: 10px; text-shadow: 0 0 10px var(--accent); }
+        .layout-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; width: 100%; max-width: 1200px; margin-top: 20px; }
+        .panel { background: var(--panel-bg); border: 1px solid rgba(0, 255, 204, 0.3); border-radius: 4px; padding: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        .panel h2 { margin-top: 0; font-size: 1.1rem; color: #fff; border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 10px; }
+        canvas { width: 100%; height: 300px; background: #000; border: 1px solid var(--accent); border-radius: 4px; }
+        button { width: 100%; padding: 10px; margin-bottom: 10px; background: transparent; color: var(--text-main); border: 1px solid var(--text-main); border-radius: 2px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+        button:hover { background: var(--text-main); color: #000; box-shadow: 0 0 15px var(--text-main); }
+        .terminal-log { height: 250px; overflow-y: auto; background: #000; padding: 10px; border: 1px solid rgba(0, 255, 204, 0.3); font-size: 0.85rem; margin-top: 15px; }
+        .nav-back { display: block; margin-bottom: 20px; color: #fff; text-decoration: none; opacity: 0.6; }
+        .nav-back:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; max-width: 1200px;"><a href="../index.html" class="nav-back">← Terug naar Hoofdmenu</a></div>
+    <h1>VORTEX Matrix Simulator</h1>
+    <div class="layout-grid">
+        <div class="panel">
+            <h2>⚙️ Systeem Controles</h2>
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; margin-bottom:5px;">Chaos Attractor Seed:</label>
+                <input type="text" id="seed-input" value="0xACE1" style="width: 100%; padding: 8px; background: #000; color: var(--text-main); border: 1px solid var(--text-main); box-sizing: border-box; margin-bottom: 15px;">
+                <button id="btn-start-waterfall">Start Spectrogram</button>
+                <button id="btn-collatz">Simuleer Collatz Cyclus</button>
+            </div>
+            <h2>📡 Globale Telemetrie Log</h2>
+            <div class="terminal-log" id="term-log">
+                > VORTEX OS INITIALIZED...<br>
+                > WAITING FOR CROSS-VIEWPORT TELEMETRY...<br>
+            </div>
+        </div>
+        <div class="panel">
+            <h2>🌊 Real-Time Spectrogram (Waterfall)</h2>
+            <canvas id="waterfall-canvas"></canvas>
+        </div>
+    </div>
+
+    <script type="module">
+        import { VortexSpectrogramWaterfall } from './js/vortex_spectrogram_waterfall.js';
+
+        const terminalLog = document.getElementById('term-log');
+        
+        function logToTerminal(message, type="INFO") {
+            const time = new Date().toLocaleTimeString();
+            let color = type === "TEL" ? "#f4a261" : "var(--text-main)";
+            terminalLog.innerHTML += `<span style="color:${color}">[${time}] ${message}</span><br>`;
+            terminalLog.scrollTop = terminalLog.scrollHeight;
+        }
+
+        // Luister naar berichten van de Mapglobe via LocalStorage
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'vortex_telemetry' && e.newValue) {
+                const data = JSON.parse(e.newValue);
+                logToTerminal(`> [MAPGLOBE] ${data.msg}`, "TEL");
+            }
+        });
+
+        const waterfall = new VortexSpectrogramWaterfall('waterfall-canvas', 800, 300);
+        let isRunning = false;
+
+        document.getElementById('btn-start-waterfall').addEventListener('click', (e) => {
+            if (!isRunning) {
+                logToTerminal("> SPECTROGRAM GESTART. MOCK DATA ACTIEF.");
+                waterfall.startMockData();
+                isRunning = true;
+                e.target.innerText = "Spectrogram Draait...";
+                e.target.style.color = "#000"; e.target.style.background = "var(--text-main)";
+            }
+        });
+
+        document.getElementById('btn-collatz').addEventListener('click', () => {
+            const seed = document.getElementById('seed-input').value;
+            logToTerminal(`> BEREKENEN COLLATZ (3n+1) VOOR SEED: ${seed}`);
+            setTimeout(() => {
+                logToTerminal(`> CYCLUS DETECTEERD: 4 -> 2 -> 1 (Instabiel)`);
+                logToTerminal(`> NEGATIEVE CYCLUS: -1 -> -2 -> -1`);
+            }, 800);
+        });
+    </script>
+</body>
+</html>

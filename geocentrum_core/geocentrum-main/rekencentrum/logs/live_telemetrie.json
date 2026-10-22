@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-10-17T23:16:11.923121",
+  "systeem": "GEOCENTRUM VORTEX OS v155.0 \u2014 Rekencentrum",
+  "vector_azimuth": 245.91,
+  "snellius": {
+    "invalshoek_deg": 33.0,
+    "brekingshoek_deg": 24.12,
+    "zeewaardige_afbuiging_deg": 8.88,
+    "n1": 1.0003,
+    "n2": 1.333
+  },
+  "ott_planimeter": {
+    "nonius_start": 2005,
+    "nonius_eind": 2476,
+    "delta_nonius": 471,
+    "oppervlakte_start_cm2": 200.5,
+    "oppervlakte_eind_cm2": 247.6,
+    "geintegreerde_toename_cm2": 47.1
+  },
+  "attractor_n2": "010101 (01)",
+  "status": "ONLINE"
+}

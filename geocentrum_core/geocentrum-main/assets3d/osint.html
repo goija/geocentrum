@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Ultieme OSINT & AI Agent Gids</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #2d3748;
+            background-color: #f4f6f9;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .header-container {
+            background-color: #1a202c;
+            color: #ffffff;
+            padding: 25px;
+            margin: -30px -30px 25px -30px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 4px solid #3182ce;
+        }
+
+        .header-container h1 {
+            margin: 0 0 10px 0;
+            font-size: 26px;
+        }
+
+        .header-container p {
+            margin: 0;
+            color: #cbd5e0;
+            font-size: 14px;
+        }
+
+        .intro {
+            background-color: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: #2b6cb0;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        .tool-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        .tool-table th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            text-align: left;
+            padding: 12px;
+            font-weight: 600;
+            border-bottom: 2px solid #cbd5e0;
+        }
+
+        .tool-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        .tool-name {
+            font-weight: bold;
+            color: #1a202c;
+            width: 25%;
+        }
+
+        .tool-name a {
+            color: #3182ce;
+            text-decoration: none;
+        }
+
+        .tool-name a:hover {
+            text-decoration: underline;
+        }
+
+        .tool-type {
+            width: 25%;
+        }
+        
+        .tool-type span {
+            background-color: #edf2f7;
+            color: #4a5568;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .tool-desc {
+            color: #4a5568;
+            width: 50%;
+        }
+
+        .badge-ai {
+            background-color: #ebf8ff !important;
+            color: #2b6cb0 !important;
+            border: 1px solid #bee3f8;
+            font-weight: bold;
+        }
+
+        .badge-agent {
+            background-color: #faf5ff !important;
+            color: #6b46c1 !important;
+            border: 1px solid #e9d8fd;
+            font-weight: bold;
+        }
+
+        .footer-note {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #718096;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <h1>Overzicht Open Source Intelligence (OSINT) &amp; AI Agents</h1>
+        <p>Een professionele en interactieve gids van de meest effectieve applicaties, platforms en autonome AI-onderzoekers.</p>
+    </div>
+
+    <div class="intro">
+        <strong>Inleiding:</strong> Open Source Intelligence (OSINT) omvat het verzamelen en analyseren van data uit openbare bronnen. De integratie van AI en autonome 'Agentic' systemen stelt onderzoekers in staat om complexe cross-referencing processen, patroonherkenning en geolocatie binnen seconden uit te voeren.
+    </div>
+
+    <h2>1. Algemene Zoekmachines &amp; Geavanceerd Zoeken</h2>
+    <table class="tool-table">
+        <thead>
+            <tr>
+                <th>Applicatie / Tool</th>
+                <th>Type / Focus</th>
+                <th>Beschrijving en Functionaliteit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tool-name"><a href="https://www.google.com/advanced_search" target="_blank">Google Dorks</a></td>
+                <td class="tool-type"><span>Web Search / Operators</span></td>
+                <td class="tool-desc">Het gebruik van specifieke zoekoperators (zoals site:, filetype:, intitle:) om verborgen informatie, databasebestanden en onbeveiligde pagina's op te sporen.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://github.com/searxng/searxng" target="_blank">SearXNG</a></td>
+                <td class="tool-type"><span>Metasearch Engine</span></td>
+                <td class="tool-desc">Een privacy-vriendelijke meta-zoekmachine die resultaten aggregeert van meer dan 70 verschillende zoekmachines zonder gebruikers te volgen.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. Social Media Intelligence (SOCMINT)</h2>
+    <table class="tool-table">
+        <thead>
+            <tr>
+                <th>Applicatie / Tool</th>
+                <th>Type / Focus</th>
+                <th>Beschrijving en Functionaliteit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tool-name"><a href="https://github.com/sherlock-project/sherlock" target="_blank">Sherlock</a></td>
+                <td class="tool-type"><span>Gebruikersnamen</span></td>
+                <td class="tool-desc">Een krachtige command-line tool om exact dezelfde gebruikersnaam te zoeken op meer dan 400 sociale netwerken en websites wereldwijd.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://whatsmyname.app/" target="_blank">WhatsMyName</a></td>
+                <td class="tool-type"><span>Gebruikersnamen (Web)</span></td>
+                <td class="tool-desc">Een webgebaseerd alternatief en framework om gebruikersnamen te traceren over honderden platforms en accounts te identificeren.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://epieos.com/" target="_blank">Epieos</a></td>
+                <td class="tool-type"><span>E-mail naar Profiel</span></td>
+                <td class="tool-desc">Maakt het mogelijk om via een e-mailadres verbonden Google-profielen, reviews, agenda-items en andere openbare platformen te vinden zonder de eigenaar te waarschuwen.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. Infrastructurele &amp; Netwerk Analyse</h2>
+    <table class="tool-table">
+        <thead>
+            <tr>
+                <th>Applicatie / Tool</th>
+                <th>Type / Focus</th>
+                <th>Beschrijving en Functionaliteit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tool-name"><a href="https://www.shodan.io/" target="_blank">Shodan</a></td>
+                <td class="tool-type"><span>IoT / Netwerkscannen</span></td>
+                <td class="tool-desc">De 'zoekmachine voor het internet of things'. Vindt servers, routers, webcams, verkeerslichten en industriële systemen die met het internet verbonden zijn.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://censys.com/" target="_blank">Censys</a></td>
+                <td class="tool-type"><span>Aanvalsoppervlak</span></td>
+                <td class="tool-desc">Helpt onderzoekers bij het vinden van apparaten en netwerkinfrastructuren, inclusief gedetailleerde SSL/TLS-certificaatgegevens.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://crt.sh/" target="_blank">CRT.sh</a></td>
+                <td class="tool-type"><span>SSL/TLS Certificaten</span></td>
+                <td class="tool-desc">Een database waarin alle openbaar uitgegeven SSL-certificaten doorzoekbaar zijn, cruciaal voor het vinden van verborgen subdomeinen van een doelwit.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://builtwith.com/" target="_blank">BuiltWith</a></td>
+                <td class="tool-type"><span>Website Technologie</span></td>
+                <td class="tool-desc">Brengt de onderliggende tech-stack, DNS-historie, CMS en externe scripts van een website in kaart om infrastructurele patronen te herkennen.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. Gegevenslekken &amp; Account-analyse</h2>
+    <table class="tool-table">
+        <thead>
+            <tr>
+                <th>Applicatie / Tool</th>
+                <th>Type / Focus</th>
+                <th>Beschrijving en Functionaliteit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tool-name"><a href="https://haveibeenpwned.com/" target="_blank">Have I Been Pwned</a></td>
+                <td class="tool-type"><span>Gegevenslekken</span></td>
+                <td class="tool-desc">Controleert op een veilige manier of een e-mailadres of telefoonnummer voorkomt in bekende publieke datalekken.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://www.dehashed.com/" target="_blank">Dehashed</a></td>
+                <td class="tool-type"><span>Datalek Zoekmachine</span></td>
+                <td class="tool-desc">Een professionele en doorzoekbare database van gelekte inloggegevens, wachtwoord-hashes en accounts ten behoeve van credential auditing.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>5. Geospatial Intelligence (GEOINT)</h2>
+    <table class="tool-table">
+        <thead>
+            <tr>
+                <th>Applicatie / Tool</th>
+                <th>Type / Focus</th>
+                <th>Beschrijving en Functionaliteit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tool-name"><a href="https://yandex.com/images/" target="_blank">Yandex Visual Search</a></td>
+                <td class="tool-type"><span>Reverse Image Search</span></td>
+                <td class="tool-desc">Een extreem krachtige motor voor het omgekeerd zoeken naar afbeeldingen, zeer accuraat in het herkennen van locaties, objecten en gezichten.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://www.suncalc.org/" target="_blank">SunCalc</a></td>
+                <td class="tool-type"><span>Chronolocatie</span></td>
+                <td class="tool-desc">Berekent de stand van de zon en schaduwlengtes op een specifieke datum, tijd en geografische locatie om het exacte tijdstip van een foto te achterhalen.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://www.flightradar24.com/" target="_blank">Flightradar24</a></td>
+                <td class="tool-type"><span>Luchtvaart Tracking</span></td>
+                <td class="tool-desc">Realtime en historische tracking van burgerlijke en commerciële vliegtuigen wereldwijd via openbare ADS-B signalen.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>6. AI-Aangedreven OSINT &amp; Autonome Agents (Nieuw)</h2>
+    <table class="tool-table">
+        <thead>
+            <tr>
+                <th>Applicatie / Tool</th>
+                <th>Type / Focus</th>
+                <th>Beschrijving en Functionaliteit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tool-name"><a href="https://sherlockeye.io/" target="_blank">Sherlockeye</a></td>
+                <td class="tool-type"><span class="badge-agent">Autonomous AI Agent</span></td>
+                <td class="tool-desc">Een AI-agent platform specifiek gebouwd voor onderzoekers. Je beschrijft je onderzoeksdoel en de agent verzamelt, analyseert en kruisverwijst openbare data autonoom. Slaat data desgewenst op in de blockchain voor juridische bewijslast.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://geoseeer.com/" target="_blank">GeoSeer</a></td>
+                <td class="tool-type"><span class="badge-ai">AI / Agentic GEOINT</span></td>
+                <td class="tool-desc">Een AI-tool die locaties pinpoint zonder EXIF-metadata. Het maakt gebruik van multi-agent parallelle redenering om visuele kenmerken (architectuur, vegetatie, schaduw) te koppelen aan exacte GPS-coördinaten.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://github.com/lucasg/Dependencies" target="_blank">OpenOSINT</a></td>
+                <td class="tool-type"><span class="badge-agent">Terminal AI Agent</span></td>
+                <td class="tool-desc">Een open-source terminal-first AI agent specifiek getraind om beveiligingsonderzoek en dreigingsanalyses uit te voeren via autonome webreconnaissance.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://github.com/browser-use/browser-use" target="_blank">Browser-Use</a></td>
+                <td class="tool-type"><span class="badge-agent">Web Scraping Agent</span></td>
+                <td class="tool-desc">Een AI-framework waarmee een LLM-agent de controle krijgt over een echte browser. De agent kan zelfstandig navigeren, inloggen, menselijke interacties simuleren en verborgen data scrapen op basis van een simpele prompt.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://gptzero.me/" target="_blank">GPTZero</a> / <a href="https://hivemoderation.com/" target="_blank">Hive</a></td>
+                <td class="tool-type"><span class="badge-ai">AI Forensics</span></td>
+                <td class="tool-desc">Essentiële OSINT-tools voor het verifiëren van desinformatie-campagnes en nepnieuws. Detecteert of tekst, afbeeldingen of documenten synthetisch (door AI) zijn gegenereerd.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://www.babel-x.com/" target="_blank">Babel X</a></td>
+                <td class="tool-type"><span class="badge-ai">Meertalige NLP AI</span></td>
+                <td class="tool-desc">Scrapt en analyseert data van sociale media, blogs en het dark web in meer dan 200 talen tegelijk en past AI-sentimentanalyse toe om dreigingen vroegtijdig te signaleren.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>7. Klassieke OSINT Frameworks &amp; All-in-One Platforms</h2>
+    <table class="tool-table">
+        <thead>
+            <tr>
+                <th>Applicatie / Tool</th>
+                <th>Type / Focus</th>
+                <th>Beschrijving en Functionaliteit</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="tool-name"><a href="https://www.maltego.com/" target="_blank">Maltego</a></td>
+                <td class="tool-type"><span>Link-Analyse</span></td>
+                <td class="tool-desc">Een industrie-standaard grafische applicatie om relaties tussen personen, bedrijven, IP's en domeinen direct visueel in kaart te brengen. (Heeft tegenwoordig ook AI-integraties).</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://github.com/smicallef/spiderfoot" target="_blank">Spiderfoot</a></td>
+                <td class="tool-type"><span>Recon Automatisering</span></td>
+                <td class="tool-desc">Een open-source automatiseringstool die meer dan 100 publieke databronnen tegelijk kan bevragen voor IP's, domeinen en e-mailadressen.</td>
+            </tr>
+            <tr>
+                <td class="tool-name"><a href="https://osintframework.com/" target="_blank">OSINT Framework</a></td>
+                <td class="tool-type"><span>Web Directory</span></td>
+                <td class="tool-desc">Een interactieve, webgebaseerde mindmap die duizenden gespecialiseerde OSINT-bronnen categoriseert op type informatie. Ideaal startpunt voor handmatig onderzoek.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer-note">
+        Gebruik van OSINT-tools dient altijd te voldoen aan lokale wet- en regelgeving omtrent privacy, ethiek en de algemene voorwaarden van de betreffende platforms. Autonome agents dienen zorgvuldig te worden gemonitord om onbedoelde interacties of API-kosten te voorkomen.
+    </div>
+</div>
+
+</body>
+</html>

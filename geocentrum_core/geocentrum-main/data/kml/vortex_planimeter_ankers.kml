@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>VORTEX Planimeter Ankers</name><Placemark><name>Schermafdr (Nonius 1985)</name><Point><coordinates>10.1543,43.8500,0</coordinates></Point></Placemark>
+<Placemark><name>nebra-plei (Nonius 26214)</name><Point><coordinates>8.4587,42.0086,0</coordinates></Point></Placemark>
+<Placemark><name>5549764981 (Nonius 26214)</name><Point><coordinates>8.4587,42.0086,0</coordinates></Point></Placemark>
+<Placemark><name>5549764561 (Nonius 19661)</name><Point><coordinates>9.3283,42.8017,0</coordinates></Point></Placemark>
+<Placemark><name>5559359841 (Nonius 2906)</name><Point><coordinates>8.9109,44.7672,0</coordinates></Point></Placemark>
+<Placemark><name>nebra-plei (Nonius 26214)</name><Point><coordinates>11.1196,46.2845,0</coordinates></Point></Placemark>
+<Placemark><name>GEOCENTRUM (Nonius 2476)</name><Point><coordinates>-6.6804,50.2776,0</coordinates></Point></Placemark>
+<Placemark><name>cellarius- (Nonius 26214)</name><Point><coordinates>9.9457,43.5466,0</coordinates></Point></Placemark>
+<Placemark><name>Familie Mo (Nonius 13708)</name><Point><coordinates>10.4674,46.3466,0</coordinates></Point></Placemark>
+<Placemark><name>Verdronken (Nonius 14062)</name><Point><coordinates>-4.1326,51.7672,0</coordinates></Point></Placemark>
+<Placemark><name>Omgevingsw (Nonius 12960)</name><Point><coordinates>6.1717,41.0707,0</coordinates></Point></Placemark>
+<Placemark><name>DSO / Bal  (Nonius 12960)</name><Point><coordinates>10.5370,49.4845,0</coordinates></Point></Placemark>
+<Placemark><name>MapAnalyst (Nonius 15299)</name><Point><coordinates>-1.1326,54.2017,0</coordinates></Point></Placemark>
+<Placemark><name>Annerose D (Nonius 1489)</name><Point><coordinates>8.6674,44.3879,0</coordinates></Point></Placemark></Document></kml>

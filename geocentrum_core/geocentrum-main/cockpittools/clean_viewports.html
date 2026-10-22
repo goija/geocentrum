@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⬅️ Clean Viewports Cockpit</title>
+  <style>
+    body { background: #000; color: #fff; font-family: monospace; margin: 0; padding: 15px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .btn { background: #111; color: #00e5ff; border: 1px solid #00e5ff; padding: 10px 20px; text-decoration: none; border-radius: 4px; flex: 1; text-align: center; min-width: 120px; }
+    .viewport-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+    .viewport { border: 1px dashed #333; height: 300px; display: flex; justify-content: center; align-items: center; color: #555; }
+    @media (min-width: 768px) {
+      .viewport-grid { grid-template-columns: repeat(2, 1fr); }
+      .viewport { height: 400px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <a href="/rekencentrum/tijdscapsule/tijdscapsule_index.html" class="btn">⬅ Dashboard</a>
+    <div class="btn" style="color: #ff3385; border-color: #ff3385;">Viewports Locked</div>
+  </div>
+  <div class="viewport-grid">
+    <div class="viewport">VIEWPORT 1 (NO SIGNAL)</div>
+    <div class="viewport">VIEWPORT 2 (NO SIGNAL)</div>
+  </div>
+</body>
+</html>

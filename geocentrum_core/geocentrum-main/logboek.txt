@@ -1,0 +1,25 @@
+=====================================================================
+VORTEX OS - GEODETISCH & PLANIMETER LOGBOEK
+Datum: 18 oktober 2026
+Beheerder: Janna van Vrijberghe
+=====================================================================
+
+[1] Standaard Parameters & Berekening (Diameter = 29.0 cm):
+- Straal (R): 14.50 cm (145.0 mm)
+- Netto Zeshoek Zijde (s): 14.50 cm (145.0 mm)
+- Bruto Zeshoek Zijde (+ 6.35 mm naad): 157.7 mm
+- Apothema (Binnenstraal / Hoogte): 12.56 cm (125.6 mm)
+- Netto Oppervlakte: 660.52 cm²
+- Bruto Oppervlakte (+ naad): 719.64 cm²
+- A. Ott Nonius Kalibratie (f = 10.0): 6605.2 eenheden
+
+[2] Geodetisch Raster & Multi-Ring Configuraties:
+- Start Azimut: 108.0° (Goseck / Sirius referentie-as)
+- Ring 1 (Buitenring / Zeshoek): R = 14.5 cm, Onafhankelijk roterend en kantelbaar (3D-tilt)
+- Ring 2 (Middenring / Pentagram): R = 9.5 cm, Onafhankelijk roterend en kantelbaar (3D-tilt)
+- Ring 3 (Binnenring / Kern): R = 4.8 cm, Onafhankelijk roterend en kantelbaar (3D-tilt)
+
+[3] Systeemstatus:
+- Bugfixes doorgevoerd: Alle rekeneenheden gekoppeld, UI gescheiden in invoer vs. uitvoer.
+- Canvas rendering: Volledig operationeel met PNG/JPEG export.
+=====================================================================

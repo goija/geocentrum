@@ -1,0 +1,31 @@
+{
+  "snapshot": 8,
+  "tijdstempel_lock": "15-10-2026 20:15 CEST",
+  "actief_meetpunt": {
+    "naam": "Ashkelon (Oost-Mediterraan)",
+    "lat": 31.6801,
+    "lon": 34.5666
+  },
+  "ott_constanten": {
+    "poolarm_R_cm": 15.00,
+    "rijarm_L_cm": 16.67,
+    "optisch_pad_cm": 16.675,
+    "golflengte_nm": 589.0,
+    "meetcirkel_A0_cm2": 363.08
+  },
+  "meting": {
+    "alfa_deg": 114.54,
+    "beta_deg": 129.53,
+    "gamma_deg": 165.01,
+    "nonius": 10.604,
+    "stramien_km2": 38.350
+  },
+  "tzolkin_vectoren": [
+    { "hoek": 22.0, "beschrijving": "Planimeter Normandië & Kompas", "lat": 54.7392, "lon": 6.9703 },
+    { "hoek": 29.0, "beschrijving": "Trans-Atlantische Zichtlijn (NYC)", "lat": 54.5891, "lon": 7.4771 },
+    { "hoek": 91.0, "beschrijving": "Pömmelte Equinox Oost-Vector", "lat": 52.1211, "lon": 9.6161 },
+    { "hoek": 97.0, "beschrijving": "Snellius Refractie Kustlijn (Biskaje)", "lat": 51.8412, "lon": 9.5567 },
+    { "hoek": 122.0, "beschrijving": "Caustische k=7 Resonantie (Saturnus)", "lat": 50.7635, "lon": 8.8383 },
+    { "hoek": 331.0, "beschrijving": "CRT Modulaire Attractor", "lat": 54.5891, "lon": 2.9629 }
+  ]
+}

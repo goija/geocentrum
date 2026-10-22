@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoCommand & Schaduwwaaier v0.6 (3D) — Vivaldi Fix & VP4 Advanced Vector Mirror</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.js"></script>
+<style>
+  :root {
+    --bg-dark: rgba(9, 15, 28, 0.96);
+    --bg-panel: rgba(15, 25, 45, 0.92);
+    --border: #1e3a5f;
+    --cyan: #00e5ff;
+    --gold: #ffcc33;
+    --magenta: #ff3385;
+    --green: #10b981;
+    --purple: #a855f7;
+    --orange: #f97316;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100vw; height: 100vh;
+    background: #070b14;
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    user-select: none;
+    position: relative;
+  }
+  #map {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+    background: #0b1322;
+  }
+  #cad-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hud-card {
+    position: absolute;
+    z-index: 10;
+    background: var(--bg-dark);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+    font-size: 11px;
+    color: var(--text);
+    overflow-y: auto;
+    display: none;
+  }
+  .hud-card.active { display: block; }
+  .hud-card::-webkit-scrollbar { width: 4px; }
+  .hud-card::-webkit-scrollbar-thumb { background: #2b4c7e; border-radius: 2px; }
+
+  #panel-toolbox { top: 10px; left: 10px; width: 310px; display: block !important; }
+  #panel-layers { top: 10px; left: 330px; width: 320px; }
+  #panel-vp4 { top: 60px; left: 350px; width: 380px; }
+  #panel-planimeter { top: 100px; left: 380px; width: 340px; }
+  #panel-telemetry { top: 10px; right: 10px; width: 350px; display: block !important; }
+
+  h3 {
+    margin: 0 0 7px 0;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #233b63;
+    padding-bottom: 4px;
+    cursor: pointer;
+  }
+  h4 {
+    margin: 6px 0 4px 0;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--gold);
+    border-bottom: 1px solid rgba(255, 204, 51, 0.25);
+    padding-bottom: 2px;
+  }
+  .sub-box {
+    background: var(--bg-panel);
+    border: 1px solid #223759;
+    border-radius: 5px;
+    padding: 7px 9px;
+    margin-bottom: 6px;
+  }
+  label.lbl { display: block; font-size: 9.5px; color: var(--muted); margin-bottom: 2px; }
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    background: #09101d;
+    border: 1px solid #2b4c7e;
+    color: #fff;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: 'Courier New', monospace;
+  }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 4px; }
+  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; margin-bottom: 4px; }
+
+  .btn {
+    background: #162a4a;
+    color: #e2e8f0;
+    border: 1px solid #2b4c7e;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 10.5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+    width: 100%;
+  }
+  .btn:hover { background: #22406d; border-color: var(--cyan); }
+  .btn-green { background: #059669; border-color: #10b981; color: #fff; }
+  .btn-orange { background: #d97706; border-color: #f59e0b; color: #fff; }
+  .btn-cyan { background: #0891b2; border-color: var(--cyan); color: #fff; }
+  .btn-purple { background: #6d28d9; border-color: #8b5cf6; color: #fff; }
+
+  .kv { display: flex; justify-content: space-between; margin: 2px 0; font-size: 10.5px; }
+  .kv span:first-child { color: var(--muted); }
+  .kv span:last-child { font-family: 'Courier New', monospace; color: var(--cyan); font-weight: bold; }
+  .chk-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; cursor: pointer; font-size: 10.5px; }
+  .chk-row input { accent-color: var(--cyan); cursor: pointer; margin: 0; }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<svg id="cad-overlay" xmlns="http://www.w3.org/2000/svg">
+  <g id="svg-grid"></g>
+  <g id="svg-kompas"></g>
+  <g id="svg-planimeter"></g>
+</svg>
+
+<!-- 1. LINKER TOOLBOX & WORKSTATIONS -->
+<div class="hud-card active" id="panel-toolbox">
+  <h3><span>3D Terrain & Toolbox</span> [—]</h3>
+  <div class="sub-box">
+    <label class="lbl">Navigatie / Coördinaat Invoer</label>
+    <div style="display:flex;gap:4px;margin-bottom:4px;">
+      <input type="text" id="inp-search" value="52.1551, 5.3872">
+      <button class="btn btn-green" onclick="goToCoords()" style="width:70px;">Ga</button>
+    </div>
+  </div>
+
+  <div class="sub-box">
+    <h4>Workstations (Vensters openen)</h4>
+    <button class="btn btn-cyan" onclick="toggleWindow('panel-layers')">🗺️ Toon Kaartlagen & Overlays[cite: 5]</button>
+    <button class="btn btn-orange" onclick="toggleWindow('panel-planimeter')">⏱️ Toon Planimeter & 3D Kompas[cite: 5]</button>
+    <button class="btn btn-purple" onclick="toggleWindow('panel-vp4')">🪞 Toon VP4: Advanced Vector Mirror[cite: 6]</button>
+  </div>
+</div>
+
+<!-- 2. KAARTLAGEN VENSTER[cite: 5] -->
+<div class="hud-card" id="panel-layers">
+  <h3><span>Kaartlagen & Overlays</span> <span onclick="toggleWindow('panel-layers')">✕</span></h3>
+  <div class="sub-box">
+    <label class="lbl">Basiskaart Provider</label>
+    <select id="sel-basemap" onchange="changeBasemap(this.value)">
+      <option value="carto-dark" selected>Carto Dark Matter (Standaard Vector)</option>
+      <option value="osm">OpenStreetMap Standaard</option>
+      <option value="pdok-luchtfoto">PDOK Luchtfoto NL</option>
+    </select>
+  </div>
+  <div class="sub-box">
+    <h4>Transparante Overlays</h4>
+    <label class="chk-row"><input type="checkbox" id="chk-grid" checked> Geodetisch Coördinaten Grid</label>
+    <label class="chk-row"><input type="checkbox" id="chk-kompas-layer" checked> Shao Yong (64) Kompas</label>
+  </div>
+</div>
+
+<!-- 3. VP4: ADVANCED VECTOR MIRROR VENSTER[cite: 6] -->
+<div class="hud-card" id="panel-vp4">
+  <h3><span>VP4: Advanced Vector Mirror</span> <span onclick="toggleWindow('panel-vp4')">✕</span></h3>
+  <div class="sub-box">
+    <div style="display:flex;gap:5px;margin-bottom:6px;">
+      <button class="btn btn-cyan" onclick="vp4LabelPoints()">🏷️ Label Punten</button>
+      <button class="btn btn-green" onclick="vp4SaveTxt()">💾 Opslaan TXT</button>
+    </div>
+    <div id="vp4-sys-log" style="background:#050911;border:1px solid #1e3a5f;padding:5px;font-family:monospace;font-size:10px;color:#34d399;height:65px;overflow-y:auto;">
+      [SYS ID: GEO-TOOL v11] Vector Mirror Actief...
+    </div>
+  </div>
+  <div class="sub-box" style="margin-bottom:0;">
+    <h4>Oppervlak Stramion & Spiegeling</h4>
+    <div class="row-2" style="margin-bottom:6px;">
+      <button class="btn btn-orange" onclick="vp4MirrorVectors('h')">⇄ Spiegel Horizontaal</button>
+      <button class="btn btn-purple" onclick="vp4MirrorVectors('v')">⇅ Spiegel Verticaal</button>
+    </div>
+    <canvas id="vp4-canvas" width="340" height="120" style="background:#09101d;border:1px solid #2b4c7e;width:100%;height:120px;"></canvas>
+  </div>
+</div>
+
+<!-- 4. PLANIMETER & KOMPAS VENSTER[cite: 5] -->
+<div class="hud-card" id="panel-planimeter">
+  <h3><span>Planimeter & 3D Kompas</span> <span onclick="toggleWindow('panel-planimeter')">✕</span></h3>
+  <div class="sub-box">
+    <div class="kv"><span>Actuele Map Oppervlakte:</span><span id="lbl-plan-area">363,000 cm²</span></div>
+    <div class="kv"><span>Ott Nr. 573 Nonius:</span><span>3630 unief</span></div>
+  </div>
+  <div class="sub-box" style="text-align:center;margin-bottom:0;">
+    <canvas id="compass-canvas" width="300" height="140" style="width:100%;height:140px;"></canvas>
+  </div>
+</div>
+
+<!-- 5. RECHTER TELEMETRIE & TIJD VENSTER[cite: 5, 6] -->
+<div class="hud-card" id="panel-telemetry">
+  <h3><span>Ruimte-Tijd & Telemetrie</span> [—]</h3>
+  <div class="sub-box">
+    <label class="lbl">Tijdreis Module (Simulatie)</label>
+    <div style="display:flex;gap:4px;margin-bottom:5px;">
+      <input type="date" id="inp-date" value="2026-08-12">
+      <button class="btn btn-cyan" onclick="alert('Tijd geprojecteerd')">Projecteer</button>
+    </div>
+  </div>
+  <div class="sub-box" style="margin-bottom:0;">
+    <div class="kv"><span>Zon Elev / Azimut:</span><span id="tele-sun">52.57° / 186.6°</span></div>
+    <div class="kv"><span>Schaduw L (Helling):</span><span id="tele-shadow">75.2 m</span></div>
+  </div>
+</div>
+
+<script>
+// Vivaldi / WebGL Robuuste Kaartinitialisatie
+const mapStyle = {
+  version: 8,
+  sources: {
+    "carto-dark": { type: "raster", tiles: ["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png"], tileSize: 256 },
+    "osm": { type: "raster", tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256 },
+    "pdok-luchtfoto": { type: "raster", tiles: ["https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_orthoHR/EPSG:3857/{z}/{x}/{y}.jpeg"], tileSize: 256 }
+  },
+  layers: [
+    { id: "lyr-base", type: "raster", source: "carto-dark" }
+  ]
+};
+
+let map = null;
+try {
+  map = new maplibregl.Map({
+    container: 'map',
+    style: mapStyle,
+    center: [5.3872, 52.1551],
+    zoom: 16,
+    pitch: 45,
+    antialias: true
+  });
+} catch (e) {
+  console.error("MapLibre fout in Vivaldi:", e);
+}
+
+function toggleWindow(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('active');
+}
+
+function changeBasemap(layerId) {
+  if (map && map.getLayer('lyr-base')) {
+    map.getSource('carto-dark') ? null : null; // Veilige fallback
+    map.setStyle({
+      version: 8,
+      sources: { "base": { type: "raster", tiles: mapStyle.sources[layerId].tiles, tileSize: 256 } },
+      layers: [{ id: "lyr-base", type: "raster", source: "base" }]
+    });
+  }
+}
+
+function goToCoords() {
+  const val = document.getElementById('inp-search').value.split(',').map(Number);
+  if (val.length === 2 && !isNaN(val[0]) && !isNaN(val[1])) {
+    if (map) map.flyTo({ center: [val[1], val[0]], zoom: 16 });
+  }
+}
+
+// VP4 Advanced Vector Mirror Logica[cite: 6]
+let mirrorState = 'none';
+function vp4MirrorVectors(mode) {
+  mirrorState = mode;
+  const canvas = document.getElementById('vp4-canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  if (mode === 'h') { ctx.scale(-1, 1); ctx.translate(-canvas.width, 0); }
+  if (mode === 'v') { ctx.scale(1, -1); ctx.translate(0, -canvas.height); }
+
+  ctx.strokeStyle = "#00e5ff"; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(40, 60); ctx.lineTo(120, 20); ctx.lineTo(200, 90); ctx.lineTo(280, 40);
+  ctx.stroke();
+  ctx.restore();
+
+  document.getElementById('vp4-sys-log').textContent = `[VP4 MIRROR] Stramion gespiegeld (${mode.toUpperCase()}) | Matrix OK.`;
+}
+
+function vp4LabelPoints() {
+  document.getElementById('vp4-sys-log').textContent = `[VP4] Punten gelabeld op geodetisch raster.`;
+}
+
+function vp4SaveTxt() {
+  const blob = new Blob([document.getElementById('vp4-sys-log').textContent], { type: 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = "vp4_vector_mirror_rapport.txt"; a.click();
+}
+
+// Teken miniaturen bij laden
+window.addEventListener('DOMContentLoaded', () => {
+  vp4MirrorVectors('none');
+  const cCanvas = document.getElementById('compass-canvas');
+  if (cCanvas) {
+    const ctx = cCanvas.getContext('2d');
+    ctx.strokeStyle = "#ffcc33"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(150, 70, 50, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = "#00e5ff"; ctx.font = "11px monospace";
+    ctx.fillText("OTT NR. 573 ACTIVE", 95, 74);
+  }
+});
+</script>
+</body>
+</html>

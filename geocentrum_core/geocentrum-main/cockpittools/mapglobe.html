@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Mapglobe Hoofdapplicatie (Laren Anchor)</title>
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: monospace; color: #e0e1dd; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        #cockpit-panel {
+            position: absolute; top: 20px; left: 20px; width: 320px;
+            background: rgba(13, 27, 42, 0.85); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 180, 216, 0.3); border-radius: 8px;
+            padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 10;
+        }
+        h1 { margin: 0 0 15px 0; font-size: 1.2rem; color: #00b4d8; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .led-container { margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
+        button { width: 100%; padding: 10px; margin-bottom: 10px; background: #00b4d8; color: #000; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        button:hover { background: #90e0ef; }
+        button.danger { background: #e76f51; color: #fff; }
+        button.danger:hover { background: #f4a261; }
+        button.warning { background: #f4a261; color: #000; }
+        button.warning:hover { background: #e9c46a; }
+        .nav-back { display: inline-block; margin-top: 15px; color: #8d99ae; text-decoration: none; font-size: 0.9rem; }
+        .nav-back:hover { color: #fff; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="cockpit-panel">
+        <h1>Mapglobe // Laren Anchor</h1>
+        <div class="led-container">
+            <div id="led-network"></div>
+            <div id="led-laser"></div>
+            <div id="led-osint"></div>
+            <div id="led-kadaster"></div>
+            <div id="led-anchor"></div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+        <button id="btn-fire">Vuur Geodetische Laser</button>
+        <button id="btn-kadaster" class="warning">Laad Kadaster Grenzen</button>
+        <button id="btn-osint" class="danger">Exporteer OSINT Rapport</button>
+        <button id="btn-clear">Wis Vectoren</button>
+        <a href="../index.html" class="nav-back">← Terug naar Hoofdmenu</a>
+    </div>
+
+    <script type="module">
+        import { VortexLED } from './js/vortex_led_status_indicator.js';
+        import { VortexLaserGlobeLayer } from './js/vortex_laser_globe_layer.js';
+        import { VortexOsintVectorReport } from './js/vortex_osint_vector_report.js';
+        import { VortexKadasterDxfLoader } from './js/vortex_kadaster_dxf_loader.js';
+        import { VortexLarenAnchorGrid } from './js/vortex_laren_anchor_grid.js';
+
+        function broadcastTelemetry(msg) {
+            localStorage.setItem('vortex_telemetry', JSON.stringify({ ts: Date.now(), msg: msg }));
+        }
+
+        const netLed = new VortexLED('led-network', 'P2P Netwerk (WebRTC)');
+        const laserLed = new VortexLED('led-laser', 'Laser Render Engine');
+        const osintLed = new VortexLED('led-osint', 'OSINT Data Logger');
+        const kadasterLed = new VortexLED('led-kadaster', 'Kadaster DXF Parser');
+        const anchorLed = new VortexLED('led-anchor', 'Laren Global Anchor');
+        
+        netLed.setStatus('active'); laserLed.setStatus('standby');
+        osintLed.setStatus('standby'); kadasterLed.setStatus('standby');
+        anchorLed.setStatus('active');
+
+        // Initialiseer MapLibre gecentreerd op Laren Global Anchor (52.257° N, 5.225° E)
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+            center: [5.225, 52.257], // Laren Global Anchor [Lng, Lat]
+            zoom: 12,                // Ingedrukt op regionale schaal
+            pitch: 45,
+            bearing: 15
+        });
+
+        map.addControl(new maplibregl.NavigationControl());
+
+        map.on('load', () => {
+            broadcastTelemetry("MAPGLOBE ONLINE. LAREN GLOBAL ANCHOR LOCKED.");
+            
+            const laserLayer = new VortexLaserGlobeLayer(map);
+            const osintReport = new VortexOsintVectorReport("Laren_Anchor_Target");
+            const dxfLoader = new VortexKadasterDxfLoader(map);
+            const anchorGrid = new VortexLarenAnchorGrid(map);
+
+            // Teken direct het anker-grid en concentrische cirkels
+            anchorGrid.initAnchorLayer();
+
+            document.getElementById('btn-fire').addEventListener('click', () => {
+                laserLed.setStatus('active');
+                laserLayer.fireLaser([5.225, 52.257], [-74.0, 40.7], '#00ffcc'); // Laren -> NY
+                osintReport.logCoordinates(52.257, 5.225, 1.0);
+                broadcastTelemetry("LASER GEFIRED vanaf Laren Anchor naar WTC New York.");
+                setTimeout(() => laserLed.setStatus('standby'), 500);
+            });
+
+            document.getElementById('btn-kadaster').addEventListener('click', () => {
+                kadasterLed.setStatus('active'); kadasterLed.blink();
+                dxfLoader.loadAndRenderDxf('data/kadaster_kadastrale_grenzen.dxf');
+                broadcastTelemetry("KADASTER DXF INGELADEN rondom Laren/Blaricum.");
+            });
+
+            document.getElementById('btn-clear').addEventListener('click', () => {
+                laserLayer.clearLasers(); kadasterLed.setStatus('standby');
+                broadcastTelemetry("VECTOREN GEWIST.");
+            });
+
+            document.getElementById('btn-osint').addEventListener('click', () => {
+                osintLed.setStatus('active'); osintLed.blink();
+                osintReport.enrichNetworkMetadata("127.0.0.1", "VORTEX Sovereign", "AS99999");
+                osintReport.exportToBrowser();
+                broadcastTelemetry("OSINT RAPPORT GEËXPORTEERD.");
+                setTimeout(() => osintLed.setStatus('standby'), 1000);
+            });
+
+            map.on('click', (e) => {
+                osintReport.logCoordinates(e.lngLat.lat, e.lngLat.lng, 1.0);
+                osintLed.blink();
+                broadcastTelemetry(`AN KER-FIX KLIK: [Lat: ${e.lngLat.lat.toFixed(4)}, Lng: ${e.lngLat.lng.toFixed(4)}]`);
+            });
+        });
+    </script>
+</body>
+</html>

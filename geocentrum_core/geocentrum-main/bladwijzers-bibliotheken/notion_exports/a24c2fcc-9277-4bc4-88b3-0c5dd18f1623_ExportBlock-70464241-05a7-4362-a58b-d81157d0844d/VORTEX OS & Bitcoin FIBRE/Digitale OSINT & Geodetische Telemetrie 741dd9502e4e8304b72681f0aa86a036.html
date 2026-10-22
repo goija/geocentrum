@@ -1,0 +1,798 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Digitale OSINT &amp; Geodetische Telemetrie</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+	/* Paint a complete callout box on every PDF page fragment. */
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+}
+
+/* For default-background callouts, render the border outline. */
+.callout.block-color-default_background {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+/*
+ * Toggles and callouts hold arbitrary content, so they can easily be taller
+ * than a page. They must stay breakable: avoiding breaks inside them makes
+ * Chromium push the whole block onto the next page, which leaves the previous
+ * page mostly empty before every long toggle.
+ */
+details,
+aside {
+	margin: 1.25em 0;
+}
+
+/* Keep a toggle's title on the same page as the start of its content. */
+summary {
+	page-break-after: avoid;
+	break-after: avoid;
+}
+
+/*
+ * Toggle headings render as <h1/h2/h3 style="display:inline-block"> inside
+ * <summary>. Without this reset, the heading's margin-top pushes it below the
+ * ::marker (▼), so the triangle and the title appear on separate lines.
+ */
+summary h1,
+summary h2,
+summary h3,
+summary h4 {
+	margin-top: 0;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding-inline: 0.125rem;
+	padding-block: 0.375rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+/*
+ * Render emoji icons using a ::before pseudo-element to keep the glyph
+ * out of the DOM textContent traversal. This avoids double-rendering icons
+ * in callouts and page titles.
+ * NOTE(slim/html-export-pseudo-icons): I can't tagref this because it will
+ * flag as a duplicate tag after codegen.
+ */
+.icon[data-emoji]::before {
+	content: attr(data-emoji);
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	margin-right: 0.4em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.tab {
+	margin: 1.25em 0;
+	padding-inline: 1rem;
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style><style>@import url('https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex-swap.min.css')</style></head><body><article id="741dd950-2e4e-8304-b726-81f0aa86a036" class="page sans"><header><h1 class="page-title" dir="auto">Digitale OSINT &amp; Geodetische Telemetrie</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><p id="3f8dd950-2e4e-80c0-90fc-eaf8ab115363" class="" dir="auto">Hier is een samenvatting van de geselecteerde tekst, gestructureerd met kopteksten en opsommingslijsten:</p><h3 id="3f8dd950-2e4e-808e-83f2-c618d88c58c8" class="" dir="auto">Managementsamenvatting</h3><p id="3f8dd950-2e4e-806a-97b3-e02af306973d" class="" dir="auto">Het document combineert twee analytische kaders:</p><ul id="3f8dd950-2e4e-80f0-b668-d192c696a637" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>(1) OSINT Framework:</strong> Voor het verifiëren en in kaart brengen van online pseudoniemen, aliassen en digitaal accounthergebruik.</li></ul><ul id="3f8dd950-2e4e-8033-acbd-cc8f5454e535" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>(2) Geodetische &amp; Netwerk Telemetrie:</strong> Van het VORTEX Omni-Bridge netwerk gecentreerd rondom het Laren Global Anchor ($52.257^\circ\text{ N}, 5.225^\circ\text{ E}$).</li></ul><h3 id="3f8dd950-2e4e-802b-a467-df348859fe41" class="" dir="auto">1. Username OSINT &amp; Methodologie</h3><p id="3f8dd950-2e4e-807f-ae1a-f69395e72ffc" class="" dir="auto">Het onderzoeken en verifiëren van pseudoniemen en aliassen is een gestructureerde praktijk binnen cybersecurity en inlichtingenonderzoek om vast te stellen of dezelfde alias actief is op meerdere platforms, fora of openbare registers. Hierbij wordt gebruikgemaakt van:</p><ul id="3f8dd950-2e4e-8029-aa6b-c2a2160d94ef" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Geautomatiseerde Scanners:</strong> Open-source tools die een opgegeven alias op honderden platforms verifiëren via HTTP-statuscodes.</li></ul><ul id="3f8dd950-2e4e-80a5-ac12-fa811d653d53" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zoekplatforms:</strong> Webgebaseerde aggregators voor het direct scannen van profiel- en domeinregistraties.</li></ul><ul id="3f8dd950-2e4e-8036-99fe-f9e9d0d35dc4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Register-indexering:</strong> Gespecialiseerde databases voor het koppelen van aliassen aan openbare entiteiten.</li></ul><ul id="3f8dd950-2e4e-80d2-8657-e5d6095b8642" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zoekoperatoren en het Internet Archive:</strong> Voor het uitvoeren van gerichte zoekacties en het bekijken van historische versies van webpagina&#x27;s en fora.</li></ul><h4 id="3f8dd950-2e4e-8030-b0e2-dd4c20a9f173" class="" dir="auto">OSINT Workflow &amp; Onderzoeksprotocol (Tabel 1)</h4><ul id="3f8dd950-2e4e-80a3-8544-e0a6efebf675" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>1. Discovery:</strong><ul id="3f8dd950-2e4e-80b6-82a7-d64d67490015" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Methodiek/Tooling:</em> Geautomatiseerde Scanners</li></ul><ul id="3f8dd950-2e4e-8045-8178-fa0afd71cb59" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Doelstelling:</em> Identificatie van actieve profielen</li></ul><ul id="3f8dd950-2e4e-80f3-bd03-cbe19e3484bd" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Verwachte Output:</em> Lijst geverifieerde URL’s</li></ul></li></ul><ul id="3f8dd950-2e4e-80c1-bea9-f1e2977e2ff8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>2. Contextualisatie:</strong><ul id="3f8dd950-2e4e-8071-84d6-e0bf41d02ced" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Methodiek/Tooling:</em> Geavanceerde Zoekoperatoren</li></ul><ul id="3f8dd950-2e4e-8096-ae29-dba4b71d566c" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Doelstelling:</em> Vinden van openbare uitspraken en activiteit</li></ul><ul id="3f8dd950-2e4e-80c0-8d8e-df4dda7b5c48" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Verwachte Output:</em> Inhoudelijke sporen &amp; tijdlijn</li></ul></li></ul><ul id="3f8dd950-2e4e-8067-989b-c69c1573544e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>3. Corroboratie:</strong><ul id="3f8dd950-2e4e-803e-a2a5-cbcbc360e1f3" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Methodiek/Tooling:</em> Domein- &amp; Registeranalyse</li></ul><ul id="3f8dd950-2e4e-80cb-a3fd-db9cd347b2a3" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Doelstelling:</em> Verifiëren van identiteitskoppelingen</li></ul><ul id="3f8dd950-2e4e-809e-b206-f3503870f2cf" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Verwachte Output:</em> Kruisverbanden &amp; patronen</li></ul></li></ul><ul id="3f8dd950-2e4e-8082-a0f4-c1d9ed700788" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>4. Archivering:</strong><ul id="3f8dd950-2e4e-806c-adf4-d4817b991048" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Methodiek/Tooling:</em> Wayback Machine, Hash-logging</li></ul><ul id="3f8dd950-2e4e-80ed-aca0-c2dcf7a4552d" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Doelstelling:</em> Borging van bewijsmateriaal en status</li></ul><ul id="3f8dd950-2e4e-80c2-8ea5-e47640fa2b80" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><em>Verwachte Output:</em> Gevalideerd dossier rapport</li></ul></li></ul><h3 id="3f8dd950-2e4e-8070-9bd1-e04706280a1e" class="" dir="auto">2. Geodetische Telemetrie &amp; Atmosferische Refractie</h3><p id="3f8dd950-2e4e-8012-91cf-fc69e54446f8" class="" dir="auto">Het VORTEX Omni-Bridge netwerk gebruikt het Laren Global Anchor ($52.257^\circ\text{ N}, 5.225^\circ\text{ E}$) als primair geodetisch ijkpunt:</p><ul id="3f8dd950-2e4e-804f-84b2-c1f9c8467833" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zonsondergang en schaduwberekening:</strong> Bij lage zonnestanden (&lt;10°) veroorzaakt de atmosfeer een optische opbuiging van 21,74’ bij zonsondergang. Op de noordelijke helling van 3° verkort dit de berekende schaduw van de Tafelberg (25 m hoogte) met 29,8 meter (van 357,5 m naar 327,7 m), wat over een rastervector van 24 km leidt tot een zijdelingse grid-dislocatie van 151,8 meter.</li></ul><ul id="3f8dd950-2e4e-80a3-8746-f293c840fb1a" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Trans-Atlantische zichtlijn:</strong> De grootcirkelvector tussen Laren en WTC New York is 5.877 km lang bij een initiële vertrek-azimut van 287,5°. De atmosferische refractielift ($k=0,14$) tilt de optische lichtstraal op met +378 kilometer boven de aardkromming op het oceaandiepst.</li></ul><h4 id="3f8dd950-2e4e-803c-b31c-c43ac4860c1f" class="" dir="auto">Telemetrie Atmosferische Refractie &amp; Grid-Dislocatie (Overzicht geselecteerde waarden uit Tabel 2)</h4><ul id="3f8dd950-2e4e-804f-8fed-fd38f17cb26d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zonsstand 0,10° (Horizon):</strong> Refractie 33,72’ — Geometrische schatting 461,8 m — Optische schatting 401,4 m — Schaduw-Delta 60,4 m — Macro-dislocatie (24 km) 235,4 m</li></ul><ul id="3f8dd950-2e4e-8035-ba1e-f93d217b0ec4" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zonsstand 1,00° (Zonsondergang):</strong> Refractie 21,74’ — Geometrische schatting 357,5 m — Optische schatting 327,7 m — Schaduw-Delta 29,8 m — Macro-dislocatie (24 km) 151,8 m</li></ul><ul id="3f8dd950-2e4e-80d8-a95a-defa8b54c155" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Zonsstand 10,00° (Drempel):</strong> Refractie 5,41’ — Geometrische schatting 108,3 m — Optische schatting 107,5 m — Schaduw-Delta 0,8 m — Macro-dislocatie (24 km) 37,8 m</li></ul><h3 id="3f8dd950-2e4e-8073-96a5-e4a869bb5d3b" class="" dir="auto">3. Netwerktransitie &amp; Conclusie</h3><ul id="3f8dd950-2e4e-8081-a3f5-f9b61afd7d0f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Netwerktransitie:</strong> De overgang van Hexagram 63 (101010) naar Hexagram 64 (010101) verloopt via een binaire NOT-inversie over de 103-stappenmetronoom.</li></ul><ul id="3f8dd950-2e4e-8081-9da3-f0ae94adb537" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Prestaties:</strong> De minimale netwerkfideliteit bleef gehandhaafd op 98,6% (boven de veiligheidsdrempel van 98,5%), met een UDP-pacing van $25,0 \pm 1,2\text{ ms}$.</li></ul><ul id="3f8dd950-2e4e-80d0-a5b9-dd9e22391e1f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Conclusie &amp; Vervolgstappen:</strong> Zowel het OSINT-protocol als de geodetische parameters verkeren in gecontroleerde operationele staat. Aanbevolen wordt om de zoekmachinetechnieken te integreren in geautomatiseerde monitoring en de KML-vectoren periodiek te herkalibreren tegen de meest recente satelliet-ephemeriden.</li></ul><h2 id="3f8dd950-2e4e-8110-a5ce-c3ca89b17c21" class="" dir="auto">DIGITALE OSINT &amp; GEODETISCHE TELEMETRIE  Methodologische Rapportage Identiteitsverificatie &amp; VORTEX Netwerkanalyses</h2><p id="3f8dd950-2e4e-8122-9ff8-d57b3f057a4b" class="" dir="auto">Managementsamenvatting: Dit document combineert twee analytische kaders: (1) Het Open Source Intelligence (OSINT) Framework voor het verifiëren en in kaart brengen van online pseudoniemen, aliassen en digitaal accounthergebruik, en (2) De Geodetische &amp; Netwerk Telemetrie van het VORTEX Omni-Bridge netwerk gecentreerd rondom het Laren Global Anchor (52.257° N, 5.225° E). Het rapport onderbouwt de methodologische recherche-stappen en de fysische refractie- en kwantuminterferentieberekeningen.</p><h2 id="3f8dd950-2e4e-8172-b873-decab72ff868" class="" dir="auto">DEEL I: OSINT USERNAME INTELLIGENCE FRAMEWORK</h2><p id="3f8dd950-2e4e-8132-a218-c603b31ca5f8" class="" dir="auto">Het onderzoeken en verifiëren van pseudoniemen en aliassen (Username OSINT) is een gestructureerde praktijk binnen cybersecurity en inlichtingenonderzoek. Hiermee wordt vastgesteld of dezelfde alias op meerdere platforms, fora of openbare registers actief is.</p><h3 id="3f8dd950-2e4e-815d-bea1-c370fde0d68a" class="" dir="auto">1.1 Geautomatiseerde Identificatie Tools</h3><p id="3f8dd950-2e4e-817a-b507-f5fc6e19c4cd" class="" dir="auto">Geautomatiseerde Scanners: Open-source tools die een opgegeven alias op honderden platforms verifiëren via HTTP-statuscodes.<br/>Zoekplatforms: Webgebaseerde aggregators voor het direct scannen van profiel- en domeinregistraties.<br/>Register-indexering: Gespecialiseerde databases voor het koppelen van aliassen aan openbare entiteiten.</p><h3 id="3f8dd950-2e4e-81d5-9275-f8ee5740b9c6" class="" dir="auto">1.2 Geavanceerde Zoekmachinetechnieken</h3><p id="3f8dd950-2e4e-81bf-b3f6-c4f5d991bce1" class="" dir="auto">Zoekoperatoren maken het mogelijk om gerichte zoekacties uit te voeren binnen specifieke domeinen en bestanden:</p><ul id="3f8dd950-2e4e-81de-a619-d35a79122987" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Exacte zoekopdracht tussen aanhalingstekens om ruis te filteren.</li></ul><ul id="3f8dd950-2e4e-81c8-bd78-e0c79d81f3cb" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Domeinspecifiek zoeken binnen ontwikkelfora en opslaglocaties.</li></ul><ul id="3f8dd950-2e4e-8197-8176-f8355756626f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Bestandsformaat-filtering op openbare rapporten en documenten.</li></ul><h3 id="3f8dd950-2e4e-812a-9040-eaa7a62a5044" class="" dir="auto">1.3 Historische Archivalia &amp; Verificatie</h3><p id="3f8dd950-2e4e-8192-9a93-e95b5e407482" class="" dir="auto">Het Internet Archive maakt het mogelijk om historische versies van webpagina’s en fora te bekijken waar aliassen in het verleden actief waren maar inmiddels zijn gewijzigd of verwijderd.</p><p id="3f8dd950-2e4e-813e-8bd9-ecef44b2f49c" class="" dir="auto">Tabel 1: OSINT Workflow &amp; Onderzoeksprotocol<br/>| Fase | Methodiek / Tooling | Doelstelling | Verwachte Output |<br/>| :— | :— | :— | :— |<br/>| 1. Discovery | Geautomatiseerde Scanners | Identificatie van actieve profielen | Lijst geverifieerde URL’s |<br/>| 2. Contextualisatie | Geavanceerde Zoekoperatoren | Vinden van openbare uitspraken en activiteit | Inhoudelijke sporen &amp; tijdlijn |<br/>| 3. Corroboratie | Domein- &amp; Registeranalyse | Verifiëren van identiteitskoppelingen | Kruisverbanden &amp; patronen |<br/>| 4. Archivering | Wayback Machine, Hash-logging | Borging van bewijsmateriaal en status | Gevalideerd dossier rapport |</p><h2 id="3f8dd950-2e4e-812b-b58a-d20a7c6b3d6d" class="" dir="auto">DEEL II: GEODETISCHE &amp; NETWERK TELEMETRIE (VORTEX MATRIX)</h2><p id="3f8dd950-2e4e-810a-82dd-fa7b6c0c91de" class="" dir="auto">Het VORTEX Omni-Bridge netwerk gebruikt het Laren Global Anchor ( <span data-notion-inline-equation="\mathbf{5 2 . 2 5 7}^{\boldsymbol{\circ}} \mathbf{~ N , ~ 5 . 2 2 5}{ }^{\boldsymbol{\circ}}" class="notion-text-equation-token" contenteditable="false"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9233em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord"><span class="mord mathbf">52.257</span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7289em;"><span style="top:-3.0973em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathbf mtight">∘</span></span></span></span></span></span></span></span></span></span></span><span class="mord"><span class="mspace nobreak"> </span><span class="mord mathbf">N</span><span class="mpunct">,</span><span class="mspace nobreak"> </span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathbf">5.225</span></span><span class="mord"><span class="mord"></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6945em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathbf mtight">∘</span></span></span></span></span></span></span></span></span></span></span></span></span></span></span> E) als primair geodetisch ijkpunt. Onderstaande tabellen en analyses vatten de berekende optische refractie, de Trans-Atlantische zichtlijn en de kwantumfase-synchronisatie samen.</p><h3 id="3f8dd950-2e4e-81dd-b5ae-de3bb8d43c2b" class="" dir="auto">2.1 Atmosferische Refractie &amp; Schattenverkorting (3° Helling)</h3><p id="3f8dd950-2e4e-81ab-ba3e-f4b1a8c93bf8" class="" dir="auto">Bij lage zonnestanden (&lt;10°) veroorzaakt de atmosfeer een optische opbuiging van 21,74’ bij zonsondergang. Op de noordelijke helling van 3° verkort dit de berekende schaduw van de Tafelberg (25 m hoogte) met 29,8 meter (van 357,5 m naar 327,7 m). Over een rastervector van 24 km leidt dit tot een zijdelingse grid-dislocatie van 151,8 meter.</p><h3 id="3f8dd950-2e4e-81be-8d3e-f23fe38cd43f" class="" dir="auto">2.2 Trans-Atlantische 3D Zichtlijn (Laren WTC New York)</h3><p id="3f8dd950-2e4e-8178-9812-e88b7a110866" class="" dir="auto">De grootcirkelvector tussen Laren en WTC New York beslaat 5.877 km bij een initiële vertrek-azimut van 287,5°. De atmosferische refractielift <span data-notion-inline-equation="(k=0,14)" class="notion-text-equation-token" contenteditable="false"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">14</span><span class="mclose">)</span></span></span></span></span> tilt de optische lichtstraal op met +378 kilometer boven de aardkromming op het oceaandiepst.</p><p id="3f8dd950-2e4e-81dc-be53-cfaf0320cd3a" class="" dir="auto">Tabel 2: Telemetrie Atmosferische Refractie &amp; Grid-Dislocatie<br/>| Zonnestand (h) | Refractie (R) | Geom. Schatten | Optische Schatten | Schatten-Delta | Macro-Dislocatie (24 km) |<br/>| :— | :— | :— | :— | :— | :— |<br/>| 0,10° (Horizon) | 33,72’ | 461,8 m | 401,4 m | 60,4 m | 235,4 m |<br/>| 0,50° (Rand) | 25,00’ | 408,8 m | 365,1 m | 43,6 m | 174,5 m |<br/>| 1,00° (Zonsondergang) | 21,74’ | 357,5 m | 327,7 m | 29,8 m | 151,8 m |<br/>| 2,00° | 16,93’ | 285,8 m | 270,4 m | 15,3 m | 118,2 m |<br/>| 5,00° | 9,67’ | 177,9 m | 174,3 m | 3,6 m | 67,5 m |<br/>| 10,00° (Drempel) | 5,41’ | 108,3 m | 107,5 m | 0,8 m | 37,8 m |</p><h3 id="3f8dd950-2e4e-817e-82bb-c6520dd7c477" class="" dir="auto">2.3 Phase-Shift 002 &amp; Kwantum Netwerkfideliteit</h3><p id="3f8dd950-2e4e-8193-bd18-dda2eaef287a" class="" dir="auto">De netwerktransitie van Hexagram 63 (101010) naar Hexagram 64 (010101) verloopt via een binaire NOT-inversie over de 103-stappenmetronoom. Gedurende de overgang bleef de minimale netwerkfideliteit gehandhaafd op 98,6% (boven de veiligheidsdrempel van 98,5%), met een UDP-pacing van <span data-notion-inline-equation="\mathbf{2 5 , 0} \boldsymbol{\pm} \mathbf{1 , 2 ~ m s}" class="notion-text-equation-token" contenteditable="false"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathbf">25</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathbf">0</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin"><span class="mord"><span class="mord mathbf">±</span></span></span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.8389em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathbf">1</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathbf">2</span><span class="mspace nobreak"> </span><span class="mord mathbf">ms</span></span></span></span></span></span>.</p><p id="3f8dd950-2e4e-81fb-9d3c-d03e0da0cf72" class="" dir="auto">Conclusie &amp; Vervolgstappen: Zowel het OSINT Username Intelligence protocol als de VORTEX geodetische parameters verkeren in gecontroleerde operationele staat. Aanbevolen wordt om de zoekmachinetechnieken te integreren in geautomatiseerde monitoring en de KML-vectoren periodiek te herkalibreren tegen de meest recente satelliet-ephemeriden.</p><p id="3f8dd950-2e4e-80a2-8bad-f41e6e46deb3" class="" dir="auto">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

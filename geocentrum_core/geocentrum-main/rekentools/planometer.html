@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Technische Geo-Tekening: Shao Yong / Jiazi Spinor & Ott Nr. 573 Planimeter</title>
+<style>
+  :root {
+    --bg: #0b111e;
+    --grid-fine: rgba(0, 210, 255, 0.12);
+    --grid-major: rgba(0, 210, 255, 0.28);
+    --cyan: #00e5ff;
+    --gold: #ffcc33;
+    --magenta: #ff3385;
+    --brass: #d4af37;
+    --text: #e0f2fe;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #canvas-wrap {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: auto;
+  }
+  svg {
+    background: radial-gradient(circle at center, #101a2e 0%, #070b14 100%);
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    border: 1px solid #1e3a5f;
+    cursor: crosshair;
+  }
+  #hud {
+    width: 390px;
+    background: rgba(9, 15, 28, 0.96);
+    border-left: 1px solid #1e3a5f;
+    padding: 16px;
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  h2 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: var(--gold);
+    border-bottom: 1px solid #2b4c7e;
+    padding-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .panel {
+    background: rgba(16, 28, 48, 0.75);
+    border: 1px solid #233b63;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+  }
+  .kv {
+    display: flex;
+    justify-content: space-between;
+    margin: 3px 0;
+  }
+  .kv span:last-child {
+    color: var(--cyan);
+    font-weight: bold;
+  }
+  .hex-box {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #2b4c7e;
+  }
+  .bit-bar {
+    width: 28px;
+    height: 4px;
+    margin: 2px auto;
+    background: var(--gold);
+  }
+  .bit-0 {
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold) 40%, transparent 40%, transparent 60%, var(--gold) 60%, var(--gold) 100%);
+  }
+  .controls label {
+    display: block;
+    margin: 6px 0;
+    cursor: pointer;
+  }
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap">
+  <!-- Schaal: 40 px = 1.0 cm | 20 px = 0.5 cm (1 whiteboard vakje) -->
+  <svg id="geo-svg" width="960" height="960" viewBox="-480 -480 960 960">
+    <defs>
+      <!-- 0.5 cm Fijn Raster (20x20 px) -->
+      <pattern id="grid-05cm" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--grid-fine)" stroke-width="0.7"/>
+        <path d="M 0 0 L 20 20" fill="none" stroke="rgba(0, 210, 255, 0.05)" stroke-width="0.5"/>
+      </pattern>
+      <!-- 2.5 cm Hoofdraster (100x100 px = 5 vakjes) -->
+      <pattern id="grid-25cm" width="100" height="100" patternUnits="userSpaceOnUse">
+        <rect width="100" height="100" fill="url(#grid-05cm)"/>
+        <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--grid-major)" stroke-width="1.1"/>
+      </pattern>
+      <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#ffcc33"/>
+      </marker>
+      <marker id="arrow-magenta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3385"/>
+      </marker>
+    </defs>
+
+    <!-- 1. RASTER LAAG (0.5 cm eenheden) -->
+    <rect x="-480" y="-480" width="960" height="960" fill="url(#grid-25cm)"/>
+
+    <!-- Coördinaat-assen & Maatvoering -->
+    <g id="axes" stroke="#2dd4bf" stroke-width="0.8" opacity="0.7">
+      <line x1="-480" y1="0" x2="480" y2="0" stroke-dasharray="6,3"/>
+      <line x1="0" y1="-480" x2="0" y2="480" stroke-dasharray="6,3"/>
+    </g>
+
+    <!-- 2. SHAO YONG 64 & JIAZI 60 GEOMETRIE -->
+    <g id="kompas-layers"></g>
+
+    <!-- 3. MÖBIUS / HINGE SPINOR QI-FLOW CURVE -->
+    <g id="spinor-layer"></g>
+
+    <!-- 4. A. OTT NR. 573 PLANIMETER KINEMATICA LAAG -->
+    <g id="planimeter-layer"></g>
+  </svg>
+</div>
+
+<div id="hud">
+  <h2>CAD / Geo-Telemetrie (Ott Nr. 573)</h2>
+  <div class="panel">
+    <div class="kv"><span>Totale Cirkel Oppervlakte (A):</span><span>363,00 cm²</span></div>
+    <div class="kv"><span>Planimeter Eindstand (f=0,1):</span><span>3630 nonius</span></div>
+    <div class="kv"><span>Gemeten Straal (r):</span><span>10,749 cm (21,50 vakjes)</span></div>
+    <div class="kv"><span>0,5 cm Raster Equivalent:</span><span>1452,0 vakjes (0,25 cm²)</span></div>
+    <div class="kv"><span>Poolarm Straal (R_pool):</span><span>15,00 cm (30,0 vakjes)</span></div>
+    <div class="kv"><span>Rijarm Lengte (L_rij):</span><span>16,67 cm (33,3 vakjes)</span></div>
+  </div>
+
+  <h2>Shao Yong (64) & Jiazi (60) Verdeling</h2>
+  <div class="panel">
+    <div class="kv"><span>Shao Yong Sector (1/64):</span><span>5,625° | 5,672 cm²</span></div>
+    <div class="kv"><span>Nonius per 1/64 Sector:</span><span>56,72 eenheden (22,69 vakjes)</span></div>
+    <div class="kv"><span>Jiazi Cyclus Sector (1/60):</span><span>6,000° | 6,050 cm²</span></div>
+    <div class="kv"><span>Nonius per 1/60 Jiazi:</span><span>60,50 eenheden (24,20 vakjes)</span></div>
+    <div class="kv"><span>N² Attractor Kwadrant (16/64):</span><span>90,75 cm² (363 vakjes!)</span></div>
+    <div class="kv"><span>N² Kern-cirkel (4/64):</span><span>r = 2,687 cm | 22,69 cm²</span></div>
+  </div>
+
+  <h2>Actieve Sector: Exact Chain Helper</h2>
+  <div class="panel" id="active-hex-info">
+    <div class="kv"><span>Azimut / Hoek (θ):</span><span id="hud-angle">0,00°</span></div>
+    <div class="kv"><span>Straal Positie (ρ):</span><span id="hud-radius">10,75 cm</span></div>
+    <div class="kv"><span>Cumulatieve Nonius (0→θ):</span><span id="hud-nonius">3630</span></div>
+    <div class="kv"><span>Shao Yong Index (0..63):</span><span id="hud-sy-idx">#0 (111111)</span></div>
+    <div class="kv"><span>Jiazi Stamboom-Tak (1..60):</span><span id="hud-jiazi">Jia-Zi (1/60)</span></div>
+    <div class="kv"><span>Nucleaire Kern (b₃,b₄):</span><span id="hud-core">11 (Qian)</span></div>
+
+    <div class="hex-box">
+      <div>
+        <div style="color:#aaa;margin-bottom:4px;">H (6-bit)</div>
+        <div id="vis-H"></div>
+        <div id="lbl-H" style="margin-top:4px;color:var(--cyan);">111111</div>
+      </div>
+      <div>
+        <div style="color:#aaa;margin-bottom:4px;">N (Hu Gua)</div>
+        <div id="vis-N"></div>
+        <div id="lbl-N" style="margin-top:4px;color:var(--gold);">111111</div>
+      </div>
+      <div>
+        <div style="color:#aaa;margin-bottom:4px;">N² (Attractor)</div>
+        <div id="vis-N2"></div>
+        <div id="lbl-N2" style="margin-top:4px;color:var(--magenta);">111111</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Lagen & Projectie Instellingen</h2>
+  <div class="panel controls">
+    <label><input type="checkbox" id="chk-planimeter" checked> Toon A. Ott Nr. 573 Planimeter (Interactief)</label>
+    <label><input type="checkbox" id="chk-spinor" checked> Toon Shao Yong / Möbius Spinor Qi-Flow</label>
+    <label><input type="checkbox" id="chk-jiazi" checked> Toon 60 Jiazi Ring & 16-punt Kompasroos</label>
+  </div>
+</div>
+
+<script>
+// --- CONSTANTES & SCHAAL ---
+// 1 cm = 40 px | 1 vakje (0.5 cm) = 20 px
+const PX_PER_CM = 40;
+const R_KOMPAS_CM = Math.sqrt(363.0 / Math.PI); // 10.74905 cm
+const R_KOMPAS_PX = R_KOMPAS_CM * PX_PER_CM;    // 429.96 px
+const R_JIAZI_PX  = 355;                        // Binnenring 60 Jiazi
+const R_NUC_PX    = (R_KOMPAS_CM / 4) * PX_PER_CM; // 2.687 cm = 107.5 px (4/64 kern)
+
+// Ott Nr. 573 dimensies:
+// Poolarm R = 15.0 cm (600 px), Rijarm L = 16.67 cm (666.8 px)
+// In opstelling Foto 1 ligt het scharnier nabij het centrum en de vaste pool op (0, -15 cm)
+const POLE_X = 0;
+const POLE_Y = -15.0 * PX_PER_CM; // Bovenaan buiten de cirkel (-600 px, of instelbaar)
+// Om precies de stand van Foto 1 te tonen: Scharnier op (0,0), Pool op (0, -300 px = -7.5 cm verkorte projectie) of echte 15 cm
+const R_ARM_PX = 15.0 * PX_PER_CM;  // 600 px
+const L_ARM_PX = 16.67 * PX_PER_CM; // 666.8 px
+
+const STEMS = ["Jia","Yi","Bing","Ding","Wu","Ji","Geng","Xin","Ren","Gui"];
+const BRANCHES = ["Zi","Chou","Yin","Mao","Chen","Si","Wu","Wei","Shen","You","Xu","Hai"];
+const CORE_COLORS = {
+  "00": "#3b82f6", // Noord / Winter / Water-Aarde
+  "10": "#eab308", // Oost / Lente / Donder-Vuur
+  "01": "#ec4899", // West / Herfst / Meer-Wind
+  "11": "#ef4444"  // Zuid / Zomer / Hemel
+};
+
+const kompasGroup = document.getElementById('kompas-layers');
+const spinorGroup = document.getElementById('spinor-layer');
+const planimeterGroup = document.getElementById('planimeter-layer');
+
+// Hulpfunctie: Shao Yong (Fu Xi) 6-bit volgorde met S-curve (Qi-flow)
+function getShaoYongBits(idx) {
+  // Fu Xi cirkel: Oost-helft (0..31) loopt van Zuid naar Noord, West-helft (32..63) omgekeerd
+  const val = idx < 32 ? (63 - idx) : (idx - 32);
+  return val.toString(2).padStart(6, '0');
+}
+
+function computeNuclear(bits) {
+  // bits = b1 b2 b3 b4 b5 b6 (index 0..5)
+  const b2 = bits[1], b3 = bits[2], b4 = bits[3], b5 = bits[4];
+  const N = `${b2}${b3}${b4}${b3}${b4}${b5}`;
+  const N2 = `${b3}${b4}${b3}${b4}${b3}${b4}`;
+  const core = `${b3}${b4}`;
+  return { N, N2, core };
+}
+
+// --- 1. TEKEN KOMPASROOS, 64 SHAO YONG & 60 JIAZI ---
+function buildTechnicalDrawing() {
+  let html = '';
+
+  // Buitenste cirkel (A = 363.0 cm², r = 10.749 cm)
+  html += `<circle cx="0" cy="0" r="${R_KOMPAS_PX}" fill="rgba(0, 180, 216, 0.06)" stroke="#00e5ff" stroke-width="2.2"/>`;
+  html += `<circle cx="0" cy="0" r="${R_KOMPAS_PX - 38}" fill="none" stroke="#00e5ff" stroke-width="1"/>`;
+
+  // 64 Shao Yong Sectoren (Δθ = 5.625°)
+  for (let i = 0; i < 64; i++) {
+    const a1 = (i * 5.625 - 90) * Math.PI / 180;
+    const a2 = ((i + 1) * 5.625 - 90) * Math.PI / 180;
+    const am = ((i + 0.5) * 5.625 - 90) * Math.PI / 180;
+
+    const bits = getShaoYongBits(i);
+    const { core } = computeNuclear(bits);
+    const col = CORE_COLORS[core];
+
+    // Sector scheidingslijn
+    const x1 = Math.cos(a1) * (R_KOMPAS_PX - 38);
+    const y1 = Math.sin(a1) * (R_KOMPAS_PX - 38);
+    const x2 = Math.cos(a1) * R_KOMPAS_PX;
+    const y2 = Math.sin(a1) * R_KOMPAS_PX;
+    html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1e40af" stroke-width="0.8"/>`;
+
+    // Kern-kleur indicator blokje (zoals op Foto 1 & 4)
+    const bx = Math.cos(am) * (R_KOMPAS_PX - 12);
+    const by = Math.sin(am) * (R_KOMPAS_PX - 12);
+    html += `<circle cx="${bx}" cy="${by}" r="3.5" fill="${col}" opacity="0.9"/>`;
+
+    // 6-bit radiale streepjes in de buitenste kroon
+    for (let b = 0; b < 6; b++) {
+      const rBit = (R_KOMPAS_PX - 35) + b * 3.5;
+      const dAngle = 0.032;
+      const lx1 = Math.cos(am - dAngle) * rBit;
+      const ly1 = Math.sin(am - dAngle) * rBit;
+      const lx2 = Math.cos(am + dAngle) * rBit;
+      const ly2 = Math.sin(am + dAngle) * rBit;
+      if (bits[b] === '1') {
+        html += `<line x1="${lx1}" y1="${ly1}" x2="${lx2}" y2="${ly2}" stroke="#ffcc33" stroke-width="1.5"/>`;
+      } else {
+        const lxm1 = Math.cos(am - dAngle * 0.25) * rBit;
+        const lym1 = Math.sin(am - dAngle * 0.25) * rBit;
+        const lxm2 = Math.cos(am + dAngle * 0.25) * rBit;
+        const lym2 = Math.sin(am + dAngle * 0.25) * rBit;
+        html += `<line x1="${lx1}" y1="${ly1}" x2="${lxm1}" y2="${lym1}" stroke="#38bdf8" stroke-width="1.5"/>`;
+        html += `<line x1="${lxm2}" y1="${lym2}" x2="${lx2}" y2="${ly2}" stroke="#38bdf8" stroke-width="1.5"/>`;
+      }
+    }
+  }
+
+  // 60 Jiazi Ring (Δθ = 6.00°)
+  html += `<g id="jiazi-group">`;
+  html += `<circle cx="0" cy="0" r="${R_JIAZI_PX}" fill="none" stroke="#a855f7" stroke-width="1.4"/>`;
+  html += `<circle cx="0" cy="0" r="${R_JIAZI_PX - 28}" fill="none" stroke="#a855f7" stroke-width="1"/>`;
+  for (let j = 0; j < 60; j++) {
+    const a1 = (j * 6 - 90) * Math.PI / 180;
+    const am = ((j + 0.5) * 6 - 90) * Math.PI / 180;
+    const x1 = Math.cos(a1) * (R_JIAZI_PX - 28);
+    const y1 = Math.sin(a1) * (R_JIAZI_PX - 28);
+    const x2 = Math.cos(a1) * R_JIAZI_PX;
+    const y2 = Math.sin(a1) * R_JIAZI_PX;
+    html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#7e22ce" stroke-width="0.7"/>`;
+
+    const tx = Math.cos(am) * (R_JIAZI_PX - 14);
+    const ty = Math.sin(am) * (R_JIAZI_PX - 14);
+    const rot = (j + 0.5) * 6;
+    const label = `${STEMS[j % 10][0]}${BRANCHES[j % 12][0]}${j+1}`;
+    html += `<text x="${tx}" y="${ty}" fill="#e9d5ff" font-size="7.5" text-anchor="middle" dominant-baseline="central" transform="rotate(${rot}, ${tx}, ${ty})">${label}</text>`;
+  }
+
+  // 16-puntige Kompasroos Ster (zoals op Foto 1)
+  for (let s = 0; s < 16; s++) {
+    const ang = (s * 22.5 - 90) * Math.PI / 180;
+    const angL = ((s * 22.5 - 6) - 90) * Math.PI / 180;
+    const angR = ((s * 22.5 + 6) - 90) * Math.PI / 180;
+    const rTip = (s % 4 === 0) ? (R_JIAZI_PX - 30) : (s % 2 === 0 ? 275 : 215);
+    const rBase = R_NUC_PX;
+
+    const px = Math.cos(ang) * rTip, py = Math.sin(ang) * rTip;
+    const lx = Math.cos(angL) * rBase, ly = Math.sin(angL) * rBase;
+    const rx = Math.cos(angR) * rBase, ry = Math.sin(angR) * rBase;
+    const fillCol = (s % 2 === 0) ? "rgba(0, 229, 255, 0.32)" : "rgba(168, 85, 247, 0.28)";
+    const strCol  = (s % 4 === 0) ? "#ffcc33" : "#00e5ff";
+
+    html += `<polygon points="0,0 ${lx},${ly} ${px},${py}" fill="${fillCol}" stroke="${strCol}" stroke-width="0.9"/>`;
+    html += `<polygon points="0,0 ${px},${py} ${rx},${ry}" fill="rgba(15, 23, 42, 0.65)" stroke="${strCol}" stroke-width="0.9"/>`;
+  }
+  html += `</g>`;
+
+  // 4 Nucleaire N² Kern-Cirkel (r = 2.687 cm = 107.5 px, A = 22.69 cm²)
+  html += `<circle cx="0" cy="0" r="${R_NUC_PX}" fill="rgba(15, 23, 42, 0.9)" stroke="#ff9900" stroke-width="2"/>`;
+  const cores = [
+    { code: "11", name: "N²=11 (Qian)", ang: -45, col: CORE_COLORS["11"] },
+    { code: "01", name: "N²=01 (WeiJi)", ang: 45, col: CORE_COLORS["01"] },
+    { code: "00", name: "N²=00 (Kun)", ang: 135, col: CORE_COLORS["00"] },
+    { code: "10", name: "N²=10 (JiJi)", ang: -135, col: CORE_COLORS["10"] }
+  ];
+  cores.forEach(c => {
+    const rad = c.ang * Math.PI / 180;
+    const cx = Math.cos(rad) * (R_NUC_PX * 0.58);
+    const cy = Math.sin(rad) * (R_NUC_PX * 0.58);
+    html += `<circle cx="${cx}" cy="${cy}" r="22" fill="rgba(0,0,0,0.6)" stroke="${c.col}" stroke-width="1.8"/>`;
+    html += `<text x="${cx}" y="${cy - 3}" fill="${c.col}" font-size="11" font-weight="bold" text-anchor="middle">${c.code}</text>`;
+    html += `<text x="${cx}" y="${cy + 9}" fill="#cbd5e1" font-size="7.5" text-anchor="middle">90,75cm²</text>`;
+  });
+
+  // Maatvoering-cirkel en Diameters
+  html += `<line x1="${-R_KOMPAS_PX}" y1="455" x2="${R_KOMPAS_PX}" y2="455" stroke="#ffcc33" stroke-width="1" marker-start="url(#arrow-gold)" marker-end="url(#arrow-gold)"/>`;
+  html += `<text x="0" y="470" fill="#ffcc33" font-size="11" text-anchor="middle">D = 21,50 cm (43,0 vakjes van 0,5 cm) | A = 363,0 cm² (Nonius: 3630)</text>`;
+
+  kompasGroup.innerHTML = html;
+
+  // --- 2. SHAO YONG QI-FLOW / MÖBIUS SPINOR LEMNISCAAT ---
+  let spinorHtml = '';
+  // S-vormige Shao Yong / Möbius fase-doorgang door het centrum (Zuid-Oost -> Centrum -> Noord-West)
+  spinorHtml += `<path d="M 0 ${-R_KOMPAS_PX} A ${R_KOMPAS_PX/2} ${R_KOMPAS_PX/2} 0 0 1 0 0 A ${R_KOMPAS_PX/2} ${R_KOMPAS_PX/2} 0 0 0 0 ${R_KOMPAS_PX}" fill="none" stroke="#ff3385" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#arrow-magenta)"/>`;
+  spinorHtml += `<path d="M ${-R_KOMPAS_PX} 0 C ${-R_KOMPAS_PX*0.4} ${-R_KOMPAS_PX*0.55}, ${R_KOMPAS_PX*0.4} ${R_KOMPAS_PX*0.55}, ${R_KOMPAS_PX} 0" fill="none" stroke="#ffcc33" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#arrow-gold)"/>`;
+  spinorGroup.innerHTML = spinorHtml;
+}
+
+// --- 3. INTERACTIEVE A. OTT NR. 573 PLANIMETER ---
+// In Foto 1 ligt het poolanker P bovenaan op (0, -300 px = -7.5 cm van centrum) en het scharnier G rond (0,0)
+// Wanneer de volgstift T over de kaart beweegt, ligt het scharnier G op het snijpunt van:
+// Cirkel(P, R_pool = 300 px) en Cirkel(T, L_rij = 430 px)
+function updatePlanimeter(tx, ty) {
+  // Pool-anker bovenin het blad (exact zoals de verticale poolarm op Foto 1)
+  const px = 0, py = -300; // 15 vakjes boven het centrum
+  const R = 300;           // Effectieve pool-straal op deze projectie (15 vakjes)
+  const L = 430;           // Rijarm van scharnier naar volgstift en meetrol
+
+  const dx = tx - px, dy = ty - py;
+  let d = Math.hypot(dx, dy);
+  if (d > R + L - 2) d = R + L - 2;
+  if (d < Math.abs(R - L) + 2) d = Math.abs(R - L) + 2;
+
+  // Snijpunt van twee cirkels voor het scharnierpunt G (Pool Links configuratie)
+  const a = (R * R - L * L + d * d) / (2 * d);
+  const h = Math.sqrt(Math.max(0, R * R - a * a));
+  const mx = px + a * (dx / d);
+  const my = py + a * (dy / d);
+  const gx = mx - h * (dy / d);
+  const gy = my + h * (dx / d);
+
+  // Verlengde rijarm naar onderen voor de meetrol en nonius-trommel (zoals op Foto 1 onderaan)
+  const ux = (tx - gx) / L, uy = (ty - gy) / L;
+  const wx = gx + ux * (L + 75);
+  const wy = gy + uy * (L + 75);
+
+  let pHtml = '';
+  // Pool-anker + Messing Poolarm (Foto 1, 2 & 3)
+  pHtml += `<line x1="${px}" y1="${py}" x2="${gx}" y2="${gy}" stroke="#d4af37" stroke-width="18" stroke-linecap="round" opacity="0.88"/>`;
+  pHtml += `<line x1="${px}" y1="${py}" x2="${gx}" y2="${gy}" stroke="#785c12" stroke-width="1.2" stroke-dasharray="2,8"/>`;
+  pHtml += `<circle cx="${px}" cy="${py}" r="8" fill="#92400e" stroke="#fde047" stroke-width="2"/>`;
+  pHtml += `<text x="${px + 15}" y="${py + 4}" fill="#fde047" font-size="10">Poolanker (Ott Nr. 573)</text>`;
+
+  // Rijarm + Meetrol + Nonius-telwerk
+  pHtml += `<line x1="${gx}" y1="${gy}" x2="${wx}" y2="${wy}" stroke="#eab308" stroke-width="11" stroke-linecap="round" opacity="0.9"/>`;
+  pHtml += `<circle cx="${gx}" cy="${gy}" r="11" fill="#451a03" stroke="#facc15" stroke-width="2.5"/>`;
+
+  // Volgstift (Tracer) op (tx, ty)
+  pHtml += `<circle cx="${tx}" cy="${ty}" r="9" fill="rgba(0,229,255,0.25)" stroke="#00e5ff" stroke-width="2"/>`;
+  pHtml += `<circle cx="${tx}" cy="${ty}" r="2.5" fill="#ffffff"/>`;
+
+  // Meetrol & Telwieltje aan het uiteinde (wx, wy)
+  pHtml += `<circle cx="${wx}" cy="${wy}" r="18" fill="#fef3c7" stroke="#92400e" stroke-width="2.5"/>`;
+  pHtml += `<text x="${wx}" y="${wy + 3}" fill="#000" font-size="8.5" font-weight="bold" text-anchor="middle">3630</text>`;
+
+  planimeterGroup.innerHTML = pHtml;
+
+  // --- UPDATE TELEMETRIE HUD ---
+  let deg = (Math.atan2(ty, tx) * 180 / Math.PI + 90 + 360) % 360;
+  const rhoCm = Math.hypot(tx, ty) / PX_PER_CM;
+  const syIdx = Math.floor(deg / 5.625) % 64;
+  const jiaziIdx = Math.floor(deg / 6.0) % 60;
+  const cumNonius = Math.round((deg / 360) * 3630);
+
+  const bits = getShaoYongBits(syIdx);
+  const { N, N2, core } = computeNuclear(bits);
+
+  document.getElementById('hud-angle').textContent = `${deg.toFixed(2)}°`;
+  document.getElementById('hud-radius').textContent = `${rhoCm.toFixed(2)} cm (${(rhoCm*2).toFixed(1)} vakjes)`;
+  document.getElementById('hud-nonius').textContent = `${cumNonius} / 3630 (${(cumNonius*0.1).toFixed(1)} cm²)`;
+  document.getElementById('hud-sy-idx').textContent = `#${syIdx} (${bits})`;
+  document.getElementById('hud-jiazi').textContent = `${STEMS[jiaziIdx%10]}-${BRANCHES[jiaziIdx%12]} (#${jiaziIdx+1}/60)`;
+  document.getElementById('hud-core').textContent = `${core} → N²=${N2}`;
+
+  renderHexBars('vis-H', bits);
+  renderHexBars('vis-N', N);
+  renderHexBars('vis-N2', N2);
+  document.getElementById('lbl-H').textContent = bits;
+  document.getElementById('lbl-N').textContent = N;
+  document.getElementById('lbl-N2').textContent = N2;
+}
+
+function renderHexBars(elId, bits) {
+  let h = '';
+  for (let i = 0; i < 6; i++) {
+    h += `<div class="bit-bar ${bits[i] === '0' ? 'bit-0' : ''}"></div>`;
+  }
+  document.getElementById(elId).innerHTML = h;
+}
+
+// Initialisatie op exact dezelfde hoek als Foto 1 (rechtsonder, ~160°)
+buildTechnicalDrawing();
+const initAng = (162 - 90) * Math.PI / 180;
+updatePlanimeter(Math.cos(initAng) * R_KOMPAS_PX, Math.sin(initAng) * R_KOMPAS_PX);
+
+// Interactie met de muis
+const svgEl = document.getElementById('geo-svg');
+svgEl.addEventListener('mousemove', (e) => {
+  const pt = svgEl.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const cursor = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+  updatePlanimeter(cursor.x, cursor.y);
+});
+
+// Checkboxes voor lagen
+document.getElementById('chk-planimeter').addEventListener('change', e => {
+  planimeterGroup.style.display = e.target.checked ? 'block' : 'none';
+});
+document.getElementById('chk-spinor').addEventListener('change', e => {
+  spinorGroup.style.display = e.target.checked ? 'block' : 'none';
+});
+document.getElementById('chk-jiazi').addEventListener('change', e => {
+  document.getElementById('jiazi-group').style.display = e.target.checked ? 'block' : 'none';
+});
+</script>
+</body>
+</html>

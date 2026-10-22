@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "name": "VORTEX_Tzolkin_Degree_Vectors",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [5.22, 52.25] },
+      "properties": { "name": "Poolanker P (Oorsprong 0,0)" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[5.22, 52.25], [6.97, 54.74]] },
+      "properties": { "angle_deg": 22.0, "label": "22° (Normandië Planimeter)" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[5.22, 52.25], [7.48, 54.59]] },
+      "properties": { "angle_deg": 29.0, "label": "29° (Trans-Atlantische NYC Vector)" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[5.22, 52.25], [9.62, 52.12]] },
+      "properties": { "angle_deg": 91.0, "label": "91° (Pömmelte Equinox Oost-Vector)" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[5.22, 52.25], [9.56, 51.84]] },
+      "properties": { "angle_deg": 97.0, "label": "97° (Snellius Refractie Biskaje)" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[5.22, 52.25], [8.84, 50.76]] },
+      "properties": { "angle_deg": 122.0, "label": "122° (Caustische Resonantie k=7)" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[5.22, 52.25], [2.96, 54.59]] },
+      "properties": { "angle_deg": 331.0, "label": "331° (CRT Modulaire Attractor)" }
+    }
+  ]
+}

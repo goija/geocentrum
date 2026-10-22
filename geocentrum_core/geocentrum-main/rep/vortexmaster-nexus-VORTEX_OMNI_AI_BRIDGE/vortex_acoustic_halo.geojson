@@ -1,0 +1,42 @@
+{
+  "type": "FeatureCollection",
+  "name": "Vortex_Acoustic_Halo_34850",
+  "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "id": "Epicenter", "location": "Laren_NL", "type": "Tesseract_Tunnel", "marker-color": "#ff00ff" },
+      "geometry": { "type": "Point", "coordinates": [5.220000, 52.250000] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Anchor_1", "pair": "[25, 185]", "frequencies": "100Hz_740Hz", "marker-color": "#00a9e0" },
+      "geometry": { "type": "Point", "coordinates": [5.220250, 52.251850] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Anchor_2", "pair": "[53, 179]", "frequencies": "212Hz_716Hz", "marker-color": "#00a9e0" },
+      "geometry": { "type": "Point", "coordinates": [5.220530, 52.251790] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Anchor_3", "pair": "[65, 175]", "frequencies": "260Hz_700Hz", "marker-color": "#00a9e0" },
+      "geometry": { "type": "Point", "coordinates": [5.220650, 52.251750] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Anchor_4", "pair": "[91, 163]", "frequencies": "364Hz_652Hz", "marker-color": "#00a9e0" },
+      "geometry": { "type": "Point", "coordinates": [5.220910, 52.251630] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Anchor_5", "pair": "[101, 157]", "frequencies": "404Hz_628Hz", "marker-color": "#00a9e0" },
+      "geometry": { "type": "Point", "coordinates": [5.221010, 52.251570] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "Anchor_6", "pair": "[131, 133]", "frequencies": "524Hz_532Hz", "marker-color": "#00a9e0" },
+      "geometry": { "type": "Point", "coordinates": [5.221310, 52.251330] }
+    }
+  ]
+}

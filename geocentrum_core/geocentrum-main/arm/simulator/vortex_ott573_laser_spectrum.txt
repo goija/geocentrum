@@ -1,0 +1,16 @@
+=== VORTEX COCKPIT v154.2 // OTT NR. 573 & LASER SPECTRALE TELEMETRIE ===
+Tijdstip: 2026-10-15T10:03:02.363Z
+Status Arm: STILGEZET (STOP)
+Azimut / Straal: 277.58° | 2.40 cm
+Cumulatieve Nonius (f=0.1): 2799 / 3630 (279.9 cm²)
+Shao Yong Hexagram (Volgstift): #49 (010001)
+Jiazi Stamboom-Tak: Geng-Xu (#47/60)
+Nucleaire Kern: 00 → N²=000000
+--- OPTISCHE LASER & SPECTRALE DATA ---
+Laser Modus: CAVITY (UIT)
+Golflengte (Lambda): 532.0 nm (Nd:YAG Groen)
+Frequentie (f): 563.52 THz
+Foton-energie (E): 2.331 eV
+BK7 Brekingsindex: n = 1.5194 (BK7)
+Laser Rand-Intersectie: #29 (100010) @ 164.8°
+Omtrek Meting: 0.00 cm² (0 punten)

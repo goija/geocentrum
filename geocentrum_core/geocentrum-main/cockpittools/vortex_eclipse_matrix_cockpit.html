@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS v154.6 // Omnibridge: 6x6 Frankrijk Matrix, Mercurius 245.91° & Eclips 12-08-2026</title>
+  <style>
+    :root {
+      --bg: #070b12;
+      --panel: #0d1422;
+      --card: #131d31;
+      --border: #1e3252;
+      --cyan: #00e5ff;
+      --gold: #ffcc33;
+      --magenta: #ff3385;
+      --emerald: #10b981;
+      --text: #e2f1ff;
+      --muted: #8ba3c7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Linker HUD Kolom (Kompas & Planetaire Efemeriden 15-10-2026) */
+    .sidebar-left {
+      width: 330px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+
+    /* Centrale Omnibridge Viewport */
+    .viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #111a29 0%, #06090f 100%);
+      overflow: hidden;
+    }
+
+    /* Rechter HUD Kolom (Ott Nr. 573, 6x6 Matrix & Shao Yong / Laser) */
+    .sidebar-right {
+      width: 380px;
+      background: var(--panel);
+      border-left: 1px solid var(--border);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+
+    h2 {
+      font-size: 12px;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 5px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 11.5px;
+    }
+
+    .kv {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.06);
+      padding-bottom: 2px;
+    }
+    .kv span:first-child { color: var(--muted); }
+    .kv span:last-child { color: var(--cyan); font-weight: bold; }
+
+    /* Planeten Tabel */
+    table.planet-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    table.planet-tbl th, table.planet-tbl td {
+      padding: 4px 5px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    table.planet-tbl th { color: var(--gold); }
+    .row-highlight {
+      background: rgba(255, 204, 51, 0.15);
+      color: var(--gold);
+      font-weight: bold;
+    }
+
+    /* Zwevende UI Knoppen in Viewport */
+    .hud-top-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+      flex-wrap: wrap;
+    }
+    .btn {
+      background: rgba(13, 20, 34, 0.9);
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+      padding: 6px 11px;
+      font-family: inherit;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn:hover, .btn.active {
+      background: var(--cyan);
+      color: #000;
+      font-weight: bold;
+    }
+    .btn-gold {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    .btn-gold:hover, .btn-gold.active {
+      background: var(--gold);
+      color: #000;
+    }
+
+    /* Magritte Watermerk */
+    .watermark {
+      position: absolute;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 18px;
+      color: rgba(226, 241, 255, 0.35);
+      pointer-events: none;
+      letter-spacing: 0.5px;
+    }
+
+    svg#omni-svg {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .toggle-list label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 5px 0;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .slider-row {
+      margin-top: 8px;
+    }
+    .slider-row input { width: 100%; }
+  </style>
+</head>
+<body>
+
+  <!-- LINKER KOLOM: LOKALE HEMEL (15-10-2026) & KOMPAS HUD -->
+  <aside class="sidebar-left">
+    <div class="box">
+      <h2><span>= KOMPAS & VIZIER HUD</span><span>v154.6</span></h2>
+      <div class="kv"><span>Datum / Tijd:</span><span>15-10-2026 | 20:15 CEST</span></div>
+      <div class="kv"><span>Zon (Op / Onder):</span><span>08:10 / 19:08</span></div>
+      <div class="kv"><span>Maan (Op / Onder):</span><span>13:36 / 21:25</span></div>
+      <div class="kv"><span>Vizier Breedtegraad:</span><span style="color:var(--gold);">51.21° N — 52.25° N</span></div>
+      <div class="kv"><span>Kaart Oriëntatie:</span><span id="lbl-rot-mode">Geïnverteerd (155° ZZW)</span></div>
+    </div>
+
+    <div class="box">
+      <h2><span>Planeten & Sterrenbeelden (Nu)</span><span>15-10-2026</span></h2>
+      <table class="planet-tbl">
+        <thead>
+          <tr>
+            <th>Planeet</th>
+            <th>Azimut</th>
+            <th>Hoogte</th>
+            <th>Sterrenbeeld</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="row-highlight">
+            <td>Mercurius</td>
+            <td>245.9°</td>
+            <td>-4.2°</td>
+            <td>Libra</td>
+          </tr>
+          <tr>
+            <td>Venus</td>
+            <td>254.7°</td>
+            <td>-13.1°</td>
+            <td>Virgo</td>
+          </tr>
+          <tr>
+            <td>Mars</td>
+            <td>345.8°</td>
+            <td>-22.9°</td>
+            <td>Cancer</td>
+          </tr>
+          <tr>
+            <td>Jupiter</td>
+            <td>332.7°</td>
+            <td>-24.1°</td>
+            <td>Leeuw</td>
+          </tr>
+          <tr style="color:#34d399;">
+            <td>Saturnus</td>
+            <td>102.5°</td>
+            <td>+13.8°</td>
+            <td>Cetus</td>
+          </tr>
+          <tr>
+            <td>Uranus</td>
+            <td>50.9°</td>
+            <td>-5.2°</td>
+            <td>Taurus</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="box" style="border-color: var(--gold);">
+      <h2><span>BepiColombo & Eclips 12-08-2026</span><span>LOCK</span></h2>
+      <div class="kv"><span>Doelwit:</span><span style="color:var(--gold);">Mercurius (BepiColombo)</span></div>
+      <div class="kv"><span>Actuele Azimut Vector:</span><span style="color:var(--gold);">245.91° (WZW)</span></div>
+      <div class="kv"><span>Matrix Intersectie:</span><span>Dept. 41 (Loir-et-Cher)</span></div>
+      <div class="kv"><span>Uittrede 6×6 Rooster:</span><span>Dept. 17 / 85 (Biskaje)</span></div>
+      <div class="kv"><span>Eclips Landfall (12 aug):</span><span>Galicië / Asturië / Cantabrië</span></div>
+      <div class="kv"><span>Oorsprong-Projectie:</span><span style="color:var(--magenta);">det J = -1.00 (Inversie)</span></div>
+    </div>
+
+    <div class="box">
+      <h2><span>6×6 Matrix Ankerpunten (Frankrijk)</span></h2>
+      <div class="kv"><span>Poolanker P (NO-Driehoek):</span><span>Lage Landen (59/02/NL)</span></div>
+      <div class="kv"><span>Oostelijke Spits:</span><span>Dept. 67 (Bas-Rhin)</span></div>
+      <div class="kv"><span>Noord-Anker (Geel):</span><span>Dept. 76 / 80 (Somme)</span></div>
+      <div class="kv"><span>Kern N² (Centrum):</span><span>Dept. 41 / 18 (Bourges)</span></div>
+      <div class="kv"><span>ZW-Anker (Blauw/Geel):</span><span>Dept. 17 / 85 (Vendée)</span></div>
+      <div class="kv"><span>ZO-Anker (Roodbruin):</span><span>Dept. 03 / 42 / 69 (Lyon)</span></div>
+    </div>
+  </aside>
+
+  <!-- CENTRALE OMNIBRIDGE VIEWPORT -->
+  <main class="viewport">
+    <div class="hud-top-overlay">
+      <div class="btn-group">
+        <button class="btn active" id="btn-inv" onclick="setOrientation(155)">MapLibre Inversie (155° ZZW-Boven)</button>
+        <button class="btn" id="btn-north" onclick="setOrientation(0)">Analoge Schets (0° Noord-Boven)</button>
+        <button class="btn btn-gold" onclick="snapToNode('center')">Lock Centrum (Dept. 41 / N²)</button>
+        <button class="btn btn-gold" onclick="snapToNode('sw')">Lock ZW-Anker (Dept. 17/85)</button>
+        <button class="btn btn-gold" onclick="snapToNode('eclipse')">Lock Eclips Landfall (Asturië)</button>
+      </div>
+    </div>
+
+    <svg id="omni-svg" viewBox="-520 -520 1040 1040">
+      <defs>
+        <pattern id="lined-paper" width="40" height="24" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="24" x2="40" y2="24" stroke="rgba(0, 229, 255, 0.08)" stroke-width="1"/>
+        </pattern>
+        <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#ffcc33"/>
+        </marker>
+        <marker id="arrow-cyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#00e5ff"/>
+        </marker>
+        <filter id="laser-glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3.5" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Achtergrond Gelinieerd Raster (zoals op de analoge schets) -->
+      <rect x="-520" y="-520" width="1040" height="1040" fill="url(#lined-paper)"/>
+
+      <!-- ROTERENDE WERELD- & MATRIX-GROEP -->
+      <g id="world-stage" transform="rotate(155)">
+
+        <!-- 1. GEODETISCHE GROOTCIRKELS & DRADENKRUIS (MapLibre Groen) -->
+        <g id="layer-geodesic" stroke="#10b981" stroke-width="1" opacity="0.55" fill="none">
+          <circle cx="0" cy="0" r="430" stroke-dasharray="6,4"/>
+          <circle cx="0" cy="0" r="240" stroke-dasharray="3,5"/>
+          <line x1="-500" y1="0" x2="500" y2="0" stroke-dasharray="5,5"/>
+          <line x1="0" y1="-500" x2="0" y2="500" stroke-dasharray="5,5"/>
+        </g>
+
+        <!-- 2. EUROPA & FRANKRIJK CONTOUREN (Noord-Boven basiscoördinaten, Centrum (0,0) = Dept 41/18 Midden-Frankrijk) -->
+        <g id="layer-map">
+          <!-- Iberisch Schiereiland (Spanje / Portugal) -->
+          <polygon points="-140,145 -320,140 -385,175 -410,310 -310,355 -160,320 -95,210"
+                   fill="#101826" stroke="#334155" stroke-width="1.5"/>
+          <!-- Frankrijk Hoofdcontour (Hexagone) -->
+          <polygon points="15,-195 -65,-140 -195,-90 -135,15 -140,145 -20,175 110,145 145,45 165,-75 85,-145"
+                   fill="rgba(20, 42, 66, 0.72)" stroke="#38bdf8" stroke-width="1.8"/>
+          <!-- Groot-Brittannië & Ierland -->
+          <polygon points="-60,-210 -150,-220 -130,-350 -40,-390 15,-270"
+                   fill="#101826" stroke="#334155" stroke-width="1.4"/>
+          <!-- Benelux / Duitsland / Zwitserland / Noord-Italië -->
+          <polygon points="15,-195 115,-295 245,-260 240,-40 180,95 110,145 145,45 165,-75 85,-145"
+                   fill="#101826" stroke="#334155" stroke-width="1.4"/>
+
+          <!-- Geografische Regio-Labels (roteren mee of blijven leesbaar) -->
+          <g fill="#94a3b8" font-size="10" text-anchor="middle">
+            <text x="0" y="-5" fill="#ffffff" font-weight="bold" font-size="11">FRANCE (CENTRE-LOIRE)</text>
+            <text x="-85" y="55">NEW AQUITANIA</text>
+            <text x="-45" y="130">OCCITANIA</text>
+            <text x="-140" y="-75">BRITTANY</text>
+            <text x="-55" y="-115">NORMANDY</text>
+            <text x="20" y="-95">PARIS</text>
+            <text x="75" y="45">LYON</text>
+            <text x="105" y="-250" fill="#00e5ff">AMSTERDAM / LAREN</text>
+            <text x="55" y="-195">BRUSSELS</text>
+            <text x="-55" y="-235">LONDON</text>
+            <text x="-250" y="165" fill="#ffcc33">ASTURIAS</text>
+            <text x="-335" y="160" fill="#ffcc33">GALICIA</text>
+            <text x="-200" y="165" fill="#ffcc33">CANTABRIA</text>
+            <text x="-255" y="250">MADRID / SPAIN</text>
+            <text x="-385" y="275">LISBON</text>
+          </g>
+        </g>
+
+        <!-- 3. ANALOGE 6x6 DEPARTEMENTALE MATRIX & TRIANGULATIE (Afbeelding 1 & 3) -->
+        <g id="layer-matrix6x6">
+          <!-- 3 Verticale Ketting-Assen (Exact Chain Helper) -->
+          <g stroke="rgba(226, 241, 255, 0.35)" stroke-width="1.5" stroke-dasharray="6,4">
+            <line x1="-120" y1="-340" x2="-120" y2="210"/>
+            <line x1="0" y1="-360" x2="0" y2="210"/>
+            <line x1="150" y1="-360" x2="150" y2="210"/>
+          </g>
+          <!-- Bovenste Ketting-Ankers (Geel & Roze op Foto 1/3) -->
+          <circle cx="0" cy="-350" r="9" fill="#eab308" stroke="#000" stroke-width="2"/>
+          <circle cx="150" cy="-350" r="8" fill="#ec4899" stroke="#000" stroke-width="2"/>
+
+          <!-- Het 6x6 Orthogonale Rooster (-120..+90 X, -175..+35 Y => 6x6 vakken van 35x35 px) -->
+          <g id="grid-6x6-lines" stroke="#0f172a" stroke-width="2.2">
+            <!-- Horizontale lijnen (7x) -->
+            <line x1="-120" y1="-175" x2="90" y2="-175" stroke="#38bdf8" stroke-width="2"/>
+            <line x1="-120" y1="-140" x2="90" y2="-140" stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="-120" y1="-105" x2="90" y2="-105" stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="-120" y1="-70"  x2="90" y2="-70"  stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="-120" y1="-35"  x2="90" y2="-35"  stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="-120" y1="0"    x2="90" y2="0"    stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="-120" y1="35"   x2="90" y2="35"   stroke="#38bdf8" stroke-width="2"/>
+
+            <!-- Verticale lijnen (7x) -->
+            <line x1="-120" y1="-175" x2="-120" y2="35" stroke="#38bdf8" stroke-width="2"/>
+            <line x1="-85"  y1="-175" x2="-85"  y2="35" stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="-50"  y1="-175" x2="-50"  y2="35" stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="-15"  y1="-175" x2="-15"  y2="35" stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="20"   y1="-175" x2="20"   y2="35" stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="55"   y1="-175" x2="55"   y2="35" stroke="#38bdf8" stroke-width="1.4"/>
+            <line x1="90"   y1="-175" x2="90"   y2="35" stroke="#38bdf8" stroke-width="2"/>
+          </g>
+
+          <!-- Departementsnummers uit Afbeelding 1 & 3 -->
+          <g fill="#bae6fd" font-size="9.5" font-weight="bold" text-anchor="middle">
+            <text x="-175" y="-85">29</text>
+            <text x="-145" y="-75">22</text>
+            <text x="-102" y="-50">35</text>
+            <text x="-67"  y="-120">76</text>
+            <text x="-32"  y="-150">80</text>
+            <text x="35"   y="-155">02</text>
+            <text x="5"    y="-85">75/78</text>
+            <text x="-12"  y="-40" fill="#fde047">41</text>
+            <text x="12"   y="-18" fill="#fde047">18</text>
+            <text x="-15"  y="12">36</text>
+            <text x="45"   y="25">03</text>
+            <text x="-105" y="52">17</text>
+            <text x="-72"  y="55">16</text>
+            <text x="-40"  y="55">87</text>
+            <text x="-5"   y="48">23</text>
+            <text x="78"   y="52">69</text>
+            <text x="155"  y="-68" fill="#ffcc33">67</text>
+            <text x="148"  y="-35">68</text>
+            <text x="-95"  y="95">33</text>
+            <text x="-105" y="135">40</text>
+            <text x="-30"  y="145">31</text>
+            <text x="25"   y="150">34</text>
+            <text x="18"   y="185">66</text>
+          </g>
+
+          <!-- Triangulatie-Driehoek vanuit NO-Poolanker P(65, -245) naar Matrix, ZW-Anker (-120, 35) en Elzas 67 (165, -70) -->
+          <g stroke="#fde047" stroke-width="1.6" fill="none" opacity="0.9">
+            <!-- Poolanker P (Noordoosten / Lage Landen) -->
+            <circle cx="65" cy="-245" r="9" fill="#0f172a" stroke="#fde047" stroke-width="2.2"/>
+            <circle cx="65" cy="-245" r="3" fill="#fde047"/>
+            <!-- Driehoekszijden naar 67 (Straatsburg) en naar ZW-hoek (-120, 35) -->
+            <line x1="65" y1="-245" x2="165" y2="-70"/>
+            <line x1="65" y1="-245" x2="-15" y2="-140"/>
+            <line x1="165" y1="-70" x2="-120" y2="35"/>
+            <line x1="65" y1="-245" x2="-120" y2="35" stroke-dasharray="4,3"/>
+          </g>
+
+          <!-- De Gekleurde Knooppunten op het 6x6 Rooster (Exact volgens Foto 1 & 3) -->
+          <!-- Noord-Anker (Geel) -->
+          <circle cx="-67" cy="-175" r="8" fill="#fde047" stroke="#0f172a" stroke-width="2"/>
+          <!-- Centrum N² Kernen (Dept 41 / 18) -->
+          <circle cx="-15" cy="-42" r="9" fill="#eab308" stroke="#0f172a" stroke-width="2"/>
+          <circle cx="28" cy="-35" r="7.5" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+          <circle cx="38" cy="-92" r="8" fill="#1e293b" stroke="#fde047" stroke-width="2"/>
+          <!-- Zuidwest-Anker (Blauw + Geel cirkelpaar bij 17 Charente-Maritime / 85 Vendée) -->
+          <circle cx="-120" cy="35" r="9.5" fill="#0284c7" stroke="#0f172a" stroke-width="2"/>
+          <circle cx="-136" cy="44" r="9" fill="#fde047" stroke="#0f172a" stroke-width="1.5"/>
+          <!-- Zuidoost-Anker (Roodbruin bij 03 Allier / 69 Rhône) -->
+          <circle cx="90" cy="35" r="8.5" fill="#b45309" stroke="#0f172a" stroke-width="2"/>
+        </g>
+
+        <!-- 4. ASTRONOMISCHE VECTOREN (15-10-2026) & ECLIPS PAD (12-08-2026) -->
+        <g id="layer-astro">
+          <!-- Totale Zonsverduistering Pad van Totaliteit (12 augustus 2026 over Noord-Spanje -> Balearen) -->
+          <path d="M -390,95 Q -250,165 -60,295" fill="none" stroke="rgba(255, 51, 133, 0.28)" stroke-width="26" stroke-linecap="round"/>
+          <path d="M -390,95 Q -250,165 -60,295" fill="none" stroke="#ff3385" stroke-width="2" stroke-dasharray="8,4"/>
+          <text x="-265" y="135" fill="#ff3385" font-size="9.5" font-weight="bold">ECLIPS 12 AUG 2026 (TOTALITEIT)</text>
+
+          <!-- BepiColombo / Mercurius Vector (Azimut 245.91° vanuit NL door Centrum Frankrijk naar Noord-Spanje) -->
+          <line x1="105" y1="-250" x2="-350" y2="210" stroke="#ffcc33" stroke-width="3" stroke-dasharray="7,5" filter="url(#laser-glow)" marker-end="url(#arrow-gold)"/>
+          <text x="-155" y="110" fill="#ffcc33" font-size="10" font-weight="bold" transform="rotate(-45, -155, 110)">
+            MERCURIUS (BEPICOLOMBO) AZIMUT 245.91°
+          </text>
+
+          <!-- Saturnus Vector (Enige planeet boven de horizon: Azimut 102.5°, Hoogte +13.8°) -->
+          <line x1="0" y1="0" x2="320" y2="70" stroke="#34d399" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#arrow-cyan)"/>
+          <text x="210" y="42" fill="#34d399" font-size="9">SATURNUS 102.5° (+13.8°)</text>
+        </g>
+
+        <!-- 5. SHAO YONG (64) & JIAZI (60) RING OVERLAY (A = 363.0 cm²) -->
+        <g id="layer-shaoyong"></g>
+
+        <!-- 6. A. OTT NR. 573 PLANIMETER & SPECTRALE LASER ARM -->
+        <g id="layer-planimeter"></g>
+
+      </g>
+    </svg>
+
+    <div class="watermark">Ceci n'est pas une carte.</div>
+  </main>
+
+  <!-- RECHTER KOLOM: OTT NR. 573 TELEMETRIE, SHAO YONG & LASER -->
+  <aside class="sidebar-right">
+    <div class="box">
+      <h2><span>A. Ott Nr. 573 Planimeter Telemetrie</span><span>#573</span></h2>
+      <div class="kv"><span>Meetcirkel Oppervlakte (A):</span><span>363,00 cm² (1452 vakjes)</span></div>
+      <div class="kv"><span>Nonius Eindstand (f=0,1):</span><span id="hud-nonius">-3630 / 3630</span></div>
+      <div class="kv"><span>6×6 Hoofdrooster (Frankrijk):</span><span>36 cellen (4×90,75 cm²)</span></div>
+      <div class="kv"><span>Poolarm (R) / Rijarm (L):</span><span>15,00 cm / 16,67 cm</span></div>
+      <div class="kv"><span>Volgstift Positie T(x,y):</span><span id="hud-tracer">[0.00, 0.00] cm</span></div>
+      <div class="kv"><span>Scharnier Positie G(x,y):</span><span id="hud-hinge">[+1.05, +0.07] cm</span></div>
+      <div class="kv"><span>Arm-Hoeken (α | β | γ):</span><span id="hud-angles">171.9° | 185.6° | 166.4°</span></div>
+    </div>
+
+    <div class="box">
+      <h2><span>Shao Yong (64) & Jiazi (60) Matrix</span><span>N²</span></h2>
+      <div class="kv"><span>Actieve Azimut Hoek (θ):</span><span id="hud-az">245.91°</span></div>
+      <div class="kv"><span>Shao Yong Sector (1/64):</span><span id="hud-sy">#43 (010111)</span></div>
+      <div class="kv"><span>Oorsprong-Inversie (Spiegel):</span><span id="hud-inv">#20 (101000)</span></div>
+      <div class="kv"><span>Nucleaire Ketting (H → N → N²):</span><span id="hud-nuc">101011 → 010101 (01)</span></div>
+      <div class="kv"><span>Jiazi Tijd-Sector (1/60):</span><span id="hud-jiazi">Jia-Wu (#31/60)</span></div>
+    </div>
+
+    <div class="box">
+      <h2><span>Spectrale Laser & Optica (Rijarm)</span><span>532 nm</span></h2>
+      <div class="kv"><span>Laser Golflengte (λ):</span><span id="hud-wl">589 nm (Fraunhofer D)</span></div>
+      <div class="kv"><span>Frequentie / Foton-energie:</span><span id="hud-freq">508.99 THz | 2.105 eV</span></div>
+      <div class="kv"><span>Optische Padlengte (OPL):</span><span>16,675 cm (n = 1.0003)</span></div>
+      <div class="slider-row">
+        <label style="font-size:10.5px; color:var(--muted);">Scan Golflengte λ (380 nm - 740 nm):</label>
+        <input type="range" id="rng-laser" min="380" max="740" value="589" oninput="updateLaser(this.value)">
+      </div>
+    </div>
+
+    <div class="box toggle-list">
+      <h2><span>Cockpit Lagen & Projectie</span></h2>
+      <label><input type="checkbox" checked onchange="toggleLayer('layer-matrix6x6', this.checked)"> Toon Analoge 6×6 Frankrijk Matrix & Dept.</label>
+      <label><input type="checkbox" checked onchange="toggleLayer('layer-astro', this.checked)"> Toon Mercurius 245.91° & Eclips 12-08-2026</label>
+      <label><input type="checkbox" checked onchange="toggleLayer('layer-shaoyong', this.checked)"> Toon Shao Yong (64) & Jiazi (60) Ring</label>
+      <label><input type="checkbox" checked onchange="toggleLayer('layer-planimeter', this.checked)"> Toon Interactieve Ott Nr. 573 Planimeter</label>
+      <div class="slider-row">
+        <label style="font-size:10.5px; color:var(--muted);">Handmatige Kaart-Rotatie (0° - 360°):</label>
+        <input type="range" id="rng-rot" min="0" max="360" value="155" oninput="setOrientation(this.value)">
+      </div>
+    </div>
+  </aside>
+
+<script>
+  const PX_PER_CM = 28; // Schaal voor het 363 cm² veld binnen de MapLibre/Frankrijk-kaart
+  const R_CIRCLE = Math.sqrt(363.0 / Math.PI) * PX_PER_CM; // ~301 px (10.749 cm)
+  const STEMS = ["Jia","Yi","Bing","Ding","Wu","Ji","Geng","Xin","Ren","Gui"];
+  const BRANCHES = ["Zi","Chou","Yin","Mao","Chen","Si","Wu","Wei","Shen","You","Xu","Hai"];
+  const CORE_COLORS = { "00": "#3b82f6", "10": "#eab308", "01": "#ec4899", "11": "#ef4444" };
+
+  let currentRot = 155;
+  let laserColor = "#ffcc33";
+
+  function getShaoYongBits(idx) {
+    const val = idx < 32 ? (63 - idx) : (idx - 32);
+    return val.toString(2).padStart(6, '0');
+  }
+
+  function computeNuclear(bits) {
+    const b2 = bits[1], b3 = bits[2], b4 = bits[3], b5 = bits[4];
+    return {
+      N: `${b2}${b3}${b4}${b3}${b4}${b5}`,
+      N2: `${b3}${b4}${b3}${b4}${b3}${b4}`,
+      core: `${b3}${b4}`
+    };
+  }
+
+  // Teken de 64 Shao Yong sectoren rondom het Franse 6x6 centrum
+  function initShaoYongRing() {
+    const g = document.getElementById('layer-shaoyong');
+    let html = `<circle cx="0" cy="0" r="${R_CIRCLE}" fill="none" stroke="rgba(0,229,255,0.45)" stroke-width="1.5"/>`;
+    html += `<circle cx="0" cy="0" r="${R_CIRCLE - 22}" fill="none" stroke="rgba(168,85,247,0.4)" stroke-width="1"/>`;
+
+    for (let i = 0; i < 64; i++) {
+      const a1 = (i * 5.625 - 90) * Math.PI / 180;
+      const am = ((i + 0.5) * 5.625 - 90) * Math.PI / 180;
+      const x1 = Math.cos(a1) * (R_CIRCLE - 22), y1 = Math.sin(a1) * (R_CIRCLE - 22);
+      const x2 = Math.cos(a1) * R_CIRCLE, y2 = Math.sin(a1) * R_CIRCLE;
+      const bx = Math.cos(am) * (R_CIRCLE - 11), by = Math.sin(am) * (R_CIRCLE - 11);
+
+      const bits = getShaoYongBits(i);
+      const { core } = computeNuclear(bits);
+      html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(0,229,255,0.25)" stroke-width="0.7"/>`;
+      html += `<circle cx="${bx}" cy="${by}" r="2.8" fill="${CORE_COLORS[core]}"/>`;
+    }
+    g.innerHTML = html;
+  }
+
+  // Update de Ott Nr. 573 Planimeter op basis van volgstift T(tx, ty) en vaste Pool P(65, -245)
+  function updatePlanimeter(tx, ty) {
+    // Poolanker P ligt exact op het noordoostelijke triangulatiepunt (65, -245) uit Afbeelding 1 & 3
+    const px = 65, py = -245;
+    const R = 15.0 * 14;   // Geschaalde poolarm (15.00 cm)
+    const L = 16.67 * 14;  // Geschaalde rijarm (16.67 cm)
+
+    const dx = tx - px, dy = ty - py;
+    let d = Math.hypot(dx, dy);
+    if (d > R + L - 2) d = R + L - 2;
+    if (d < Math.abs(R - L) + 2) d = Math.abs(R - L) + 2;
+
+    const a = (R * R - L * L + d * d) / (2 * d);
+    const h = Math.sqrt(Math.max(0, R * R - a * a));
+    const mx = px + a * (dx / d), my = py + a * (dy / d);
+    const gx = mx - h * (dy / d), gy = my + h * (dx / d);
+
+    const gLayer = document.getElementById('layer-planimeter');
+    let html = '';
+
+    // Messing Poolarm (P -> G)
+    html += `<line x1="${px}" y1="${py}" x2="${gx}" y2="${gy}" stroke="#d4af37" stroke-width="7" stroke-linecap="round" opacity="0.85"/>`;
+    // Rijarm + Laserbundel (G -> T)
+    html += `<line x1="${gx}" y1="${gy}" x2="${tx}" y2="${ty}" stroke="${laserColor}" stroke-width="4.5" stroke-linecap="round" filter="url(#laser-glow)"/>`;
+    // Scharnier G
+    html += `<circle cx="${gx}" cy="${gy}" r="6.5" fill="#1e293b" stroke="#ffcc33" stroke-width="2"/>`;
+    // Volgstift T (Tracer)
+    html += `<circle cx="${tx}" cy="${ty}" r="8" fill="rgba(0,229,255,0.2)" stroke="#00e5ff" stroke-width="2"/>`;
+    html += `<circle cx="${tx}" cy="${ty}" r="2.5" fill="#fff"/>`;
+
+    gLayer.innerHTML = html;
+
+    // Telemetrie berekenen
+    const txCm = (tx / PX_PER_CM).toFixed(2);
+    const tyCm = (-ty / PX_PER_CM).toFixed(2);
+    const gxCm = (gx / PX_PER_CM).toFixed(2);
+    const gyCm = (-gy / PX_PER_CM).toFixed(2);
+
+    const az = ((Math.atan2(tx, -ty) * 180 / Math.PI) + 360) % 360;
+    const syIdx = Math.floor(az / 5.625) % 64;
+    const invIdx = (syIdx + 32) % 64;
+    const jiaziIdx = Math.floor(az / 6.0) % 60;
+    const nonius = Math.round((az / 360) * 3630);
+
+    const bits = getShaoYongBits(syIdx);
+    const invBits = getShaoYongBits(invIdx);
+    const { N, N2, core } = computeNuclear(bits);
+
+    document.getElementById('hud-tracer').textContent = `[${txCm}, ${tyCm}] cm`;
+    document.getElementById('hud-hinge').textContent = `[${gxCm}, ${gyCm}] cm`;
+    document.getElementById('hud-az').textContent = `${az.toFixed(2)}°`;
+    document.getElementById('hud-nonius').textContent = `${nonius} / 3630 (${(nonius*0.1).toFixed(1)} cm²)`;
+    document.getElementById('hud-sy').textContent = `#${syIdx} (${bits})`;
+    document.getElementById('hud-inv').textContent = `#${invIdx} (${invBits})`;
+    document.getElementById('hud-nuc').textContent = `${N} → ${N2} (${core})`;
+    document.getElementById('hud-jiazi').textContent = `${STEMS[jiaziIdx%10]}-${BRANCHES[jiaziIdx%12]} (#${jiaziIdx+1}/60)`;
+  }
+
+  // Rotatie instellen (155° MapLibre Inversie vs 0° Klassiek Noord-Boven)
+  function setOrientation(deg) {
+    currentRot = parseFloat(deg);
+    document.getElementById('world-stage').setAttribute('transform', `rotate(${currentRot})`);
+    document.getElementById('rng-rot').value = currentRot;
+    document.getElementById('btn-inv').classList.toggle('active', Math.abs(currentRot - 155) < 3);
+    document.getElementById('btn-north').classList.toggle('active', Math.abs(currentRot) < 3);
+    document.getElementById('lbl-rot-mode').textContent =
+      currentRot === 0 ? "Analoge Schets (0° N-Boven)" : `Geïnverteerd (${currentRot}° Rotatie)`;
+  }
+
+  // Spring met de planimeter-volgstift direct naar een van de hoofdankers
+  function snapToNode(node) {
+    if (node === 'center') updatePlanimeter(-12, -35);       // Dept 41 / 18 (Centrum Frankrijk)
+    else if (node === 'sw') updatePlanimeter(-120, 35);      // Dept 17 / 85 (Charente-Maritime / Vendée)
+    else if (node === 'eclipse') updatePlanimeter(-250, 165);// Asturië / Galicië (Eclips 12 aug 2026 & 245.91° vector)
+  }
+
+  function toggleLayer(id, show) {
+    document.getElementById(id).style.display = show ? 'block' : 'none';
+  }
+
+  function wavelengthToRgb(nm) {
+    let r = 0, g = 0, b = 0;
+    if (nm >= 380 && nm < 440) { r = -(nm - 440) / 60; b = 1; }
+    else if (nm >= 440 && nm < 490) { g = (nm - 440) / 50; b = 1; }
+    else if (nm >= 490 && nm < 510) { g = 1; b = -(nm - 510) / 20; }
+    else if (nm >= 510 && nm < 580) { r = (nm - 510) / 70; g = 1; }
+    else if (nm >= 580 && nm < 645) { r = 1; g = -(nm - 645) / 65; }
+    else if (nm >= 645 && nm <= 750) { r = 1; }
+    return `rgb(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)})`;
+  }
+
+  function updateLaser(nm) {
+    nm = parseFloat(nm);
+    laserColor = wavelengthToRgb(nm);
+    const freq = (299792.458 / nm).toFixed(2);
+    const ev = (1239.84193 / nm).toFixed(3);
+    document.getElementById('hud-wl').textContent = `${nm} nm`;
+    document.getElementById('hud-freq').textContent = `${freq} THz | ${ev} eV`;
+    snapToNode('sw');
+  }
+
+  // Muis-interactie in de SVG (rekening houdend met de actuele rotatie van world-stage)
+  const svgEl = document.getElementById('omni-svg');
+  const stageEl = document.getElementById('world-stage');
+  svgEl.addEventListener('mousemove', (e) => {
+    const pt = svgEl.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const loc = pt.matrixTransform(stageEl.getScreenCTM().inverse());
+    updatePlanimeter(loc.x, loc.y);
+  });
+
+  // Start op het Zuidwestelijke 6x6 anker langs de 245.91° Mercurius/Eclips-vector
+  initShaoYongRing();
+  snapToNode('sw');
+</script>
+</body>
+</html>

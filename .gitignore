@@ -1,0 +1,5 @@
+target/
+__pycache__/
+*.log
+geocentrum_core/systeemdiagnose/morgen (kopie)/
+geocentrum_core/systeemdiagnose/tijdelijk/

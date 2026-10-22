@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS // Procesdossier Beheercentrum</title>
+  <style>
+    :root {
+      --bg-core: #070b10;
+      --bg-vp: #0f1622;
+      --bg-vp-header: #162133;
+      --text-main: #e2e8f0;
+      --text-dim: #8b9bb4;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --accent-green: #10b981;
+      --accent-purple: #a855f7;
+      --border: #1e293b;
+      --ui-scale: 1;
+      --mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg-core);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: calc(13.5px * var(--ui-scale));
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .master-bar {
+      background: var(--bg-vp-header);
+      border-bottom: 1px solid var(--border);
+      padding: 0.55rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .brand {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.95em;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    button, select {
+      background: var(--bg-vp);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.65rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.8em;
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .workspace {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #0f172a 0%, #070b10 100%);
+    }
+
+    .viewport {
+      position: absolute;
+      width: 480px;
+      height: 350px;
+      background: var(--bg-vp);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      resize: both;
+      overflow: hidden;
+    }
+
+    .viewport:hover, .viewport.active {
+      border-color: var(--accent-cyan);
+      z-index: 1000;
+    }
+
+    .viewport.collapsed {
+      height: auto !important;
+      min-height: 0 !important;
+      resize: none;
+    }
+
+    .viewport.collapsed .vp-body,
+    .viewport.collapsed .vp-footer {
+      display: none !important;
+    }
+
+    .viewport.maximized {
+      top: 10px !important;
+      left: 10px !important;
+      width: calc(100vw - 20px) !important;
+      height: calc(100vh - 70px) !important;
+      z-index: 1500 !important;
+      resize: none !important;
+    }
+
+    .vp-header {
+      background: var(--bg-vp-header);
+      padding: 0.45rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      cursor: grab;
+      user-select: none;
+      font-family: var(--mono);
+      font-size: 0.8em;
+      font-weight: 600;
+    }
+
+    .vp-controls {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .vp-btn {
+      padding: 0.1rem 0.35rem;
+      font-size: 0.75em;
+      border-radius: 3px;
+    }
+
+    .vp-body {
+      flex: 1;
+      padding: 0.75rem;
+      overflow: auto;
+      font-size: 0.88em;
+    }
+
+    .vp-footer {
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--border);
+      padding: 0.25rem 0.75rem;
+      font-family: var(--mono);
+      font-size: 0.72em;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.78em; margin-top: 0.4rem; }
+    th, td { padding: 0.35rem 0.4rem; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--text-dim); font-size: 0.72em; text-transform: uppercase; }
+
+    .badge { padding: 0.12rem 0.35rem; border-radius: 3px; font-size: 0.72em; font-weight: 600; }
+    .b-cyan { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); }
+    .b-amber { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+    .b-green { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+    .b-purple { background: rgba(168, 85, 247, 0.2); color: var(--accent-purple); }
+  </style>
+</head>
+<body>
+
+  <header class="master-bar">
+    <div class="brand">
+      <span>📄 VORTEX OS // PROCESDOSSIER BEHEERCENTRUM (Eigenaar: goija)</span>
+    </div>
+    <div class="toolbar">
+      <button onclick="resetWindows()">Herstel Vensters</button>
+      <button onclick="zoomWorkspace(0.1)">Inzoomen (+)</button>
+      <button onclick="zoomWorkspace(-0.1)">Uitzoomen (-)</button>
+      <select onchange="toggleWindow(this.value)">
+        <option value="">Venster selecteren...</option>
+        <option value="vp-fundamenten">1. Fundamentele Begrippen</option>
+        <option value="vp-lifecycle">2. Projectfasen (Lifecycle)</option>
+        <option value="vp-raci">3. RACI-Matrix</option>
+        <option value="vp-workflow">4. Lifecycle Automation (v1.0)</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="workspace" id="workspace">
+
+    <!-- 1. FUNDAMENTELE BEGRIPPEN -->
+    <section class="viewport" id="vp-fundamenten" style="top: 20px; left: 20px;" onmousedown="bringToFront('vp-fundamenten')">
+      <div class="vp-header" onmousedown="startDrag(event, 'vp-fundamenten')">
+        <span>📁 1. Fundamentele Begrippen</span>
+        <div class="vp-controls">
+          <button class="vp-btn" onclick="toggleCollapse('vp-fundamenten')">—</button>
+          <button class="vp-btn" onclick="toggleMaximize('vp-fundamenten')">⛶</button>
+          <button class="vp-btn" onclick="closeWindow('vp-fundamenten')">✕</button>
+        </div>
+      </div>
+      <div class="vp-body">
+        <table>
+          <thead><tr><th>Concept</th><th>Betekenis</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Project</strong></td><td>Tijdelijke inspanning met begin, einde en resultaat</td></tr>
+            <tr><td><strong>Programma</strong></td><td>Groep samenhangende projecten</td></tr>
+            <tr><td><strong>Portfolio</strong></td><td>Totaaloverzicht van alle projecten</td></tr>
+            <tr><td><strong>Deliverable</strong></td><td>Concreet opleverbaar resultaat</td></tr>
+            <tr><td><strong>Baseline</strong></td><td>Vastgelegde uitgangssituatie</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="vp-footer"><span>Eigenaar: goija</span><span>#FUND</span></div>
+    </section>
+
+    <!-- 2. PROJECTFASEN -->
+    <section class="viewport" id="vp-lifecycle" style="top: 20px; left: 520px;" onmousedown="bringToFront('vp-lifecycle')">
+      <div class="vp-header" onmousedown="startDrag(event, 'vp-lifecycle')">
+        <span>⚡ 2. Projectfasen (Lifecycle)</span>
+        <div class="vp-controls">
+          <button class="vp-btn" onclick="toggleCollapse('vp-lifecycle')">—</button>
+          <button class="vp-btn" onclick="toggleMaximize('vp-lifecycle')">⛶</button>
+          <button class="vp-btn" onclick="closeWindow('vp-lifecycle')">✕</button>
+        </div>
+      </div>
+      <div class="vp-body">
+        <div style="font-family: var(--mono); font-size: 0.75em; margin-bottom: 0.5rem; color: var(--accent-cyan);">
+          Initiatie → Planning → Uitvoering → Monitoring → Afsluiting → Evaluatie
+        </div>
+        <table>
+          <thead><tr><th>Fase</th><th>Kernactiviteiten</th><th>Resultaat</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Initiatie</strong></td><td>Doel bepalen, haalbaarheid</td><td>Projectcharter</td></tr>
+            <tr><td><strong>Planning</strong></td><td>Scope, budget, risico's</td><td>Projectplan</td></tr>
+            <tr><td><strong>Uitvoering</strong></td><td>Taken uitvoeren</td><td>Werkende deliverables</td></tr>
+            <tr><td><strong>Monitoring</strong></td><td>Voortgang meten</td><td>Statusrapporten</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="vp-footer"><span>Eigenaar: goija</span><span>#LIFE</span></div>
+    </section>
+
+    <!-- 3. RACI MATRIX -->
+    <section class="viewport" id="vp-raci" style="top: 390px; left: 20px;" onmousedown="bringToFront('vp-raci')">
+      <div class="vp-header" onmousedown="startDrag(event, 'vp-raci')">
+        <span>👥 3. RACI-Matrix (Governance)</span>
+        <div class="vp-controls">
+          <button class="vp-btn" onclick="toggleCollapse('vp-raci')">—</button>
+          <button class="vp-btn" onclick="toggleMaximize('vp-raci')">⛶</button>
+          <button class="vp-btn" onclick="closeWindow('vp-raci')">✕</button>
+        </div>
+      </div>
+      <div class="vp-body">
+        <table>
+          <thead><tr><th>Activiteit / Rol</th><th>goija (Architect)</th><th>Content Owner</th><th>Editor</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Projectplan</strong></td><td><span class="badge b-cyan">A / R</span></td><td>C</td><td>-</td></tr>
+            <tr><td><strong>Content Schrijven</strong></td><td>-</td><td>C</td><td><span class="badge b-green">R</span></td></tr>
+            <tr><td><strong>Review & Goedkeuring</strong></td><td>I</td><td><span class="badge b-amber">R / A</span></td><td>C</td></tr>
+            <tr><td><strong>Git & Viewport Sync</strong></td><td><span class="badge b-cyan">R / A</span></td><td>C</td><td>R</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="vp-footer"><span>Eigenaar: goija</span><span>#RACI</span></div>
+    </section>
+
+    <!-- 4. DOCUMENT LIFECYCLE AUTOMATION -->
+    <section class="viewport" id="vp-workflow" style="top: 390px; left: 520px;" onmousedown="bringToFront('vp-workflow')">
+      <div class="vp-header" onmousedown="startDrag(event, 'vp-workflow')">
+        <span>⚙️ 4. Document Lifecycle Automation (v1.0)</span>
+        <div class="vp-controls">
+          <button class="vp-btn" onclick="toggleCollapse('vp-workflow')">—</button>
+          <button class="vp-btn" onclick="toggleMaximize('vp-workflow')">⛶</button>
+          <button class="vp-btn" onclick="closeWindow('vp-workflow')">✕</button>
+        </div>
+      </div>
+      <div class="vp-body">
+        <table>
+          <thead><tr><th>Trigger</th><th>Voorwaarde</th><th>Uitgevoerde Acties</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge b-purple">doc_created</span></td><td><code>status == 'draft'</code></td><td>Sjabloon toewijzen, deadline in 7d</td></tr>
+            <tr><td><span class="badge b-purple">doc_submitted</span></td><td><code>status == 'pending'</code></td><td>Reviewer toewijzen, edits lockken</td></tr>
+            <tr><td><span class="badge b-purple">review_completed</span></td><td><code>approval == 'approved'</code></td><td>Auto-index, zoekindex bijwerken</td></tr>
+            <tr><td><span class="badge b-purple">user_feedback</span></td><td><code>score < 3.0</code></td><td>Markeer voor eigenaar, prioriteitstag</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="vp-footer"><span>Eigenaar: goija</span><span>#AUTO</span></div>
+    </section>
+
+  </main>
+
+  <script>
+    let highestZ = 100;
+    let currentScale = 1;
+
+    function bringToFront(id) {
+      const vp = document.getElementById(id);
+      highestZ++;
+      vp.style.zIndex = highestZ;
+      document.querySelectorAll('.viewport').forEach(v => v.classList.remove('active'));
+      vp.classList.add('active');
+    }
+
+    let dragEl = null, startX = 0, startY = 0;
+    function startDrag(e, id) {
+      if (e.target.tagName === 'BUTTON') return;
+      bringToFront(id);
+      dragEl = document.getElementById(id);
+      const rect = dragEl.getBoundingClientRect();
+      startX = e.clientX - rect.left;
+      startY = e.clientY - rect.top;
+      e.preventDefault();
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      if (!dragEl) return;
+      dragEl.style.left = (e.clientX - startX) + 'px';
+      dragEl.style.top = (e.clientY - startY) + 'px';
+    });
+
+    window.addEventListener('mouseup', () => { dragEl = null; });
+
+    function toggleCollapse(id) {
+      document.getElementById(id).classList.toggle('collapsed');
+    }
+
+    function toggleMaximize(id) {
+      document.getElementById(id).classList.toggle('maximized');
+    }
+
+    function closeWindow(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function toggleWindow(id) {
+      if (!id) return;
+      const vp = document.getElementById(id);
+      vp.style.display = 'flex';
+      bringToFront(id);
+    }
+
+    function resetWindows() {
+      const coords = {
+        'vp-fundamenten': {top: '20px', left: '20px'},
+        'vp-lifecycle': {top: '20px', left: '520px'},
+        'vp-raci': {top: '390px', left: '20px'},
+        'vp-workflow': {top: '390px', left: '520px'}
+      };
+      Object.keys(coords).forEach(id => {
+        const vp = document.getElementById(id);
+        vp.style.display = 'flex';
+        vp.style.top = coords[id].top;
+        vp.style.left = coords[id].left;
+        vp.classList.remove('collapsed', 'maximized');
+      });
+    }
+
+    function zoomWorkspace(delta) {
+      currentScale = Math.max(0.7, Math.min(1.4, currentScale + delta));
+      document.documentElement.style.setProperty('--ui-scale', currentScale);
+    }
+  </script>
+</body>
+</html>

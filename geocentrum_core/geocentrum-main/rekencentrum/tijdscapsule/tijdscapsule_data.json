@@ -1,0 +1,36 @@
+{
+  "tijdscapsule_metadata": {
+    "titel": "VORTEX OS — Geodetische & Astrometrische Tijdscapsule",
+    "timestamp_lock": "2026-10-22 10:00:01 CEST",
+    "iso_timestamp": "2026-10-22T08:00:01Z",
+    "versie": "v159.1 Locked-Interface",
+    "interface_lock": "pizzadisk_simulatie_v158.py (Protected)",
+    "oorsprong_anker": "Poolanker P (52.2500° N, 5.2200° E)",
+    "attractor_state": "010101 (Hex #21)"
+  },
+  "plani_configuratie": {
+    "diameter_cm": 29,
+    "start_azimut_deg": 108,
+    "ring1": { "rotatie_deg": 202, "tilt_deg": 22 },
+    "ring2": { "rotatie_deg": 22, "tilt_deg": 22 },
+    "ring3": { "rotatie_deg": 22, "tilt_deg": -22 },
+    "a_ott_573": {
+      "poolarm_r_cm": 15.00,
+      "rijarm_l_cm": 16.67,
+      "fraunhofer_d_nm": 589.0,
+      "oppervlakte_a0_cm2": 363.08
+    }
+  },
+  "astrometrie_18_okt_2026": {
+    "object": "Maan",
+    "tijd_cest": "2026-10-22 10:00:01 CEST",
+    "rechte_klimming_ra_deg": 191.20,
+    "declinatie_dec_deg": 13.30,
+    "lokale_sterrentijd_lst_deg": 312.74,
+    "uurhoek_ha_deg": 121.54,
+    "azimut_deg": 303.23,
+    "elevatie_deg": -7.45,
+    "constellatie": "Capricornus / Steenbok (Zuidmuur)"
+  },
+  "dataset_ref": "vortex_processed_points.geojson (100 Punten P1-P100)"
+}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS — Geodetisch Rekencentrum</title>
+  <style>
+    :root {
+      --bg: #030712; --panel: rgba(15,23,42,0.96);
+      --cyan: #00e5ff; --gold: #ffcc33; --green: #00ff88; --magenta: #ff3385;
+      --text: #f1f5f9; --font: 'Fira Code', monospace;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); padding: 2rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cyan); padding-bottom: 1rem; margin-bottom: 2rem; }
+    h1 { font-size: 1.4rem; color: var(--gold); }
+    .status-tag { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid var(--green); padding: 4px 12px; border-radius: 4px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+    .pulse-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    
+    .main-container { width: 100%; max-width: 800px; display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    .tool-card { background: var(--panel); border: 1px solid #1e293b; border-radius: 8px; padding: 1.5rem; box-shadow: 0 0 20px rgba(0,229,255,0.05); }
+    .tool-card h2 { color: var(--cyan); font-size: 1.1rem; margin-bottom: 1rem; border-bottom: 1px dashed #334155; padding-bottom: 0.5rem; }
+    
+    .input-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.4rem; }
+    input { width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff; padding: 10px; border-radius: 4px; font-family: var(--font); }
+    input:focus { border-color: var(--cyan); outline: none; }
+    
+    .result-box { margin-top: 1rem; padding: 1rem; background: #02040a; border: 1px solid #1e293b; border-radius: 4px; font-size: 0.9rem; min-height: 4.5rem; }
+    .idle-text { color: #64748b; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📐 Geodetisch Rekencentrum</h1>
+    <a href="/index.html" style="color:var(--gold); text-decoration:none; font-size:0.8rem;">⬅️ Terug naar Cockpit Index</a>
+  </div>
+  <div class="status-tag">
+    <span class="pulse-dot"></span> LIVE JS Engine (Realtime)
+  </div>
+</header>
+
+<div class="main-container">
+  <!-- Refractie Tool -->
+  <div class="tool-card">
+    <h2>🌤️ Atmosferische Refractie (Saemundsson)</h2>
+    <div class="input-group">
+      <label>Ware Elevatiehoek h (graden):</label>
+      <input type="number" id="trueElev" step="0.01" placeholder="Bijv. 15.5" oninput="calcRefractie()">
+    </div>
+    <div class="result-box" id="refractieResult">
+      <span class="idle-text">Wacht op invoer... Typ een hoek om direct te berekenen.</span>
+    </div>
+  </div>
+
+  <!-- Planimeter Tool -->
+  <div class="tool-card">
+    <h2>⚙️ A. Ott Planimeter (Nr. 573)</h2>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+      <div class="input-group">
+        <label>Beginstand (Nonius):</label>
+        <input type="number" id="planBegin" step="1" placeholder="Bijv. 1250" oninput="calcPlanimeter()">
+      </div>
+      <div class="input-group">
+        <label>Eindstand (Nonius):</label>
+        <input type="number" id="planEind" step="1" placeholder="Bijv. 1380" oninput="calcPlanimeter()">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Factor (k):</label>
+      <input type="number" id="planFactor" step="0.01" placeholder="Bijv. 10.0" oninput="calcPlanimeter()">
+    </div>
+    <div class="result-box" id="planResult">
+      <span class="idle-text">Wacht op invoer... Vul alle drie de velden in.</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  function calcRefractie() {
+    let inputVal = document.getElementById('trueElev').value;
+    
+    // Check of veld leeg is
+    if (inputVal.trim() === '') {
+      document.getElementById('refractieResult').innerHTML = '<span class="idle-text">Wacht op invoer... Typ een hoek om direct te berekenen.</span>';
+      return;
+    }
+    
+    let h = parseFloat(inputVal);
+    
+    // Saemundsson formule
+    let rArcMin = 1.02 / Math.tan((h + 10.3 / (h + 5.11)) * Math.PI / 180);
+    let rDeg = rArcMin / 60;
+    let apparent = h + rDeg;
+    
+    document.getElementById('refractieResult').innerHTML = 
+      `Schijnbare Elevatie: <span style="color:var(--cyan); font-weight:bold; font-size:1.1rem;">${apparent.toFixed(4)}°</span><br>` +
+      `Correctie (R): <span style="color:var(--green)">+${rDeg.toFixed(4)}°</span> (${rArcMin.toFixed(2)}')`;
+  }
+
+  function calcPlanimeter() {
+    let b_str = document.getElementById('planBegin').value;
+    let e_str = document.getElementById('planEind').value;
+    let k_str = document.getElementById('planFactor').value;
+    
+    // Wacht tot alle drie de velden zijn ingevuld
+    if (b_str.trim() === '' || e_str.trim() === '' || k_str.trim() === '') {
+      document.getElementById('planResult').innerHTML = '<span class="idle-text">Wacht op invoer... Vul alle drie de velden in.</span>';
+      return;
+    }
+    
+    let b = parseFloat(b_str);
+    let e = parseFloat(e_str);
+    let k = parseFloat(k_str);
+    
+    let diff = e - b;
+    // Automatische rollover correctie
+    if (diff < 0) diff += 10000; 
+    
+    let area = diff * k;
+    
+    document.getElementById('planResult').innerHTML = 
+      `Oppervlakte: <span style="color:var(--cyan); font-weight:bold; font-size:1.2rem;">${area.toFixed(2)}</span><br>` +
+      `Verschil (Δ Nonius): <span style="color:var(--gold)">${diff}</span> eenheden`;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firefox-PDF-hulpmiddelen — about:pdf#features</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --ff-bg: #f9f9fb;
+      --ff-bg-Radial: #f3effb;
+      --ff-purple: #7542e5;
+      --ff-purple-hover: #5e30c7;
+      --ff-purple-circle: #eee8fd;
+      --ff-purple-active: #e2d6fc;
+      --ff-text: #15141a;
+      --ff-subtext: #5b5b66;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: radial-gradient(circle at 20% 15%, #f5f1fc 0%, #f9f9fb 55%, #f9f9fb 100%);
+      color: var(--ff-text);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    /* Exact Firefox Card Styling */
+    .ff-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 2px 14px rgba(21, 20, 26, 0.06), 0 0 1px rgba(21, 20, 26, 0.08);
+    }
+
+    .ff-feature-item {
+      border-radius: 12px;
+      transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+      border: 2px solid transparent;
+    }
+
+    .ff-feature-item:hover {
+      background-color: #f8f6fe;
+      transform: translateY(-1px);
+    }
+
+    .ff-feature-item.active {
+      background-color: #f3effe;
+      border-color: var(--ff-purple);
+      box-shadow: 0 4px 12px rgba(117, 66, 229, 0.12);
+    }
+
+    .ff-icon-circle {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      border-radius: 9999px;
+      background-color: var(--ff-purple-circle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .ff-feature-item:hover .ff-icon-circle,
+    .ff-feature-item.active .ff-icon-circle {
+      background-color: var(--ff-purple-active);
+      transform: scale(1.04);
+    }
+
+    .ff-back-btn {
+      border: 1.5px solid #7542e5;
+      color: #15141a;
+      border-radius: 9999px;
+      padding: 5px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      transition: all 0.15s ease;
+    }
+
+    .ff-back-btn:hover {
+      background-color: rgba(117, 66, 229, 0.08);
+    }
+
+    /* PDF Workspace Layouts */
+    .pdf-viewport-vertical {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .pdf-viewport-horizontal {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 24px;
+      overflow-x: auto;
+      padding-bottom: 16px;
+    }
+
+    .pdf-viewport-horizontal .pdf-page-wrapper {
+      flex: 0 0 auto;
+    }
+
+    .pdf-viewport-twoup {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      justify-items: center;
+    }
+
+    .pdf-page-sheet {
+      position: relative;
+      background: #ffffff;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      user-select: none;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .pdf-page-sheet.selected-page {
+      outline: 3px solid #7542e5;
+      box-shadow: 0 8px 28px rgba(117, 66, 229, 0.22);
+    }
+
+    .annotation-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .annotation-canvas.drawing-active {
+      pointer-events: auto;
+      cursor: crosshair;
+    }
+
+    .placed-overlay-item {
+      position: absolute;
+      z-index: 30;
+      cursor: move;
+      transition: box-shadow 0.15s ease;
+    }
+
+    .placed-overlay-item:hover {
+      box-shadow: 0 0 0 2px #7542e5;
+      border-radius: 6px;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f4;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c4c4ce;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9e9ea9;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-purple-200 selection:text-purple-900">
+
+  <!-- Top Browser URL Bar Simulation -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-200 px-4 py-2 flex items-center justify-between text-xs text-gray-600">
+    <div class="flex items-center gap-2 max-w-xl w-full">
+      <div class="flex items-center gap-1.5 text-gray-400">
+        <button onclick="resetToOverview()" title="Vernieuwen" class="p-1.5 hover:bg-gray-100 rounded-md text-gray-600">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+      </div>
+      <div class="flex items-center gap-2 bg-[#f0f0f4] px-3 py-1.5 rounded-lg w-full border border-transparent focus-within:border-[#7542e5] focus-within:bg-white transition">
+        <!-- Firefox small emblem -->
+        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" fill="url(#ffGradSmall)"/>
+          <path d="M16.5 7.5C15.2 6.2 13.2 5.8 11.5 6.5C9.5 7.3 8.5 9.5 9 11.8C9.5 14 11.6 15.5 13.8 15.2C15.5 15 17 13.8 17.4 12C17.8 10.2 17.2 8.2 16.5 7.5Z" fill="#fff" fill-opacity="0.25"/>
+          <defs>
+            <linearGradient id="ffGradSmall" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FF9500"/>
+              <stop offset="0.5" stop-color="#FF2E54"/>
+              <stop offset="1" stop-color="#7542E5"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="font-medium text-purple-700">Firefox</span>
+        <span class="text-gray-300">|</span>
+        <span id="urlBarText" class="text-gray-800 font-mono text-xs select-all">about:pdf#features</span>
+      </div>
+    </div>
+    <div class="hidden sm:flex items-center gap-3">
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 font-medium">
+        <span class="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></span>
+        Interactieve PDF-sandbox gereed
+      </span>
+    </div>
+  </header>
+
+  <!-- BOVENSTE GEDEELTE: EXACTE REPLICA VAN FIREFOX-PDF-HULPMIDDELEN -->
+  <section id="topOverviewSection" class="max-w-6xl mx-auto px-4 sm:px-8 pt-7 pb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- Left "< Terug" column matching screenshot layout -->
+      <div class="lg:col-span-2 flex items-center lg:justify-end lg:pr-4 pt-1">
+        <button onclick="resetToOverview()" class="ff-back-btn inline-flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Terug</span>
+        </button>
+      </div>
+
+      <!-- Main Content Column -->
+      <div class="lg:col-span-10">
+        <!-- Header with Firefox Icon & Title -->
+        <div class="flex items-center gap-2.5 mb-1.5">
+          <!-- Stylized Firefox Flame/Orb SVG Icon -->
+          <svg class="w-7 h-7 shrink-0" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <defs>
+              <radialGradient id="ffOrb" cx="30%" cy="25%" r="75%">
+                <stop offset="0%" stop-color="#FFE15D"/>
+                <stop offset="35%" stop-color="#FF7139"/>
+                <stop offset="70%" stop-color="#E52E71"/>
+                <stop offset="100%" stop-color="#7542E5"/>
+              </radialGradient>
+              <linearGradient id="ffTail" x1="6" y1="6" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#FF980E"/>
+                <stop offset="60%" stop-color="#FF375F"/>
+                <stop offset="100%" stop-color="#9059FF"/>
+              </linearGradient>
+            </defs>
+            <circle cx="16" cy="16" r="13.5" fill="url(#ffOrb)"/>
+            <path d="M23.5 8.5C21.2 6.2 17.5 5.8 14.5 7.4C11.2 9.1 10.5 13.6 12.6 16.6C14.7 19.6 19.2 19.9 21.8 17.2C20.2 21.4 15.2 23.2 11.2 21.1C7.2 19 6 13.8 8.3 9.8C6.2 13.5 6.8 18.8 10.2 21.8C14.2 25.3 20.6 24.8 24 20.4C26.8 16.8 26.4 11.4 23.5 8.5Z" fill="url(#ffTail)"/>
+            <circle cx="16.5" cy="15.5" r="5.2" fill="#4A1D96" fill-opacity="0.28"/>
+          </svg>
+          <h1 class="text-[22px] sm:text-[25px] font-bold tracking-tight text-[#15141a]">
+            Firefox-PDF-hulpmiddelen
+          </h1>
+        </div>
+
+        <!-- Subtitle -->
+        <p class="text-[14.5px] text-[#5b5b66] mb-5">
+          Lees, markeer en onderteken PDF’s waar u navigeert. Het is eenvoudig, gratis en privé.
+        </p>
+
+        <!-- Categorie Filterknoppen + Snel-instructie -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div class="inline-flex flex-wrap items-center gap-2 bg-white/80 p-1.5 rounded-xl border border-gray-200/80 shadow-sm" role="tablist" aria-label="Filter hulpmiddelen op categorie">
+            <button onclick="filterFeatures('all')" id="filter-all" class="filter-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition bg-[#7542e5] text-white shadow-sm">
+              Alle hulpmiddelen (8)
+            </button>
+            <button onclick="filterFeatures('edit')" id="filter-edit" class="filter-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition text-gray-700 hover:bg-purple-50">
+              Bewerken, opmaken en ordenen (5)
+            </button>
+            <button onclick="filterFeatures('view')" id="filter-view" class="filter-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition text-gray-700 hover:bg-purple-50">
+              Weergave, presentatie en navigatie (3)
+            </button>
+          </div>
+
+          <span class="text-xs text-[#7542e5] font-medium flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
+            Klik op een hulpmiddel om het hieronder direct live te gebruiken
+          </span>
+        </div>
+
+        <!-- Witte Kaart met 2-Koloms Grid van de 8 Functies -->
+        <div class="ff-card p-6 sm:p-8 max-w-[820px]">
+          <div id="featuresGrid" class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+            <!-- Wordt dynamisch gerenderd voor exacte volgorde + filtering -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ONDERSTE GEDEELTE: INTERACTIEVE PDF-WERKRUIMTE (LIVE SANDBOX) -->
+  <section id="workspaceSection" class="max-w-6xl mx-auto px-4 sm:px-8 pb-16">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/90 overflow-hidden">
+      
+      <!-- Firefox PDF.js Dark/Light Top Toolbar -->
+      <div class="bg-[#2b2a33] text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 border-b border-gray-700">
+        
+        <!-- Left Toolbar: Sidebar Toggle (Details) & Page Counter -->
+        <div class="flex items-center gap-2">
+          <button onclick="activateTool('details')" id="tb-details" title="Vind details sneller (Contouren, bijlagen, eigenschappen)" class="tb-btn p-2 rounded-lg hover:bg-white/15 transition flex items-center gap-1.5 text-xs font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10M4 18h14"/></svg>
+            <span class="hidden sm:inline">Zijpaneel</span>
+          </button>
+
+          <div class="h-4 w-[1px] bg-gray-600 mx-1"></div>
+
+          <!-- Page Navigation -->
+          <div class="flex items-center gap-1 bg-black/25 px-2.5 py-1 rounded-lg text-xs">
+            <button onclick="selectPrevPage()" class="p-1 hover:text-purple-300 transition" title="Vorige pagina">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <span>Pagina <strong id="activePageIndicator">1</strong> van <strong id="totalPagesIndicator">3</strong></span>
+            <button onclick="selectNextPage()" class="p-1 hover:text-purple-300 transition" title="Volgende pagina">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <!-- Zoom Controls -->
+          <div class="hidden md:flex items-center gap-1 bg-black/25 px-2 py-1 rounded-lg text-xs ml-1">
+            <button onclick="adjustZoom(-0.1)" class="px-1.5 hover:text-purple-300 font-bold" title="Uitzoomen">−</button>
+            <span id="zoomLabel" class="w-11 text-center font-mono">100%</span>
+            <button onclick="adjustZoom(0.1)" class="px-1.5 hover:text-purple-300 font-bold" title="Inzoomen">+</button>
+          </div>
+        </div>
+
+        <!-- Active Feature Status Pill in Center -->
+        <div class="flex items-center gap-2 bg-[#383744] px-3 py-1 rounded-full text-xs border border-purple-400/30">
+          <span class="w-2 h-2 rounded-full bg-[#a882ff]"></span>
+          <span class="text-gray-300">Actief hulpmiddel:</span>
+          <strong id="activeToolBadge" class="text-white">Pagina’s ordenen</strong>
+        </div>
+
+        <!-- Right Toolbar: Quick Icons for all 8 Firefox PDF Features -->
+        <div class="flex items-center gap-1">
+          <button onclick="activateTool('organize')" id="tb-organize" title="Pagina's ordenen" class="tb-btn p-2 rounded-lg hover:bg-white/15 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6"/></svg>
+          </button>
+          <button onclick="activateTool('signatures')" id="tb-signatures" title="Handtekeningen opslaan" class="tb-btn p-2 rounded-lg hover:bg-white/15 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          <button onclick="activateTool('notes')" id="tb-notes" title="Notities toevoegen" class="tb-btn p-2 rounded-lg hover:bg-white/15 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </button>
+          <button onclick="activateTool('annotate')" id="tb-annotate" title="PDF's opmaken" class="tb-btn p-2 rounded-lg hover:bg-white/15 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+          </button>
+          <button onclick="activateTool('images')" id="tb-images" title="Toegankelijke afbeeldingen uploaden" class="tb-btn p-2 rounded-lg hover:bg-white/15 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 15l-5-5L5 21"/></svg>
+          </button>
+          <button onclick="activateTool('view')" id="tb-view" title="Kies uw weergave" class="tb-btn p-2 rounded-lg hover:bg-white/15 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+          </button>
+          <button onclick="activateTool('present')" id="tb-present" title="PDF's in volledig scherm presenteren" class="tb-btn p-2 rounded-lg bg-[#7542e5] hover:bg-[#6233cc] text-white transition ml-1 flex items-center gap-1 text-xs font-medium px-2.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span class="hidden lg:inline">Presenteren</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contextual Tool Control Bar (Dynamic per selected feature) -->
+      <div id="toolControlPanel" class="bg-[#f4f1fc] border-b border-purple-200/80 px-5 py-4 transition-all">
+        <!-- Inhoud wordt dynamisch gevuld op basis van het gekozen hulpmiddel -->
+      </div>
+
+      <!-- Main PDF Workspace Body (Left Sidebar for Details + Center PDF Viewport) -->
+      <div class="flex flex-col lg:flex-row min-h-[560px] bg-[#e6e6ec]">
+        
+        <!-- Zijpaneel voor "Vind details sneller" (Contouren, Bijlagen, Eigenschappen) -->
+        <aside id="detailsSidebar" class="hidden w-full lg:w-80 bg-white border-b lg:border-b-0 lg:border-r border-gray-300 flex-col shrink-0">
+          <!-- Sidebar Tabs -->
+          <div class="grid grid-cols-3 border-b border-gray-200 bg-gray-50 text-xs font-semibold">
+            <button onclick="switchDetailsTab('outlines')" id="dtab-outlines" class="py-3 px-2 border-b-2 border-[#7542e5] text-[#7542e5] bg-white">
+              Contouren
+            </button>
+            <button onclick="switchDetailsTab('attachments')" id="dtab-attachments" class="py-3 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-900">
+              Bijlagen (2)
+            </button>
+            <button onclick="switchDetailsTab('properties')" id="dtab-properties" class="py-3 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-900">
+              Eigenschappen
+            </button>
+          </div>
+
+          <!-- Sidebar Tab Content -->
+          <div id="detailsTabContent" class="p-4 overflow-y-auto max-h-[520px] text-sm">
+            <!-- Wordt dynamisch gerenderd -->
+          </div>
+        </aside>
+
+        <!-- Interactive PDF Pages Canvas Viewport -->
+        <div class="flex-1 p-6 sm:p-8 overflow-auto">
+          <div id="pdfViewport" class="pdf-viewport-vertical">
+            <!-- Pagina's worden hier dynamisch gerenderd -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- VOLLEDIG SCHERM PRESENTATIEMODUS OVERLAY -->
+  <div id="presentationOverlay" class="fixed inset-0 z-50 hidden bg-[#111015] text-white flex-col justify-between">
+    <!-- Top Presentatie Balk -->
+    <div class="flex items-center justify-between px-6 py-3 bg-black/50 backdrop-blur border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <span class="px-2.5 py-1 rounded-full bg-[#7542e5] text-xs font-semibold">Presentatiemodus</span>
+        <span id="presDocTitle" class="text-sm text-gray-300 font-medium">Firefox_Privacy_Rapport_2026.pdf</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer">
+          <input type="checkbox" id="laserToggle" onchange="toggleLaserPointer(this.checked)" class="rounded text-purple-600 focus:ring-0" />
+          <span>Laserpointer</span>
+        </label>
+        <button onclick="closePresentationMode()" class="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition">
+          Sluiten (Esc)
+        </button>
+      </div>
+    </div>
+
+    <!-- Center Presentatie Slide -->
+    <div id="presSlideArea" class="flex-1 flex items-center justify-center p-6 overflow-auto relative">
+      <div id="presSlideContainer" class="transform scale-100 sm:scale-105 transition-transform"></div>
+      <div id="laserDot" class="hidden pointer-events-none fixed w-4 h-4 rounded-full bg-red-500 shadow-[0_0_16px_4px_rgba(239,68,68,0.85)] z-50"></div>
+    </div>
+
+    <!-- Bottom Presentatie Navigatie -->
+    <div class="px-6 py-4 bg-black/50 backdrop-blur border-t border-white/10 flex items-center justify-between">
+      <button onclick="changePresSlide(-1)" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold flex items-center gap-2 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Vorige pagina
+      </button>
+      <div class="flex flex-col items-center gap-1.5">
+        <span id="presSlideCounter" class="text-xs font-medium text-gray-300">Pagina 1 / 3</span>
+        <div class="w-48 h-1.5 bg-white/15 rounded-full overflow-hidden">
+          <div id="presProgressBar" class="h-full bg-[#9059ff] transition-all" style="width: 33%;"></div>
+        </div>
+      </div>
+      <button onclick="changePresSlide(1)" class="px-4 py-2 rounded-lg bg-[#7542e5] hover:bg-[#5e30c7] text-xs font-semibold flex items-center gap-2 transition">
+        Volgende pagina
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- EXPORT / PRINT SAMENVATTING MODAL -->
+  <div id="exportModal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">PDF Exporteren & Opslaan</h3>
+        <button onclick="closeExportModal()" class="p-1 rounded-lg hover:bg-gray-100 text-gray-500">✕</button>
+      </div>
+      <div id="exportSummaryBody" class="text-sm text-gray-600 space-y-3 mb-6"></div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeExportModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+          Sluiten
+        </button>
+        <button onclick="window.print(); closeExportModal();" class="px-4 py-2 rounded-lg bg-[#7542e5] text-white text-xs font-semibold hover:bg-[#5e30c7]">
+          Afdrukken / Opslaan als PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotice" class="fixed bottom-5 right-5 z-50 hidden bg-[#15141a] text-white px-4 py-3 rounded-xl shadow-xl border border-purple-500/40 text-xs font-medium items-center gap-2.5 transition-all">
+    <span class="w-2 h-2 rounded-full bg-[#a882ff]"></span>
+    <span id="toastText">Actie uitgevoerd</span>
+  </div>
+
+  <script>
+    /**************************************************************
+     * 1. DATA: DE 8 FIREFOX-PDF-HULPMIDDELEN (EXACTE TEKST & ICOONTJES)
+     **************************************************************/
+    const FIREFOX_FEATURES = [
+      {
+        id: 'organize',
+        category: 'edit',
+        title: 'Pagina’s ordenen',
+        description: 'Pagina’s herschikken, verwijderen, samenvoegen en exporteren.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+        `
+      },
+      {
+        id: 'signatures',
+        category: 'edit',
+        title: 'Handtekeningen opslaan',
+        description: 'Maak meerdere handtekeningen aan en voeg deze aan formulieren toe.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+            <path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"></path>
+            <path d="M8.5 16.5c1.2-2 2.4-2 3.2 0 .7-1.2 1.8-1.2 3.3 0"></path>
+            <path d="M14.5 11.5l3-3"></path>
+          </svg>
+        `
+      },
+      {
+        id: 'notes',
+        category: 'edit',
+        title: 'Notities toevoegen',
+        description: 'Laat opmerkingen en herinneringen achter tijdens het lezen.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <circle cx="9" cy="10" r="1" fill="#15141a"></circle>
+            <circle cx="12" cy="10" r="1" fill="#15141a"></circle>
+            <circle cx="15" cy="10" r="1" fill="#15141a"></circle>
+          </svg>
+        `
+      },
+      {
+        id: 'annotate',
+        category: 'edit',
+        title: 'PDF’s opmaken',
+        description: 'Voeg tekst, markeringen en tekeningen toe.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+            <line x1="2" y1="22" x2="22" y2="22"></line>
+          </svg>
+        `
+      },
+      {
+        id: 'images',
+        category: 'edit',
+        title: 'Toegankelijke afbeeldingen uploaden',
+        description: 'Voeg alternatieve tekst toe, zodat afbeeldingen voor meer mensen werken.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3" ry="3"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        `
+      },
+      {
+        id: 'view',
+        category: 'view',
+        title: 'Kies uw weergave',
+        description: 'Scrol verticaal of horizontaal, of wissel pagina-indelingen.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <text x="5.3" y="14.5" font-size="7.5" font-weight="bold" fill="#15141a" stroke="none">1</text>
+            <text x="15.3" y="14.5" font-size="7.5" font-weight="bold" fill="#15141a" stroke="none">2</text>
+          </svg>
+        `
+      },
+      {
+        id: 'present',
+        category: 'view',
+        title: 'PDF’s in volledig scherm presenteren',
+        description: 'Deel een schoon beeld in presentatiemodus.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+            <line x1="8" y1="20" x2="16" y2="20"></line>
+            <line x1="12" y1="16" x2="12" y2="20"></line>
+            <polygon points="10 7.5 15 10 10 12.5 10 7.5" fill="#15141a"></polygon>
+          </svg>
+        `
+      },
+      {
+        id: 'details',
+        category: 'view',
+        title: 'Vind details sneller',
+        description: 'Gebruik contouren, bijlagen en eigenschappen om door PDF’s te bladeren.',
+        svg: `
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#15141a" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h6"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <circle cx="16.5" cy="16.5" r="3.5"></circle>
+            <line x1="19.2" y1="19.2" x2="22" y2="22"></line>
+          </svg>
+        `
+      }
+    ];
+
+    /**************************************************************
+     * 2. APPLICATIE STATE
+     **************************************************************/
+    let currentFilter = 'all';
+    let currentTool = 'organize';
+    let selectedPageIndex = 0;
+    let currentZoom = 1.0;
+    let currentViewMode = 'vertical'; // 'vertical' | 'horizontal' | 'twoup'
+    let currentDetailsTab = 'outlines';
+    let presSlideIndex = 0;
+
+    // Annotatie sub-modus voor "PDF's opmaken"
+    let annotateMode = 'highlight'; // 'highlight' | 'draw' | 'text'
+    let annotateColor = '#facc15';
+
+    // Voorbeeldpagina's in de PDF-werkruimte
+    let pdfPages = [
+      {
+        id: 'page-1',
+        chapter: '1. Samenvatting & Doelstelling',
+        badge: 'Hoofdstuk 1',
+        title: 'Firefox PDF-lezer: Snel, Privé & Lokaal',
+        body: 'Met de ingebouwde Firefox PDF-hulpmiddelen kunt u documenten rechtstreeks in uw browser bekijken, ordenen en ondertekenen zonder dat uw bestanden ooit naar een externe cloudserver worden verzonden.',
+        highlights: [
+          '100% lokale verwerking binnen uw eigen browser-tabblad.',
+          'Ondersteuning voor digitale handtekeningen, notities en alt-teksten.',
+          'Volledige toetsenbord- en schermlezertoegankelijkheid.'
+        ],
+        signBoxLabel: 'Handtekening accordering directie:',
+        strokes: [], // { mode: 'highlight'|'draw', color, width, points: [{x,y}] }
+        overlays: [
+          {
+            id: 'note-demo-1',
+            type: 'note',
+            x: 340,
+            y: 55,
+            color: '#fef08a',
+            author: 'Redactie',
+            text: 'Controleer of de handtekening onderaan pagina 1 staat vóór export.'
+          }
+        ]
+      },
+      {
+        id: 'page-2',
+        chapter: '2. Toegankelijkheid & Opmaak',
+        badge: 'Hoofdstuk 2',
+        title: 'Toegankelijke PDF-documenten voor iedereen',
+        body: 'Wanneer u afbeeldingen toevoegt aan een PDF-bestand in Firefox, kunt u direct een beschrijvende alternatieve tekst (alt-tekst) opgeven. Zo krijgen gebruikers met schermlezers direct context bij visuele diagrammen.',
+        highlights: [
+          'Markeer kernzinnen met de ingebouwde markeerstift.',
+          'Voeg tekstvelden en vrije schetsen toe op elke pagina.',
+          'Wissel moeiteloos tussen verticale, horizontale of dubbele paginaweergave.'
+        ],
+        signBoxLabel: 'Paraaf kwaliteitscontrole:',
+        strokes: [],
+        overlays: []
+      },
+      {
+        id: 'page-3',
+        chapter: '3. Bijlagen & Specificaties',
+        badge: 'Hoofdstuk 3',
+        title: 'Technische Contouren & Documentmetadata',
+        body: 'Gebruik het zijpaneel om razendsnel door grote rapporten te bladeren via hoofdstukcontouren, ingesloten bijlagen te bekijken en technische eigenschappen van het PDF-bestand te inspecteren.',
+        highlights: [
+          'Directe hoofdstuksprongen via de Contouren-lijst.',
+          'Ingesloten CSV- en tekstbijlagen direct inzien.',
+          'Scherpe weergave in volledig scherm met laserpointer.'
+        ],
+        signBoxLabel: 'Datum & goedkeuring:',
+        strokes: [],
+        overlays: []
+      }
+    ];
+
+    // Opgeslagen handtekeningen
+    let savedSignatures = [
+      {
+        id: 'sig-default',
+        label: 'J. de Vries (Voorbeeld)',
+        dataUrl: createSampleSignatureDataUrl()
+      }
+    ];
+
+    function createSampleSignatureDataUrl() {
+      const c = document.createElement('canvas');
+      c.width = 220;
+      c.height = 70;
+      const ctx = c.getContext('2d');
+      ctx.strokeStyle = '#3b28cc';
+      ctx.lineWidth = 2.6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(20, 48);
+      ctx.bezierCurveTo(45, 12, 65, 58, 92, 30);
+      ctx.bezierCurveTo(112, 15, 125, 52, 155, 28);
+      ctx.quadraticCurveTo(175, 18, 198, 42);
+      ctx.stroke();
+      return c.toDataURL();
+    }
+
+    /**************************************************************
+     * 3. RENDER BOVENSTE KAART & FILTERS
+     **************************************************************/
+    function renderFeaturesGrid() {
+      const grid = document.getElementById('featuresGrid');
+      const filtered = FIREFOX_FEATURES.filter(f => currentFilter === 'all' || f.category === currentFilter);
+
+      grid.innerHTML = filtered.map(f => {
+        const isActive = f.id === currentTool;
+        return `
+          <button
+            type="button"
+            onclick="activateTool('${f.id}', true)"
+            class="ff-feature-item text-left p-3 -m-3 flex items-start gap-4 group focus:outline-none ${isActive ? 'active' : ''}"
+          >
+            <div class="ff-icon-circle shrink-0 mt-0.5">
+              ${f.svg}
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <h2 class="text-[15.5px] font-bold text-[#15141a] group-hover:text-[#7542e5] transition-colors">
+                  ${f.title}
+                </h2>
+                ${isActive ? `<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#7542e5] text-white">Actief</span>` : ''}
+              </div>
+              <p class="text-[13.5px] leading-snug text-[#5b5b66]">
+                ${f.description}
+              </p>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function filterFeatures(cat) {
+      currentFilter = cat;
+      ['all', 'edit', 'view'].forEach(key => {
+        const btn = document.getElementById(`filter-${key}`);
+        if (key === cat) {
+          btn.className = 'filter-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition bg-[#7542e5] text-white shadow-sm';
+        } else {
+          btn.className = 'filter-tab px-3.5 py-1.5 rounded-lg text-xs font-semibold transition text-gray-700 hover:bg-purple-50';
+        }
+      });
+      renderFeaturesGrid();
+    }
+
+    function resetToOverview() {
+      currentFilter = 'all';
+      filterFeatures('all');
+      document.getElementById('urlBarText').textContent = 'about:pdf#features';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('Terug naar het volledige overzicht van Firefox-PDF-hulpmiddelen');
+    }
+
+    /**************************************************************
+     * 4. ACTIVEER EEN VAN DE 8 HULPMIDDELEN IN DE WERKRUIMTE
+     **************************************************************/
+    function activateTool(toolId, scrollToWorkspace = false) {
+      currentTool = toolId;
+      const featureObj = FIREFOX_FEATURES.find(f => f.id === toolId);
+      if (featureObj) {
+        document.getElementById('activeToolBadge').textContent = featureObj.title;
+        document.getElementById('urlBarText').textContent = `about:pdf#features-${toolId}`;
+      }
+
+      // Highlight toolbar icon
+      document.querySelectorAll('.tb-btn').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-purple-400', 'bg-white/20');
+      });
+      const activeTbBtn = document.getElementById(`tb-${toolId}`);
+      if (activeTbBtn && toolId !== 'present') {
+        activeTbBtn.classList.add('ring-2', 'ring-purple-400', 'bg-white/20');
+      }
+
+      // Show or hide left sidebar for "Vind details sneller"
+      const sidebar = document.getElementById('detailsSidebar');
+      if (toolId === 'details') {
+        sidebar.classList.remove('hidden');
+        sidebar.classList.add('flex');
+        renderDetailsSidebar();
+      } else {
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('flex');
+      }
+
+      renderFeaturesGrid();
+      renderToolControlPanel();
+      renderPdfPages();
+
+      if (toolId === 'present') {
+        openPresentationMode();
+      } else if (scrollToWorkspace) {
+        document.getElementById('workspaceSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    /**************************************************************
+     * 5. CONTEXTUEEL BEDIENINGSPANEEL PER HULPMIDDEL
+     **************************************************************/
+    function renderToolControlPanel() {
+      const panel = document.getElementById('toolControlPanel');
+
+      if (currentTool === 'organize') {
+        panel.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <span>1. Pagina’s ordenen</span>
+                <span class="text-xs font-normal text-gray-600">(Geselecteerd: Pagina ${selectedPageIndex + 1} van ${pdfPages.length})</span>
+              </h3>
+              <p class="text-xs text-gray-600">Herschik de volgorde van uw PDF-pagina's, voeg een extra pagina samen, verwijder of exporteer het resultaat.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="moveSelectedPage(-1)" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 hover:border-[#7542e5] text-xs font-semibold text-gray-800 transition flex items-center gap-1">
+                ← Verplaats naar voren
+              </button>
+              <button onclick="moveSelectedPage(1)" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 hover:border-[#7542e5] text-xs font-semibold text-gray-800 transition flex items-center gap-1">
+                Verplaats naar achteren →
+              </button>
+              <button onclick="reversePagesOrder()" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 hover:border-[#7542e5] text-xs font-semibold text-gray-800 transition">
+                ⇄ Volgorde omdraaien
+              </button>
+              <button onclick="mergeNewSamplePage()" class="px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-[#5e30c7] text-xs font-semibold transition">
+                + Pagina samenvoegen
+              </button>
+              <button onclick="deleteSelectedPage()" class="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold transition">
+                Verwijderen
+              </button>
+              <button onclick="openExportModal()" class="px-3.5 py-1.5 rounded-lg bg-[#7542e5] hover:bg-[#5e30c7] text-white text-xs font-semibold shadow-sm transition">
+                Exporteren
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentTool === 'signatures') {
+        panel.innerHTML = `
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+            <div class="lg:col-span-5 space-y-2">
+              <h3 class="text-sm font-bold text-gray-900">2. Handtekeningen opslaan & plaatsen</h3>
+              <p class="text-xs text-gray-600">Teken hieronder uw handtekening, sla deze op en klik op <strong>Plaats op pagina ${selectedPageIndex + 1}</strong>.</p>
+              <div class="flex items-center gap-2">
+                <input id="sigNameInput" type="text" placeholder="Naam bijv. M. Jansen" class="px-2.5 py-1.5 text-xs rounded-lg border border-gray-300 bg-white w-44 focus:outline-none focus:border-[#7542e5]" />
+                <button onclick="clearSignaturePad()" class="px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-medium hover:bg-gray-50">Wissen</button>
+                <button onclick="saveDrawnSignature()" class="px-3 py-1.5 rounded-lg bg-[#7542e5] text-white text-xs font-semibold hover:bg-[#5e30c7]">Opslaan</button>
+              </div>
+            </div>
+            <div class="lg:col-span-3 flex justify-center">
+              <canvas id="signaturePadCanvas" width="230" height="72" class="bg-white border-2 border-dashed border-purple-300 rounded-xl cursor-crosshair shadow-inner"></canvas>
+            </div>
+            <div class="lg:col-span-4 space-y-1.5">
+              <span class="text-xs font-semibold text-gray-700 block">Opgeslagen handtekeningen (${savedSignatures.length}):</span>
+              <div class="space-y-1.5 max-h-28 overflow-y-auto pr-1">
+                ${savedSignatures.map(sig => `
+                  <div class="flex items-center justify-between bg-white px-2.5 py-1.5 rounded-lg border border-gray-200">
+                    <div class="flex items-center gap-2">
+                      <img src="${sig.dataUrl}" alt="${sig.label}" class="h-6 w-16 object-contain bg-gray-50 rounded px-1" />
+                      <span class="text-xs font-medium text-gray-800 truncate max-w-[100px]">${sig.label}</span>
+                    </div>
+                    <button onclick="placeSignatureOnPage('${sig.id}')" class="px-2.5 py-1 rounded bg-purple-100 hover:bg-[#7542e5] hover:text-white text-[#5e30c7] text-xs font-semibold transition">
+                      + Plaats
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+        setTimeout(initSignaturePad, 20);
+      } else if (currentTool === 'notes') {
+        panel.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-gray-900">3. Notities toevoegen op pagina ${selectedPageIndex + 1}</h3>
+              <p class="text-xs text-gray-600">Voeg een opmerking of herinnering toe. U kunt geplaatste notities op de pagina verslepen of verwijderen.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="noteTextInput" type="text" placeholder="Typ uw opmerking of herinnering..." class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-xs w-64 focus:outline-none focus:border-[#7542e5]" />
+              <select id="noteColorSelect" class="px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs">
+                <option value="#fef08a">Gele notitie</option>
+                <option value="#e9d5ff">Paarse notitie</option>
+                <option value="#bbf7d0">Groene notitie</option>
+                <option value="#bfdbfe">Blauwe notitie</option>
+              </select>
+              <button onclick="addNoteToCurrentPage()" class="px-3.5 py-1.5 rounded-lg bg-[#7542e5] hover:bg-[#5e30c7] text-white text-xs font-semibold transition">
+                + Notitie plaatsen
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentTool === 'annotate') {
+        panel.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-gray-900">4. PDF’s opmaken (Tekst, Markeerstift & Vrij tekenen)</h3>
+              <p class="text-xs text-gray-600">Teken of markeer rechtstreeks met uw muis/vinger op de pagina, of voeg een tekstlabel toe.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="inline-flex rounded-lg bg-white p-1 border border-gray-300">
+                <button onclick="setAnnotateMode('highlight')" class="px-3 py-1 rounded-md text-xs font-semibold transition ${annotateMode === 'highlight' ? 'bg-[#7542e5] text-white' : 'text-gray-700'}">
+                  Markeerstift
+                </button>
+                <button onclick="setAnnotateMode('draw')" class="px-3 py-1 rounded-md text-xs font-semibold transition ${annotateMode === 'draw' ? 'bg-[#7542e5] text-white' : 'text-gray-700'}">
+                  Vrij tekenen
+                </button>
+              </div>
+
+              <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-gray-300">
+                ${['#facc15', '#f472b6', '#4ade80', '#7542e5', '#ef4444'].map(col => `
+                  <button onclick="setAnnotateColor('${col}')" style="background:${col}" class="w-5 h-5 rounded-full border ${annotateColor === col ? 'ring-2 ring-offset-1 ring-gray-900' : 'border-black/20'}"></button>
+                `).join('')}
+              </div>
+
+              <div class="flex items-center gap-1">
+                <input id="customTextAnnotInput" type="text" placeholder="Tekst toevoegen..." class="px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs w-40 focus:outline-none focus:border-[#7542e5]" />
+                <button onclick="addTextAnnotationToPage()" class="px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-[#5e30c7] text-xs font-semibold transition">
+                  + Tekst
+                </button>
+              </div>
+
+              <button onclick="clearPageStrokes()" class="px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-xs text-gray-700">
+                Tekening wissen
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentTool === 'images') {
+        panel.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-gray-900">5. Toegankelijke afbeeldingen uploaden (met Alt-tekst)</h3>
+              <p class="text-xs text-gray-600">Upload een afbeelding of kies een voorbeeld-diagram en voeg alternatieve tekst toe voor schermlezers.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <input id="imageAltInput" type="text" value="Grafiek van Firefox PDF-beveiliging en lokale verwerking" placeholder="Beschrijvende alt-tekst voor schermlezers..." class="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-xs w-72 focus:outline-none focus:border-[#7542e5]" />
+              <label class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 hover:border-[#7542e5] text-xs font-semibold text-gray-800 cursor-pointer transition">
+                Bestand kiezen...
+                <input type="file" accept="image/*" onchange="handleAccessibleImageUpload(event)" class="hidden" />
+              </label>
+              <button onclick="insertPresetAccessibleImage()" class="px-3.5 py-1.5 rounded-lg bg-[#7542e5] hover:bg-[#5e30c7] text-white text-xs font-semibold transition">
+                + Plaats toegankelijk diagram
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentTool === 'view') {
+        panel.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-gray-900">6. Kies uw weergave</h3>
+              <p class="text-xs text-gray-600">Scrol verticaal of horizontaal, of wissel naar een dubbele pagina-indeling (2-up).</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="setPdfViewMode('vertical')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${currentViewMode === 'vertical' ? 'bg-[#7542e5] text-white' : 'bg-white border border-gray-300 text-gray-800'}">
+                ↕ Verticaal scrollen
+              </button>
+              <button onclick="setPdfViewMode('horizontal')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${currentViewMode === 'horizontal' ? 'bg-[#7542e5] text-white' : 'bg-white border border-gray-300 text-gray-800'}">
+                ↔ Horizontaal scrollen
+              </button>
+              <button onclick="setPdfViewMode('twoup')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${currentViewMode === 'twoup' ? 'bg-[#7542e5] text-white' : 'bg-white border border-gray-300 text-gray-800'}">
+                [1|2] Dubbele pagina-indeling
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentTool === 'present') {
+        panel.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-gray-900">7. PDF’s in volledig scherm presenteren</h3>
+              <p class="text-xs text-gray-600">Presenteer uw document zonder werkbalken met pijltoetsnavigatie en een optionele laserpointer.</p>
+            </div>
+            <button onclick="openPresentationMode()" class="px-4 py-2 rounded-lg bg-[#7542e5] hover:bg-[#5e30c7] text-white text-xs font-semibold shadow-sm transition">
+              ▶ Start Presentatiemodus
+            </button>
+          </div>
+        `;
+      } else if (currentTool === 'details') {
+        panel.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-gray-900">8. Vind details sneller (Zijpaneel geopend)</h3>
+              <p class="text-xs text-gray-600">Gebruik het geopende zijpaneel links om door contouren (hoofdstukken), bijlagen en documenteigenschappen te bladeren.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="switchDetailsTab('outlines')" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-xs font-semibold text-gray-800 hover:border-[#7542e5]">Contouren</button>
+              <button onclick="switchDetailsTab('attachments')" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-xs font-semibold text-gray-800 hover:border-[#7542e5]">Bijlagen</button>
+              <button onclick="switchDetailsTab('properties')" class="px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-xs font-semibold text-gray-800 hover:border-[#7542e5]">Eigenschappen</button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    /**************************************************************
+     * 6. RENDER DE INTERACTIEVE PDF PAGINA'S
+     **************************************************************/
+    function renderPdfPages() {
+      const viewport = document.getElementById('pdfViewport');
+      viewport.className =
+        currentViewMode === 'horizontal'
+          ? 'pdf-viewport-horizontal'
+          : currentViewMode === 'twoup'
+          ? 'pdf-viewport-twoup'
+          : 'pdf-viewport-vertical';
+
+      document.getElementById('activePageIndicator').textContent = selectedPageIndex + 1;
+      document.getElementById('totalPagesIndicator').textContent = pdfPages.length;
+
+      const baseWidth = Math.round(560 * currentZoom);
+      const baseHeight = Math.round(740 * currentZoom);
+
+      viewport.innerHTML = pdfPages.map((page, idx) => {
+        const isSelected = idx === selectedPageIndex;
+        const isDrawingMode = currentTool === 'annotate';
+
+        return `
+          <div class="pdf-page-wrapper flex flex-col items-center">
+            <div
+              onclick="selectPage(${idx})"
+              style="width:${baseWidth}px; min-height:${baseHeight}px;"
+              class="pdf-page-sheet p-8 flex flex-col justify-between ${isSelected ? 'selected-page' : ''}"
+            >
+              <!-- Pagina Header -->
+              <div>
+                <div class="flex items-center justify-between border-b border-gray-200 pb-3 mb-5">
+                  <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 text-[#5e30c7]">
+                    ${page.badge}
+                  </span>
+                  <span class="text-xs text-gray-400 font-mono">Firefox PDF.js • Pagina ${idx + 1}</span>
+                </div>
+
+                <h4 class="text-xl font-bold text-gray-900 mb-3">${page.title}</h4>
+                <p class="text-sm text-gray-700 leading-relaxed mb-5">${page.body}</p>
+
+                <!-- Kernpunten Box -->
+                <div class="bg-[#f8f6fe] border border-purple-200/70 rounded-xl p-4 mb-6">
+                  <div class="text-xs font-bold text-[#5e30c7] uppercase tracking-wider mb-2">Belangrijkste voordelen</div>
+                  <ul class="space-y-2 text-xs text-gray-700">
+                    ${page.highlights.map(h => `
+                      <li class="flex items-start gap-2">
+                        <span class="text-[#7542e5] font-bold">✓</span>
+                        <span>${h}</span>
+                      </li>
+                    `).join('')}
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Ondertekeningsveld onderaan de pagina -->
+              <div class="border-t border-gray-200 pt-4 mt-6 flex items-center justify-between text-xs text-gray-500">
+                <div>
+                  <span class="block font-semibold text-gray-700">${page.signBoxLabel}</span>
+                  <span class="text-[11px] text-gray-400">Gebruik 'Handtekeningen opslaan' om hier te tekenen</span>
+                </div>
+                <div class="w-44 h-12 border border-dashed border-gray-300 rounded-lg flex items-center justify-center text-[11px] text-gray-400">
+                  Handtekeningvak
+                </div>
+              </div>
+
+              <!-- HTML5 Teken- & Markeerstift Canvas per pagina -->
+              <canvas
+                id="annot-canvas-${idx}"
+                width="560"
+                height="740"
+                data-page-index="${idx}"
+                class="annotation-canvas ${isDrawingMode ? 'drawing-active' : ''}"
+              ></canvas>
+
+              <!-- Geplaatste Overlays (Notities, Handtekeningen, Tekst, Toegankelijke Afbeeldingen) -->
+              ${page.overlays.map(ov => renderOverlayElement(idx, ov)).join('')}
+            </div>
+
+            <span class="mt-2 text-xs font-medium ${isSelected ? 'text-[#7542e5] font-bold' : 'text-gray-600'}">
+              Pagina ${idx + 1} — ${page.chapter}
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      // Herstel opgeslagen pen/markeerstift lijnen op elk canvas en koppel events
+      pdfPages.forEach((page, idx) => {
+        const canvas = document.getElementById(`annot-canvas-${idx}`);
+        if (canvas) {
+          redrawPageCanvas(canvas, page.strokes);
+          attachAnnotationCanvasEvents(canvas, idx);
+        }
+      });
+    }
+
+    function renderOverlayElement(pageIdx, ov) {
+      if (ov.type === 'note') {
+        return `
+          <div
+            style="left:${ov.x}px; top:${ov.y}px; background:${ov.color};"
+            class="placed-overlay-item w-48 p-3 rounded-xl shadow-md border border-black/10 text-xs text-gray-900"
+            onmousedown="startDragOverlay(event, ${pageIdx}, '${ov.id}')"
+          >
+            <div class="flex items-center justify-between font-bold text-[11px] mb-1 pb-1 border-b border-black/10">
+              <span>💬 Notitie</span>
+              <button onclick="removeOverlay(event, ${pageIdx}, '${ov.id}')" class="text-gray-600 hover:text-red-600 font-bold" title="Notitie verwijderen">✕</button>
+            </div>
+            <p class="leading-snug break-words">${ov.text}</p>
+          </div>
+        `;
+      }
+
+      if (ov.type === 'signature') {
+        return `
+          <div
+            style="left:${ov.x}px; top:${ov.y}px;"
+            class="placed-overlay-item bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-purple-300 shadow-sm"
+            onmousedown="startDragOverlay(event, ${pageIdx}, '${ov.id}')"
+          >
+            <div class="flex items-center justify-between gap-3 mb-0.5">
+              <span class="text-[10px] font-semibold text-purple-700">${ov.label}</span>
+              <button onclick="removeOverlay(event, ${pageIdx}, '${ov.id}')" class="text-[10px] text-gray-400 hover:text-red-600">✕</button>
+            </div>
+            <img src="${ov.dataUrl}" alt="Handtekening ${ov.label}" class="h-10 w-36 object-contain pointer-events-none" />
+          </div>
+        `;
+      }
+
+      if (ov.type === 'text') {
+        return `
+          <div
+            style="left:${ov.x}px; top:${ov.y}px; color:${ov.color};"
+            class="placed-overlay-item bg-white/95 px-2.5 py-1 rounded border border-purple-300 shadow-sm font-bold text-sm flex items-center gap-2"
+            onmousedown="startDragOverlay(event, ${pageIdx}, '${ov.id}')"
+          >
+            <span>${ov.text}</span>
+            <button onclick="removeOverlay(event, ${pageIdx}, '${ov.id}')" class="text-xs text-gray-400 hover:text-red-600">✕</button>
+          </div>
+        `;
+      }
+
+      if (ov.type === 'image') {
+        return `
+          <div
+            style="left:${ov.x}px; top:${ov.y}px;"
+            class="placed-overlay-item bg-white p-2 rounded-xl border-2 border-[#7542e5] shadow-md w-56"
+            onmousedown="startDragOverlay(event, ${pageIdx}, '${ov.id}')"
+          >
+            <div class="flex items-center justify-between mb-1">
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#7542e5] text-white text-[10px] font-bold" title="Alternatieve tekst aanwezig voor schermlezers">
+                ALT ✓ Toegankelijk
+              </span>
+              <button onclick="removeOverlay(event, ${pageIdx}, '${ov.id}')" class="text-xs text-gray-400 hover:text-red-600">✕</button>
+            </div>
+            <img src="${ov.src}" alt="${ov.alt}" class="w-full h-24 object-cover rounded-lg mb-1.5 pointer-events-none" />
+            <div class="bg-purple-50 p-1.5 rounded text-[10px] text-purple-950 leading-tight">
+              <strong>Schermlezer alt-tekst:</strong> "${ov.alt}"
+            </div>
+          </div>
+        `;
+      }
+      return '';
+    }
+
+    /**************************************************************
+     * 7. INTERACTIEVE FUNCTIES VOOR ALLE 8 HULPMIDDELEN
+     **************************************************************/
+
+    // Algemene paginaselectie & zoom
+    function selectPage(idx) {
+      if (idx < 0 || idx >= pdfPages.length) return;
+      selectedPageIndex = idx;
+      document.getElementById('activePageIndicator').textContent = selectedPageIndex + 1;
+      if (currentTool === 'organize' || currentTool === 'signatures' || currentTool === 'notes') {
+        renderToolControlPanel();
+      }
+      document.querySelectorAll('.pdf-page-sheet').forEach((el, i) => {
+        el.classList.toggle('selected-page', i === selectedPageIndex);
+      });
+    }
+
+    function selectPrevPage() {
+      if (selectedPageIndex > 0) selectPage(selectedPageIndex - 1);
+    }
+
+    function selectNextPage() {
+      if (selectedPageIndex < pdfPages.length - 1) selectPage(selectedPageIndex + 1);
+    }
+
+    function adjustZoom(delta) {
+      currentZoom = Math.min(1.3, Math.max(0.7, +(currentZoom + delta).toFixed(2)));
+      document.getElementById('zoomLabel').textContent = `${Math.round(currentZoom * 100)}%`;
+      renderPdfPages();
+    }
+
+    // 1. PAGINA'S ORDENEN
+    function moveSelectedPage(direction) {
+      const targetIndex = selectedPageIndex + direction;
+      if (targetIndex < 0 || targetIndex >= pdfPages.length) {
+        showToast('Pagina staat al op de uiterste positie');
+        return;
+      }
+      const temp = pdfPages[selectedPageIndex];
+      pdfPages[selectedPageIndex] = pdfPages[targetIndex];
+      pdfPages[targetIndex] = temp;
+      selectedPageIndex = targetIndex;
+      renderToolControlPanel();
+      renderPdfPages();
+      showToast(`Pagina verplaatst naar positie ${selectedPageIndex + 1}`);
+    }
+
+    function reversePagesOrder() {
+      pdfPages.reverse();
+      selectedPageIndex = 0;
+      renderToolControlPanel();
+      renderPdfPages();
+      showToast('Paginavolgorde omgedraaid');
+    }
+
+    function mergeNewSamplePage() {
+      const newNum = pdfPages.length + 1;
+      pdfPages.push({
+        id: 'page-' + Date.now(),
+        chapter: `${newNum}. Samengevoegde Bijlage`,
+        badge: `Nieuw samengevoegd`,
+        title: `Extra Samengevoegde Pagina (#${newNum})`,
+        body: 'Deze pagina is zojuist samengevoegd met het huidige PDF-document via het hulpmiddel "Pagina’s ordenen" in Firefox.',
+        highlights: [
+          'Direct toegevoegd zonder kwaliteitsverlies.',
+          'Volledig bewerkbaar met markeerstift, notities en handtekeningen.'
+        ],
+        signBoxLabel: 'Handtekening voor ontvangst:',
+        strokes: [],
+        overlays: []
+      });
+      selectedPageIndex = pdfPages.length - 1;
+      renderToolControlPanel();
+      renderPdfPages();
+      showToast(`Pagina ${newNum} samengevoegd in het document`);
+    }
+
+    function deleteSelectedPage() {
+      if (pdfPages.length <= 1) {
+        showToast('Het document moet minimaal één pagina bevatten');
+        return;
+      }
+      pdfPages.splice(selectedPageIndex, 1);
+      selectedPageIndex = Math.max(0, selectedPageIndex - 1);
+      renderToolControlPanel();
+      renderPdfPages();
+      showToast('Geselecteerde pagina verwijderd');
+    }
+
+    function openExportModal() {
+      const totalOverlays = pdfPages.reduce((acc, p) => acc + p.overlays.length, 0);
+      const totalStrokes = pdfPages.reduce((acc, p) => acc + p.strokes.length, 0);
+      document.getElementById('exportSummaryBody').innerHTML = `
+        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-2 text-gray-800">
+          <div><strong>Bestand:</strong> Firefox_Privacy_Rapport_2026.pdf</div>
+          <div><strong>Aantal pagina’s:</strong> ${pdfPages.length} pagina’s</div>
+          <div><strong>Geplaatste notities, handtekeningen & alt-afbeeldingen:</strong> ${totalOverlays}</div>
+          <div><strong>Markeringen & vrije tekeningen:</strong> ${totalStrokes}</div>
+        </div>
+        <p class="text-xs text-gray-500">Alle bewerkingen zijn lokaal in uw browser uitgevoerd.</p>
+      `;
+      const modal = document.getElementById('exportModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeExportModal() {
+      const modal = document.getElementById('exportModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // 2. HANDTEKENINGEN OPSLAAN
+    let sigPadDrawing = false;
+    function initSignaturePad() {
+      const canvas = document.getElementById('signaturePadCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.strokeStyle = '#1e1b4b';
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      };
+
+      canvas.onmousedown = (e) => {
+        sigPadDrawing = true;
+        const p = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+      };
+      canvas.onmousemove = (e) => {
+        if (!sigPadDrawing) return;
+        const p = getPos(e);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      };
+      window.addEventListener('mouseup', () => { sigPadDrawing = false; });
+
+      canvas.ontouchstart = (e) => {
+        e.preventDefault();
+        sigPadDrawing = true;
+        const p = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+      };
+      canvas.ontouchmove = (e) => {
+        e.preventDefault();
+        if (!sigPadDrawing) return;
+        const p = getPos(e);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      };
+      canvas.ontouchend = () => { sigPadDrawing = false; };
+    }
+
+    function clearSignaturePad() {
+      const canvas = document.getElementById('signaturePadCanvas');
+      if (!canvas) return;
+      canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function saveDrawnSignature() {
+      const canvas = document.getElementById('signaturePadCanvas');
+      if (!canvas) return;
+      const nameInput = document.getElementById('sigNameInput');
+      const label = (nameInput && nameInput.value.trim()) || `Handtekening #${savedSignatures.length + 1}`;
+      const dataUrl = canvas.toDataURL();
+      savedSignatures.unshift({
+        id: 'sig-' + Date.now(),
+        label,
+        dataUrl
+      });
+      renderToolControlPanel();
+      showToast(`Handtekening "${label}" opgeslagen`);
+    }
+
+    function placeSignatureOnPage(sigId) {
+      const sig = savedSignatures.find(s => s.id === sigId);
+      if (!sig) return;
+      pdfPages[selectedPageIndex].overlays.push({
+        id: 'ov-sig-' + Date.now(),
+        type: 'signature',
+        label: sig.label,
+        dataUrl: sig.dataUrl,
+        x: 310,
+        y: 615
+      });
+      renderPdfPages();
+      showToast(`Handtekening geplaatst op pagina ${selectedPageIndex + 1}`);
+    }
+
+    // 3. NOTITIES TOEVOEGEN
+    function addNoteToCurrentPage() {
+      const input = document.getElementById('noteTextInput');
+      const colorSelect = document.getElementById('noteColorSelect');
+      const text = (input && input.value.trim()) || 'Herinnering: paragraaf controleren vóór publicatie.';
+      const color = colorSelect ? colorSelect.value : '#fef08a';
+
+      pdfPages[selectedPageIndex].overlays.push({
+        id: 'ov-note-' + Date.now(),
+        type: 'note',
+        text,
+        color,
+        x: 60 + Math.floor(Math.random() * 180),
+        y: 120 + Math.floor(Math.random() * 160)
+      });
+
+      if (input) input.value = '';
+      renderPdfPages();
+      showToast(`Notitie toegevoegd aan pagina ${selectedPageIndex + 1}`);
+    }
+
+    // 4. PDF'S OPMAKEN (MARKEERSTIFT, VRIJ TEKENEN & TEKST)
+    function setAnnotateMode(mode) {
+      annotateMode = mode;
+      renderToolControlPanel();
+    }
+
+    function setAnnotateColor(col) {
+      annotateColor = col;
+      renderToolControlPanel();
+    }
+
+    function addTextAnnotationToPage() {
+      const inp = document.getElementById('customTextAnnotInput');
+      const text = (inp && inp.value.trim()) || 'GOEDGEKEURD';
+      pdfPages[selectedPageIndex].overlays.push({
+        id: 'ov-txt-' + Date.now(),
+        type: 'text',
+        text,
+        color: annotateColor === '#facc15' ? '#7542e5' : annotateColor,
+        x: 160,
+        y: 320
+      });
+      if (inp) inp.value = '';
+      renderPdfPages();
+      showToast(`Tekst toegevoegd op pagina ${selectedPageIndex + 1}`);
+    }
+
+    function clearPageStrokes() {
+      pdfPages[selectedPageIndex].strokes = [];
+      renderPdfPages();
+      showToast(`Tekeningen op pagina ${selectedPageIndex + 1} gewist`);
+    }
+
+    function redrawPageCanvas(canvas, strokes) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      strokes.forEach(s => {
+        if (!s.points || s.points.length < 2) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.mode === 'highlight' ? 18 : 3;
+        ctx.globalAlpha = s.mode === 'highlight' ? 0.38 : 0.95;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.moveTo(s.points[0].x, s.points[0].y);
+        for (let i = 1; i < s.points.length; i++) {
+          ctx.lineTo(s.points[i].x, s.points[i].y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+
+    function attachAnnotationCanvasEvents(canvas, pageIdx) {
+      let drawing = false;
+      let currentStroke = null;
+
+      const getCoords = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: ((clientX - rect.left) / rect.width) * canvas.width,
+          y: ((clientY - rect.top) / rect.height) * canvas.height
+        };
+      };
+
+      const start = (e) => {
+        if (currentTool !== 'annotate') return;
+        selectedPageIndex = pageIdx;
+        drawing = true;
+        currentStroke = {
+          mode: annotateMode,
+          color: annotateColor,
+          points: [getCoords(e)]
+        };
+        pdfPages[pageIdx].strokes.push(currentStroke);
+      };
+
+      const move = (e) => {
+        if (!drawing || !currentStroke) return;
+        currentStroke.points.push(getCoords(e));
+        redrawPageCanvas(canvas, pdfPages[pageIdx].strokes);
+      };
+
+      const end = () => {
+        drawing = false;
+        currentStroke = null;
+      };
+
+      canvas.onmousedown = start;
+      canvas.onmousemove = move;
+      canvas.onmouseup = end;
+      canvas.ontouchstart = (e) => { e.preventDefault(); start(e); };
+      canvas.ontouchmove = (e) => { e.preventDefault(); move(e); };
+      canvas.ontouchend = end;
+    }
+
+    // 5. TOEGANKELIJKE AFBEELDINGEN UPLOADEN
+    function createPresetDiagramSvgDataUrl() {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="150" viewBox="0 0 320 150">
+        <rect width="320" height="150" rx="12" fill="#f3effe"/>
+        <rect x="28" y="80" width="45" height="48" rx="6" fill="#9059ff"/>
+        <rect x="95" y="52" width="45" height="76" rx="6" fill="#7542e5"/>
+        <rect x="162" y="28" width="45" height="100" rx="6" fill="#5e30c7"/>
+        <circle cx="260" cy="65" r="32" fill="#ff7139" opacity="0.9"/>
+        <text x="24" y="24" font-family="sans-serif" font-size="11" font-weight="bold" fill="#15141a">Firefox PDF Privacy &amp; Toegankelijkheid</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    function insertPresetAccessibleImage() {
+      const altInput = document.getElementById('imageAltInput');
+      const alt = (altInput && altInput.value.trim()) || 'Diagram van lokale PDF-verwerking in Firefox';
+      pdfPages[selectedPageIndex].overlays.push({
+        id: 'ov-img-' + Date.now(),
+        type: 'image',
+        src: createPresetDiagramSvgDataUrl(),
+        alt,
+        x: 260,
+        y: 380
+      });
+      renderPdfPages();
+      showToast(`Toegankelijke afbeelding met alt-tekst geplaatst op pagina ${selectedPageIndex + 1}`);
+    }
+
+    function handleAccessibleImageUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const altInput = document.getElementById('imageAltInput');
+      const alt = (altInput && altInput.value.trim()) || `Geüploade afbeelding: ${file.name}`;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        pdfPages[selectedPageIndex].overlays.push({
+          id: 'ov-img-' + Date.now(),
+          type: 'image',
+          src: e.target.result,
+          alt,
+          x: 240,
+          y: 360
+        });
+        renderPdfPages();
+        showToast(`Afbeelding "${file.name}" met alt-tekst toegevoegd`);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 6. KIES UW WEERGAVE
+    function setPdfViewMode(mode) {
+      currentViewMode = mode;
+      renderToolControlPanel();
+      renderPdfPages();
+      const labels = {
+        vertical: 'Verticaal scrollen geactiveerd',
+        horizontal: 'Horizontaal scrollen geactiveerd',
+        twoup: 'Dubbele pagina-indeling (2-up) geactiveerd'
+      };
+      showToast(labels[mode] || 'Weergave aangepast');
+    }
+
+    // 7. PDF'S IN VOLLEDIG SCHERM PRESENTEREN
+    function openPresentationMode() {
+      presSlideIndex = selectedPageIndex;
+      const overlay = document.getElementById('presentationOverlay');
+      overlay.classList.remove('hidden');
+      overlay.classList.add('flex');
+      renderPresentationSlide();
+    }
+
+    function closePresentationMode() {
+      const overlay = document.getElementById('presentationOverlay');
+      overlay.classList.add('hidden');
+      overlay.classList.remove('flex');
+      toggleLaserPointer(false);
+    }
+
+    function changePresSlide(delta) {
+      const next = presSlideIndex + delta;
+      if (next < 0 || next >= pdfPages.length) return;
+      presSlideIndex = next;
+      selectedPageIndex = next;
+      renderPresentationSlide();
+    }
+
+    function renderPresentationSlide() {
+      const page = pdfPages[presSlideIndex];
+      const container = document.getElementById('presSlideContainer');
+      document.getElementById('presSlideCounter').textContent = `Pagina ${presSlideIndex + 1} / ${pdfPages.length}`;
+      const pct = Math.round(((presSlideIndex + 1) / pdfPages.length) * 100);
+      document.getElementById('presProgressBar').style.width = `${pct}%`;
+
+      container.innerHTML = `
+        <div style="width:560px; min-height:680px;" class="pdf-page-sheet p-8 flex flex-col justify-between text-gray-900">
+          <div>
+            <div class="flex items-center justify-between border-b border-gray-200 pb-3 mb-5">
+              <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 text-[#5e30c7]">${page.badge}</span>
+              <span class="text-xs text-gray-400">Firefox Presentatiemodus • Slide ${presSlideIndex + 1}</span>
+            </div>
+            <h4 class="text-2xl font-bold text-gray-900 mb-3">${page.title}</h4>
+            <p class="text-sm text-gray-700 leading-relaxed mb-5">${page.body}</p>
+            <div class="bg-[#f8f6fe] border border-purple-200 rounded-xl p-4">
+              <ul class="space-y-2 text-xs text-gray-700">
+                ${page.highlights.map(h => `<li class="flex items-start gap-2"><span class="text-[#7542e5] font-bold">✓</span><span>${h}</span></li>`).join('')}
+              </ul>
+            </div>
+          </div>
+          <div class="border-t border-gray-200 pt-4 text-xs text-gray-500 flex justify-between">
+            <span>${page.chapter}</span>
+            <span>Firefox-PDF-hulpmiddelen</span>
+          </div>
+          ${page.overlays.map(ov => renderOverlayElement(presSlideIndex, ov)).join('')}
+        </div>
+      `;
+    }
+
+    function toggleLaserPointer(enabled) {
+      const dot = document.getElementById('laserDot');
+      const area = document.getElementById('presSlideArea');
+      if (enabled) {
+        dot.classList.remove('hidden');
+        area.onmousemove = (e) => {
+          dot.style.left = (e.clientX - 8) + 'px';
+          dot.style.top = (e.clientY - 8) + 'px';
+        };
+      } else {
+        dot.classList.add('hidden');
+        area.onmousemove = null;
+      }
+    }
+
+    // 8. VIND DETAILS SNELLER (CONTOUREN, BIJLAGEN, EIGENSCHAPPEN)
+    function switchDetailsTab(tab) {
+      currentDetailsTab = tab;
+      ['outlines', 'attachments', 'properties'].forEach(t => {
+        const btn = document.getElementById(`dtab-${t}`);
+        if (!btn) return;
+        if (t === tab) {
+          btn.className = 'py-3 px-2 border-b-2 border-[#7542e5] text-[#7542e5] bg-white font-semibold';
+        } else {
+          btn.className = 'py-3 px-2 border-b-2 border-transparent text-gray-600 hover:text-gray-900';
+        }
+      });
+      renderDetailsSidebar();
+    }
+
+    function renderDetailsSidebar() {
+      const container = document.getElementById('detailsTabContent');
+      if (!container) return;
+
+      if (currentDetailsTab === 'outlines') {
+        container.innerHTML = `
+          <div class="space-y-2">
+            <p class="text-xs text-gray-500 mb-3">Klik op een hoofdstukcontour om direct naar die pagina te springen:</p>
+            ${pdfPages.map((p, idx) => `
+              <button
+                onclick="selectPage(${idx})"
+                class="w-full text-left p-2.5 rounded-xl border transition flex items-center justify-between ${idx === selectedPageIndex ? 'bg-purple-50 border-[#7542e5] text-[#5e30c7] font-semibold' : 'border-gray-200 hover:bg-gray-50 text-gray-800'}"
+              >
+                <span class="text-xs truncate">${p.chapter}</span>
+                <span class="text-[11px] px-2 py-0.5 rounded bg-gray-100 text-gray-600">p. ${idx + 1}</span>
+              </button>
+            `).join('')}
+          </div>
+        `;
+      } else if (currentDetailsTab === 'attachments') {
+        container.innerHTML = `
+          <div class="space-y-3">
+            <p class="text-xs text-gray-500">Ingesloten bijlagen in dit PDF-document:</p>
+            <div class="p-3 rounded-xl border border-gray-200 bg-gray-50 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-800">📄 toegankelijkheid-checklist.txt</span>
+                <span class="text-[10px] text-gray-500">1,4 KB</span>
+              </div>
+              <p class="text-[11px] text-gray-600">Richtlijnen voor alt-tekst en PDF/UA-structuur.</p>
+              <button onclick="showToast('Bijlage toegankelijkheid-checklist.txt geopend')" class="text-xs font-semibold text-[#7542e5] hover:underline">
+                Voorbeeld bekijken →
+              </button>
+            </div>
+            <div class="p-3 rounded-xl border border-gray-200 bg-gray-50 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-gray-800">📊 pdf-functies-overzicht.csv</span>
+                <span class="text-[10px] text-gray-500">2,8 KB</span>
+              </div>
+              <p class="text-[11px] text-gray-600">Overzicht van alle 8 Firefox PDF-hulpmiddelen.</p>
+              <button onclick="showToast('Bijlage pdf-functies-overzicht.csv geopend')" class="text-xs font-semibold text-[#7542e5] hover:underline">
+                Voorbeeld bekijken →
+              </button>
+            </div>
+          </div>
+        `;
+      } else if (currentDetailsTab === 'properties') {
+        container.innerHTML = `
+          <dl class="space-y-2.5 text-xs">
+            <div class="bg-gray-50 p-2.5 rounded-lg">
+              <dt class="text-gray-500">Bestandsnaam</dt>
+              <dd class="font-semibold text-gray-900">Firefox_Privacy_Rapport_2026.pdf</dd>
+            </div>
+            <div class="bg-gray-50 p-2.5 rounded-lg">
+              <dt class="text-gray-500">Titel</dt>
+              <dd class="font-semibold text-gray-900">Firefox-PDF-hulpmiddelen Referentie</dd>
+            </div>
+            <div class="bg-gray-50 p-2.5 rounded-lg">
+              <dt class="text-gray-500">Auteur</dt>
+              <dd class="font-semibold text-gray-900">Mozilla Firefox PDF.js Engine</dd>
+            </div>
+            <div class="bg-gray-50 p-2.5 rounded-lg">
+              <dt class="text-gray-500">Aantal pagina’s</dt>
+              <dd class="font-semibold text-gray-900">${pdfPages.length} pagina’s</dd>
+            </div>
+            <div class="bg-gray-50 p-2.5 rounded-lg">
+              <dt class="text-gray-500">PDF-versie & Verwerking</dt>
+              <dd class="font-semibold text-gray-900">PDF 1.7 (100% Lokaal & Privé)</dd>
+            </div>
+          </dl>
+        `;
+      }
+    }
+
+    /**************************************************************
+     * 8. DRAG & DROP EN VERWIJDEREN VAN OVERLAYS OP DE PAGINA
+     **************************************************************/
+    let dragState = null;
+
+    function startDragOverlay(e, pageIdx, overlayId) {
+      if (e.target.tagName === 'BUTTON') return;
+      e.stopPropagation();
+      selectedPageIndex = pageIdx;
+      const page = pdfPages[pageIdx];
+      const ov = page.overlays.find(o => o.id === overlayId);
+      if (!ov) return;
+
+      dragState = {
+        pageIdx,
+        ov,
+        startX: e.clientX,
+        startY: e.clientY,
+        origX: ov.x,
+        origY: ov.y
+      };
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      if (!dragState) return;
+      const dx = (e.clientX - dragState.startX) / currentZoom;
+      const dy = (e.clientY - dragState.startY) / currentZoom;
+      dragState.ov.x = Math.max(10, Math.min(360, Math.round(dragState.origX + dx)));
+      dragState.ov.y = Math.max(10, Math.min(640, Math.round(dragState.origY + dy)));
+      renderPdfPages();
+    });
+
+    window.addEventListener('mouseup', () => {
+      dragState = null;
+    });
+
+    function removeOverlay(e, pageIdx, overlayId) {
+      e.stopPropagation();
+      pdfPages[pageIdx].overlays = pdfPages[pageIdx].overlays.filter(o => o.id !== overlayId);
+      renderPdfPages();
+      showToast('Item van pagina verwijderd');
+    }
+
+    /**************************************************************
+     * 9. TOAST MELDINGEN & TOETSENBORD SNELTOETSEN
+     **************************************************************/
+    let toastTimer = null;
+    function showToast(message) {
+      const toast = document.getElementById('toastNotice');
+      document.getElementById('toastText').textContent = message;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 2800);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const presOpen = !document.getElementById('presentationOverlay').classList.contains('hidden');
+      if (presOpen) {
+        if (e.key === 'Escape') closePresentationMode();
+        if (e.key === 'ArrowRight' || e.key === ' ') changePresSlide(1);
+        if (e.key === 'ArrowLeft') changePresSlide(-1);
+      }
+    });
+
+    // Initialisatie bij laden
+    window.onload = function () {
+      renderFeaturesGrid();
+      activateTool('organize', false);
+    };
+  </script>
+</body>
+</html>

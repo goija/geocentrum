@@ -1,0 +1,28 @@
+#!/bin/bash
+echo "🚀 VORTEX OS Lokaal Opstarten..."
+
+# Navigeer naar de map waar dit script staat
+cd "$(dirname "$0")"
+
+# Controleer of de server al draait
+if command -v lsof &> /dev/null && lsof -Pi :8080 -sTCP:LISTEN -t >/dev/null ; then
+    echo "⚠️ Lokale server draait al op poort 8080."
+else
+    echo "🌐 Lokale Python webserver starten op poort 8080..."
+    # Start server op de achtergrond
+    python3 -m http.server 8000 &
+    # Geef de server even een seconde om op te starten
+    sleep 2
+fi
+
+# Open de standaard webbrowser direct naar de juiste pagina
+echo "🗺️ Mapglobe Cockpit openen in je browser..."
+if command -v xdg-open &> /dev/null; then
+    xdg-open "http://localhost:8000/cockpittools/mapglobe.html"
+elif command -v sensible-browser &> /dev/null; then
+    sensible-browser "http://localhost:8000/cockpittools/mapglobe.html"
+else
+    echo "🔗 Open handmatig: http://localhost:8000/cockpittools/mapglobe.html"
+fi
+
+echo "✅ VORTEX OS is succesvol gestart!"

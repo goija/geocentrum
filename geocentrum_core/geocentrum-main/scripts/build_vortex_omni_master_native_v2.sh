@@ -1,0 +1,616 @@
+#!/bin/bash
+set -e
+
+echo "🌀 VORTEX OS v158.5 — Draggable, Toggleable & Persistent Native Viewports..."
+
+TARGET_DIR="/home/ontwerp/Bureaublad/geocentrum-main/geocentrum-main"
+mkdir -p "$TARGET_DIR"
+cd "$TARGET_DIR"
+
+cat << 'HTML_EOF' > vortex_omni_master_v158.html
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS v158.5 — Interactive Modular Viewports</title>
+  <script src="./assets_manifest.js"></script>
+  <style>
+    :root { 
+      --bg: #030712; 
+      --panel: rgba(15,23,42,0.95); 
+      --cyan: #00e5ff; 
+      --gold: #ffcc33; 
+      --magenta: #ff3385; 
+      --green: #00ff88;
+      --red: #ff4444;
+      --text: #f1f5f9; 
+      --font: 'Fira Code', monospace; 
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      font-family: var(--font); 
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden;
+      user-select: none;
+    }
+    header { 
+      background: #0f172a; 
+      padding: 0.6rem 1.2rem; 
+      border-bottom: 1px solid #1e293b; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+    }
+    h1 { font-size: 1.1rem; color: var(--cyan); }
+    main { 
+      display: grid; 
+      grid-template-columns: 290px 1fr 290px; 
+      flex: 1; 
+      height: calc(100vh - 45px);
+    }
+    .sidebar { 
+      background: var(--panel); 
+      border-right: 1px solid #1e293b; 
+      padding: 1rem; 
+      font-size: 0.75rem; 
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      overflow-y: auto;
+    }
+    .sidebar.right { 
+      border-right: none; 
+      border-left: 1px solid #1e293b; 
+    }
+    .sidebar-section-title {
+      color: var(--gold);
+      font-size: 0.8rem;
+      margin-top: 0.4rem;
+      margin-bottom: 0.2rem;
+      border-bottom: 1px dashed rgba(255,204,51,0.3);
+      padding-bottom: 4px;
+    }
+    .nav-button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(0,229,255,0.25);
+      border-radius: 4px;
+      color: var(--cyan);
+      font-family: var(--font);
+      font-size: 0.75rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .nav-button:hover, .nav-button.active {
+      background: rgba(0,229,255,0.15);
+      border-color: var(--cyan);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0,229,255,0.2);
+    }
+    .toggle-chip {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.65rem;
+      font-weight: bold;
+    }
+    .chip-on { background: rgba(0,255,136,0.2); color: var(--green); border: 1px solid var(--green); }
+    .chip-off { background: rgba(255,68,68,0.2); color: var(--red); border: 1px solid var(--red); }
+
+    .viewport-grid { 
+      display: grid; 
+      grid-template-columns: repeat(2, 1fr); 
+      grid-template-rows: repeat(2, 1fr); 
+      gap: 6px;
+      padding: 6px;
+      background: #02040a; 
+      width: 100%;
+      height: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .native-viewport {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      cursor: grab;
+      transition: transform 0.15s ease, border-color 0.2s ease;
+    }
+    .native-viewport:active {
+      cursor: grabbing;
+    }
+    .native-viewport.dragging {
+      opacity: 0.4;
+      border: 2px dashed var(--cyan);
+    }
+    .native-viewport.drag-over {
+      border-color: var(--gold);
+      box-shadow: 0 0 12px rgba(255,204,51,0.4);
+      transform: scale(0.99);
+    }
+
+    .viewport-header {
+      background: rgba(15,23,42,0.95);
+      padding: 6px 10px;
+      font-size: 0.72rem;
+      color: var(--gold);
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      cursor: grab;
+    }
+    .header-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .btn-icon {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--text);
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.68rem;
+      transition: all 0.2s ease;
+    }
+    .btn-icon:hover {
+      background: rgba(255,68,68,0.3);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    .viewport-body {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .hud-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .overlay-info {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(3,7,18,0.88);
+      border: 1px solid var(--cyan);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      color: var(--cyan);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌀 VORTEX OS v158.5 — INTERACTIVE MODULAR VIEWPORTS</h1>
+  <div style="font-size: 0.72rem; color: #64748b; display:flex; gap:12px; align-items:center;">
+    <span style="color:var(--green);" id="saveStatus">● STATE: SAVED (LOCALSTORAGE)</span>
+    <span>Node: Mathgeo-Seven</span>
+  </div>
+</header>
+
+<main>
+  <!-- Linker Navigatie Sidebar -->
+  <section class="sidebar">
+    <div class="sidebar-section-title">🧭 VIEWPORT BEHEER</div>
+    <button class="nav-button" onclick="setGridMode('quad')">
+      <span>🔲 Quad Grid (Alle Actieve)</span>
+    </button>
+
+    <div class="sidebar-section-title">👁️ OPEN / DICHT SCHAKELAARS</div>
+    <button class="nav-button" onclick="toggleViewport('vp1')">
+      <span>🎯 1. Bipolar HUD</span>
+      <span id="chip-vp1" class="toggle-chip chip-on">AAN</span>
+    </button>
+    <button class="nav-button" onclick="toggleViewport('vp2')">
+      <span>🌍 2. 3D Vector Globe</span>
+      <span id="chip-vp2" class="toggle-chip chip-on">AAN</span>
+    </button>
+    <button class="nav-button" onclick="toggleViewport('vp3')">
+      <span>🌸 3. k=7 Caustic Layer</span>
+      <span id="chip-vp3" class="toggle-chip chip-on">AAN</span>
+    </button>
+    <button class="nav-button" onclick="toggleViewport('vp4')">
+      <span>🌌 4. Nebra Pleiades</span>
+      <span id="chip-vp4" class="toggle-chip chip-on">AAN</span>
+    </button>
+
+    <div class="sidebar-section-title">⚙️ LAYOUT GEHEUGEN</div>
+    <button class="nav-button" onclick="resetDefaultLayout()" style="border-color:var(--gold); color:var(--gold);">
+      <span>🔄 Herstel Standaard Grid</span>
+    </button>
+
+    <div class="sidebar-section-title">📄 DOCUMENTATIE</div>
+    <a class="nav-button" href="/vortex_geodetic_refraction_report-v2.pdf" target="_blank" style="color:var(--gold); text-decoration:none;">
+      <span>📄 PDF Audit Rapport v2</span>
+    </a>
+    <a class="nav-button" href="/naamloos_dossier.pdf" target="_blank" style="color:var(--green); text-decoration:none;">
+      <span>📄 Nieuw Dossier PDF</span>
+    </a>
+  </section>
+
+  <!-- Centrale Verschuifbare Grid Viewports -->
+  <section id="gridContainer" class="viewport-grid">
+
+    <div id="vp1" class="native-viewport" draggable="true" data-vpid="vp1">
+      <div class="viewport-header">
+        <span>⋮⋮ VP1: BIPOLAR HUD (245,91°)</span>
+        <div class="header-controls">
+          <span style="color:var(--cyan); font-size:0.65rem;">[2D]</span>
+          <button class="btn-icon" title="Sluit Viewport" onclick="toggleViewport('vp1', false)">✕</button>
+        </div>
+      </div>
+      <div class="viewport-body">
+        <canvas id="canvasBipolar" class="hud-canvas"></canvas>
+        <div class="overlay-info">Azimut: 245,91° WZW | Snellius: -3,80°</div>
+      </div>
+    </div>
+
+    <div id="vp2" class="native-viewport" draggable="true" data-vpid="vp2">
+      <div class="viewport-header">
+        <span>⋮⋮ VP2: GEODETIC VECTOR GLOBE</span>
+        <div class="header-controls">
+          <span style="color:var(--green); font-size:0.65rem;">[3D]</span>
+          <button class="btn-icon" title="Sluit Viewport" onclick="toggleViewport('vp2', false)">✕</button>
+        </div>
+      </div>
+      <div class="viewport-body">
+        <canvas id="canvasGlobe" class="hud-canvas"></canvas>
+        <div class="overlay-info">RD: 155000, 463000 | Biskaje Corridor</div>
+      </div>
+    </div>
+
+    <div id="vp3" class="native-viewport" draggable="true" data-vpid="vp3">
+      <div class="viewport-header">
+        <span>⋮⋮ VP3: k=7 CAUSTIC MATRIX</span>
+        <div class="header-controls">
+          <span style="color:var(--magenta); font-size:0.65rem;">[MESH]</span>
+          <button class="btn-icon" title="Sluit Viewport" onclick="toggleViewport('vp3', false)">✕</button>
+        </div>
+      </div>
+      <div class="viewport-body">
+        <canvas id="canvasCaustic" class="hud-canvas"></canvas>
+        <div class="overlay-info">Caustic k=7 | λ = 589,0 nm</div>
+      </div>
+    </div>
+
+    <div id="vp4" class="native-viewport" draggable="true" data-vpid="vp4">
+      <div class="viewport-header">
+        <span>⋮⋮ VP4: NEBRA PLEIADES SOLSTITIUM</span>
+        <div class="header-controls">
+          <span style="color:var(--gold); font-size:0.65rem;">[SOLAR]</span>
+          <button class="btn-icon" title="Sluit Viewport" onclick="toggleViewport('vp4', false)">✕</button>
+        </div>
+      </div>
+      <div class="viewport-body">
+        <canvas id="canvasNebra" class="hud-canvas"></canvas>
+        <div class="overlay-info">η Tauri (Pleiaden) | Solstitium Bogen</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Rechter Status Sidebar -->
+  <section class="sidebar right">
+    <div class="sidebar-section-title">📊 INTERACTIVE ENGINE</div>
+    <p><strong>Drag & Drop:</strong> Verschuifbaar</p>
+    <p><strong>Status Persistence:</strong> LocalStorage</p>
+    <p><strong>Attractor N²:</strong> 010101 (Hex #21)</p>
+    <p><strong>Snellius Δθ:</strong> -3,80° (Biskaje)</p>
+    <p><strong>Laser D-Line:</strong> 589,0 nm</p>
+  </section>
+</main>
+
+<script>
+  // State management (LocalStorage)
+  const STORAGE_KEY = 'vortex_viewport_state_v158';
+  let state = {
+    vis: { vp1: true, vp2: true, vp3: true, vp4: true },
+    order: ['vp1', 'vp2', 'vp3', 'vp4'],
+    mode: 'quad'
+  };
+
+  function loadSavedState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if(saved) {
+        const parsed = JSON.parse(saved);
+        if(parsed.vis && parsed.order) state = parsed;
+      }
+    } catch(e) {
+      console.warn('LocalStorage error:', e);
+    }
+    applyState();
+  }
+
+  function saveCurrentState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const status = document.getElementById('saveStatus');
+      if(status) {
+        status.style.color = 'var(--green)';
+        status.textContent = '● STATE: GEHEUGEN OPGESLAGEN';
+      }
+    } catch(e) {
+      console.warn('Cannot save state:', e);
+    }
+  }
+
+  function applyState() {
+    const grid = document.getElementById('gridContainer');
+    
+    // 1. Volgorde instellen
+    state.order.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) grid.appendChild(el);
+    });
+
+    // 2. Zichtbaarheid instellen
+    let activeCount = 0;
+    ['vp1', 'vp2', 'vp3', 'vp4'].forEach(id => {
+      const el = document.getElementById(id);
+      const isVisible = !!state.vis[id];
+      if(el) {
+        el.style.display = isVisible ? 'flex' : 'none';
+        if(isVisible) activeCount++;
+      }
+      
+      const chip = document.getElementById('chip-' + id);
+      if(chip) {
+        chip.className = 'toggle-chip ' + (isVisible ? 'chip-on' : 'chip-off');
+        chip.textContent = isVisible ? 'AAN' : 'UIT';
+      }
+    });
+
+    // 3. Grid dynamisch opschalen
+    if(activeCount <= 1) {
+      grid.style.gridTemplateColumns = '1fr';
+      grid.style.gridTemplateRows = '1fr';
+    } else {
+      grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+      grid.style.gridTemplateRows = 'repeat(2, 1fr)';
+    }
+
+    setTimeout(resizeCanvases, 50);
+  }
+
+  function toggleViewport(id, forceState) {
+    if(forceState !== undefined) {
+      state.vis[id] = forceState;
+    } else {
+      state.vis[id] = !state.vis[id];
+    }
+    saveCurrentState();
+    applyState();
+  }
+
+  function setGridMode(mode) {
+    state.mode = mode;
+    if(mode === 'quad') {
+      state.vis = { vp1: true, vp2: true, vp3: true, vp4: true };
+    }
+    saveCurrentState();
+    applyState();
+  }
+
+  function resetDefaultLayout() {
+    state = {
+      vis: { vp1: true, vp2: true, vp3: true, vp4: true },
+      order: ['vp1', 'vp2', 'vp3', 'vp4'],
+      mode: 'quad'
+    };
+    saveCurrentState();
+    applyState();
+  }
+
+  // --- Drag and Drop Logic ---
+  let draggedElem = null;
+
+  function setupDragAndDrop() {
+    const viewports = document.querySelectorAll('.native-viewport');
+    
+    viewports.forEach(vp => {
+      vp.addEventListener('dragstart', (e) => {
+        draggedElem = vp;
+        vp.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      vp.addEventListener('dragend', () => {
+        if(draggedElem) draggedElem.classList.remove('dragging');
+        draggedElem = null;
+        viewports.forEach(v => v.classList.remove('drag-over'));
+        
+        const currentOrder = Array.from(document.querySelectorAll('.native-viewport')).map(v => v.id);
+        state.order = currentOrder;
+        saveCurrentState();
+      });
+
+      vp.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if(draggedElem && draggedElem !== vp) {
+          vp.classList.add('drag-over');
+        }
+      });
+
+      vp.addEventListener('dragleave', () => {
+        vp.classList.remove('drag-over');
+      });
+
+      vp.addEventListener('drop', (e) => {
+        e.preventDefault();
+        vp.classList.remove('drag-over');
+        if(draggedElem && draggedElem !== vp) {
+          const grid = document.getElementById('gridContainer');
+          const all = Array.from(grid.children);
+          const draggedIdx = all.indexOf(draggedElem);
+          const targetIdx = all.indexOf(vp);
+
+          if(draggedIdx < targetIdx) {
+            grid.insertBefore(draggedElem, vp.nextSibling);
+          } else {
+            grid.insertBefore(draggedElem, vp);
+          }
+          
+          resizeCanvases();
+        }
+      });
+    });
+  }
+
+  // --- Canvas Rendering Loops ---
+  const cBipolar = document.getElementById('canvasBipolar');
+  const cGlobe = document.getElementById('canvasGlobe');
+  const cCaustic = document.getElementById('canvasCaustic');
+  const cNebra = document.getElementById('canvasNebra');
+
+  function resizeCanvases() {
+    [cBipolar, cGlobe, cCaustic, cNebra].forEach(c => {
+      if(c && c.parentElement) {
+        c.width = c.parentElement.clientWidth;
+        c.height = c.parentElement.clientHeight;
+      }
+    });
+  }
+  window.addEventListener('resize', resizeCanvases);
+
+  let angle = 0;
+  function renderNativeLoop() {
+    angle += 0.012;
+
+    // VP1: Bipolar Compass
+    if(cBipolar && state.vis.vp1 && cBipolar.getContext('2d')) {
+      const ctx = cBipolar.getContext('2d');
+      const w = cBipolar.width, h = cBipolar.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#00e5ff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(w/2, h/2, Math.min(w,h)*0.3, 0, Math.PI*2);
+      ctx.stroke();
+
+      const rad = (245.91 - 90) * Math.PI / 180;
+      ctx.strokeStyle = '#ff3385';
+      ctx.beginPath();
+      ctx.moveTo(w/2, h/2);
+      ctx.lineTo(w/2 + Math.cos(rad)*w*0.38, h/2 + Math.sin(rad)*h*0.38);
+      ctx.stroke();
+    }
+
+    // VP2: Globe Orthographic Mesh
+    if(cGlobe && state.vis.vp2 && cGlobe.getContext('2d')) {
+      const ctx = cGlobe.getContext('2d');
+      const w = cGlobe.width, h = cGlobe.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#00ff88';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(w/2, h/2, Math.min(w,h)*0.35, 0, Math.PI*2);
+      ctx.stroke();
+
+      for(let i=0; i<5; i++) {
+        ctx.beginPath();
+        ctx.ellipse(w/2, h/2, Math.abs(Math.sin(angle + i*0.8))*Math.min(w,h)*0.35, Math.min(w,h)*0.35, 0, 0, Math.PI*2);
+        ctx.stroke();
+      }
+    }
+
+    // VP3: k=7 Caustic
+    if(cCaustic && state.vis.vp3 && cCaustic.getContext('2d')) {
+      const ctx = cCaustic.getContext('2d');
+      const w = cCaustic.width, h = cCaustic.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.strokeStyle = '#ffcc33';
+      ctx.lineWidth = 1;
+
+      ctx.beginPath();
+      for(let t=0; t<Math.PI*2; t+=0.02) {
+        const r = Math.sin(7 * t + angle) * Math.min(w,h) * 0.35;
+        const x = w/2 + r * Math.cos(t);
+        const y = h/2 + r * Math.sin(t);
+        if(t===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    }
+
+    // VP4: Nebra Star Cluster
+    if(cNebra && state.vis.vp4 && cNebra.getContext('2d')) {
+      const ctx = cNebra.getContext('2d');
+      const w = cNebra.width, h = cNebra.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.fillStyle = 'rgba(255, 204, 51, 0.12)';
+      ctx.strokeStyle = '#ffcc33';
+      ctx.beginPath();
+      ctx.arc(w/2, h/2, Math.min(w,h)*0.32, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#00e5ff';
+      const stars = [[0,0], [15,-10], [-10,12], [20,15], [-20,-15], [8,22], [-15,-5]];
+      stars.forEach(([sx, sy]) => {
+        ctx.beginPath();
+        ctx.arc(w/2 + sx*2, h/2 + sy*2, 3.5, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+
+    requestAnimationFrame(renderNativeLoop);
+  }
+
+  window.onload = () => {
+    setupDragAndDrop();
+    loadSavedState();
+    resizeCanvases();
+    renderNativeLoop();
+  };
+</script>
+
+</body>
+</html>
+HTML_EOF
+
+cp -f vortex_omni_master_v158.html index.html
+
+# 2. Synchroniseer met Git en deploy naar Vercel
+git add -f vortex_omni_master_v158.html index.html vercel.json 2>/dev/null || true
+git commit -m "Add draggable, toggleable & persistent viewports with localStorage" || true
+
+if [ -f "./vortex_master_deploy.sh" ]; then
+  ./vortex_master_deploy.sh
+elif [ -f "./push_geocentrum_main.sh" ]; then
+  ./push_geocentrum_main.sh
+else
+  git push origin main
+fi
+
+echo "======================================================================"
+echo "✅ Verschuifbare, open/dicht en onthoudbare viewports succesvol live!"
+echo "======================================================================"

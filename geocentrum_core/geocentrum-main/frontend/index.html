@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport meta tag is cruciaal voor mobiele weergave (schaalt correct op telefoons) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VORTEX OS | Hoofdinterface</title>
+    <link rel="stylesheet" href="css/mobile_style.css">
+</head>
+<body>
+
+    <header>
+        <h2>VORTEX OS // GeoCentrum</h2>
+    </header>
+
+    <main id="app-container">
+        <!-- Module 1 -->
+        <section class="module">
+            <h3>🌍 Mapglobe Viewport</h3>
+            <p>HTML5/MapLibre container</p>
+        </section>
+        
+        <!-- Module 2 -->
+        <section class="module">
+            <h3>📐 Geodetisch Rekencentrum</h3>
+            <p>Live JS Engine & Tijdscapsule</p>
+        </section>
+    </main>
+
+    <!-- Externe scripts laden -->
+    <script src="js/vortex_wasm_bridge.js"></script>
+    <script src="js/vortex_maplibre_refracted_vector_layer.js"></script>
+</body>
+</html>

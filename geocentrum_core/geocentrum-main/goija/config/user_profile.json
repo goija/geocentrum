@@ -1,0 +1,8 @@
+{
+  "user": {
+    "username": "goija",
+    "role": "Master System Architect & Historian",
+    "home_directory": "$(pwd)/goija",
+    "status": "active"
+  }
+}

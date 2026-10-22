@@ -1,0 +1,22 @@
+{
+  "juridisch_register": [
+    {
+      "id": "JUR-001",
+      "wetgeving": "AVG / GDPR",
+      "artikel": "Art. 32: Beveiliging van de verwerking",
+      "gekoppelde_assets": ["server-debian-01", "matrix-synapse-db"],
+      "technische_maatregel": "Data at rest encryptie via OTP algoritme; geen externe cloud-afhankelijkheid.",
+      "status": "Actief",
+      "laatste_audit": "2026-10-18"
+    },
+    {
+      "id": "JUR-002",
+      "wetgeving": "Kadasterwet",
+      "artikel": "Art. 55: Registratie van onroerende zaken",
+      "gekoppelde_assets": ["geo-tool-v28", "geodesic_matrix_dashboard"],
+      "technische_maatregel": "Logging van originele percelen vs. actuele Kadaster geocodes om grensoverschrijdingen vast te leggen.",
+      "status": "In Monitoring",
+      "laatste_audit": "2026-10-18"
+    }
+  ]
+}

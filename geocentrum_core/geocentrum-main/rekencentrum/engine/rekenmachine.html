@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS v155.0 — Geodetisch & Wetenschappelijk Rekenmachine</title>
+  <style>
+    :root {
+      --bg-core: #070b10;
+      --bg-panel: #0f1622;
+      --bg-header: #162133;
+      --text-main: #e2e8f0;
+      --text-dim: #8b9bb4;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --accent-green: #10b981;
+      --border: #1e293b;
+      --mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-core);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 13.5px;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    header {
+      background: var(--bg-header);
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--mono);
+      color: var(--accent-cyan);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 1rem;
+    }
+    .panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    h2 { font-size: 1em; font-family: var(--mono); color: var(--accent-amber); border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+    .form-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 0.85em;
+    }
+    input, select {
+      background: var(--bg-core);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      width: 120px;
+      text-align: right;
+    }
+    .result-box {
+      background: rgba(6, 182, 212, 0.08);
+      border: 1px solid var(--accent-cyan);
+      padding: 0.6rem;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 0.85em;
+    }
+    .result-box strong { color: var(--accent-cyan); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧮 GEOCENTRUM VORTEX OS v155.0 — REKENCENTRUM</h1>
+      <p style="font-size:0.8em; color:var(--text-dim); margin-top:0.3rem;">Real-time berekeningen voor Snellius-refractie, A. Ott Nr. 573 en Translaties</p>
+    </header>
+
+    <div class="grid">
+      <!-- MODULE 1: SNELLIUS REFRACTIE -->
+      <div class="panel">
+        <h2>1. Snellius-refractie (Kustlijn Biskaje)</h2>
+        <div class="form-group">
+          <label>Invalshoek (θ₁ in °):</label>
+          <input type="number" id="snellTheta1" value="33.0" step="0.1" oninput="berekenSnellius()">
+        </div>
+        <div class="form-group">
+          <label>Brekingsindex Lucht (n₁):</label>
+          <input type="number" id="snellN1" value="1.0003" step="0.0001" oninput="berekenSnellius()">
+        </div>
+        <div class="form-group">
+          <label>Brekingsindex Water (n₂):</label>
+          <input type="number" id="snellN2" value="1.3330" step="0.0001" oninput="berekenSnellius()">
+        </div>
+        <div class="result-box" id="resSnellius">
+          Berekenen...
+        </div>
+      </div>
+
+      <!-- MODULE 2: A. OTT NR. 573 PLANIMETER -->
+      <div class="panel">
+        <h2>2. A. Ott Nr. 573 Planimeter Integratie</h2>
+        <div class="form-group">
+          <label>Nonius Start (Dept. 46):</label>
+          <input type="number" id="ottNonStart" value="2005" step="1" oninput="berekenOtt()">
+        </div>
+        <div class="form-group">
+          <label>Nonius Eind (Dept. 17/85):</label>
+          <input type="number" id="ottNonEnd" value="2476" step="1" oninput="berekenOtt()">
+        </div>
+        <div class="form-group">
+          <label>Cirkelconstante:</label>
+          <input type="number" id="ottConst" value="3630" disabled>
+        </div>
+        <div class="result-box" id="resOtt">
+          Berekenen...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function berekenSnellius() {
+      const theta1 = parseFloat(document.getElementById('snellTheta1').value) || 0;
+      const n1 = parseFloat(document.getElementById('snellN1').value) || 1;
+      const n2 = parseFloat(document.getElementById('snellN2').value) || 1;
+
+      const rad1 = theta1 * (Math.PI / 180);
+      const sinTheta2 = (n1 * Math.sin(rad1)) / n2;
+      const rad2 = Math.asin(Math.min(1, Math.max(-1, sinTheta2)));
+      const theta2 = rad2 * (180 / Math.PI);
+      const deltaTheta = theta1 - theta2;
+
+      document.getElementById('resSnellius').innerHTML = `
+        Brekingshoek (θ₂): <strong>${theta2.toFixed(2)}°</strong><br>
+        Zeewaardige Afbuiging (Δθ): <strong style="color:var(--accent-amber)">${deltaTheta.toFixed(2)}°</strong><br>
+        Formule: n₁·sin(θ₁) = n₂·sin(θ₂)
+      `;
+    }
+
+    function berekenOtt() {
+      const nonStart = parseFloat(document.getElementById('ottNonStart').value) || 0;
+      const nonEnd = parseFloat(document.getElementById('ottNonEnd').value) || 0;
+      const deltaNon = nonEnd - nonStart;
+      const oppStart = nonStart / 10.0;
+      const oppEnd = nonEnd / 10.0;
+      const deltaOpp = oppEnd - oppStart;
+
+      document.getElementById('resOtt').innerHTML = `
+        Nonius Verschil (Δ): <strong style="color:var(--accent-cyan)">+${deltaNon} eenheden</strong><br>
+        Oppervlakte Toename: <strong style="color:var(--accent-green)">+${deltaOpp.toFixed(2)} cm²</strong><br>
+        Attractor Status: <strong>010101 (01) [Stabiel]</strong>
+      `;
+    }
+
+    // Direct uitvoeren bij laden
+    window.addEventListener('DOMContentLoaded', () => {
+      berekenSnellius();
+      berekenOtt();
+    });
+  </script>
+</body>
+</html>

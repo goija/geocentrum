@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Lokale Podcast Speler & Beheer</title>
+    <style>
+        :root {
+            --bg-color: #0d1b2a;
+            --sidebar-bg: #1b263b;
+            --panel-bg: rgba(255, 255, 255, 0.05);
+            --text-main: #e0e1dd;
+            --accent: #00b4d8;
+            --success: #2a9d8f;
+            --warning: #f4a261;
+            --danger: #e76f51;
+        }
+        body {
+            margin: 0; padding: 30px;
+            background: var(--bg-color); color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+        .card {
+            background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 20px; margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .upload-box {
+            border: 2px dashed rgba(0, 180, 216, 0.4); padding: 20px;
+            text-align: center; border-radius: 6px; background: rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .btn-upload {
+            background-color: var(--success); color: white; border: none;
+            padding: 8px 16px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            transition: background 0.2s; margin-top: 10px;
+        }
+        .btn-upload:hover { background-color: #21867a; }
+        .episode-item {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; padding: 15px; margin-bottom: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .episode-header {
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .episode-title { font-weight: bold; color: var(--warning); font-size: 1.1rem; }
+        audio { width: 100%; outline: none; margin-top: 5px; }
+        .btn-delete {
+            background-color: var(--danger); color: white; border: none;
+            padding: 6px 14px; font-size: 0.9rem; font-weight: bold;
+            border-radius: 4px; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-delete:hover { background-color: #c54222; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: var(--accent); text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .empty-notice { text-align: center; color: rgba(255,255,255,0.5); font-style: italic; padding: 20px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">← Terug naar Systeem Index Dashboard</a>
+        <h1>🎙️ VORTEX Sovereign Podcast Speler & Beheer</h1>
+        <p style="opacity: 0.8;">Speel lokale audiobestanden af, beheer je afleveringen of upload permanente MP3s.</p>
+
+        <!-- MP3 Upload Formulier -->
+        <div class="card">
+            <h3>📤 Upload Permanente MP3 Aflevering</h3>
+            <div class="upload-box">
+                <input type="file" id="mp3File" accept=".mp3,audio/*" style="color: var(--text-main);">
+                <br>
+                <button class="btn-upload" onclick="uploadAudio()">Opslaan in Browseropslag</button>
+                <p id="upload-status" style="margin-top: 10px; font-size: 0.9rem; color: var(--warning);"></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Actieve Afleveringen</h3>
+            <div id="playlist-container">
+                <!-- Standaard afleveringen -->
+                <div class="episode-item" id="item-01">
+                    <div class="episode-header">
+                        <span class="episode-title">01. VORTEX Sovereign Test</span>
+                        <button class="btn-delete" onclick="verwijderItem('item-01')">🗑️ Verwijder</button>
+                    </div>
+                    <audio controls src="http://localhost:8081/podcasts/01_VORTEX_Sovereign_Test.mp3"></audio>
+                </div>
+
+                <div class="episode-item" id="item-10">
+                    <div class="episode-header">
+                        <span class="episode-title">10. Sixteen Rings</span>
+                        <button class="btn-delete" onclick="verwijderItem('item-10')">🗑️ Verwijder</button>
+                    </div>
+                    <audio controls src="http://localhost:8081/podcasts/10_Sixteen_Rings.mp3"></audio>
+                </div>
+
+                <div class="episode-item" id="item-11">
+                    <div class="episode-header">
+                        <span class="episode-title">11. Bensound Creative Minds</span>
+                        <button class="btn-delete" onclick="verwijderItem('item-11')">🗑️ Verwijder</button>
+                    </div>
+                    <audio controls src="http://localhost:8081/podcasts/11_Bensound_Creative_Minds.mp3"></audio>
+                </div>
+
+                <div class="episode-item" id="item-12">
+                    <div class="episode-header">
+                        <span class="episode-title">12. Simplomon Wijst de Cloud de Deur</span>
+                        <button class="btn-delete" onclick="verwijderItem('item-12')">🗑️ Verwijder</button>
+                    </div>
+                    <audio controls src="http://localhost:8081/podcasts/12_Simplomon_Wijst_De_Cloud_De_Deur.mp3"></audio>
+                </div>
+
+                <div class="episode-item" id="item-13">
+                    <div class="episode-header">
+                        <span class="episode-title">13. Penrose Wiskunde Bewaakt Stalen Bruggen</span>
+                        <button class="btn-delete" onclick="verwijderItem('item-13')">🗑️ Verwijder</button>
+                    </div>
+                    <audio controls src="http://localhost:8081/podcasts/13_Penrose_Wiskunde.mp3"></audio>
+                </div>
+            </div>
+            <div id="empty-msg" class="empty-notice">Geen actieve afleveringen meer in de lijst.</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Verwijder items die in localStorage staan
+            const deletedItems = JSON.parse(localStorage.getItem('vortex_deleted_episodes') || '[]');
+            deletedItems.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.remove(); }
+            });
+
+            // Laad opgeslagen geüploade MP3s
+            laadGeuploadeAfleveringen();
+            checkEmpty();
+        });
+
+        function verwijderItem(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                const audio = el.querySelector('audio');
+                if (audio) { audio.pause(); audio.currentTime = 0; }
+                
+                el.style.transform = 'scale(0.95)';
+                el.style.opacity = '0';
+                setTimeout(() => {
+                    el.remove();
+                    if (id.startsWith('item-uploaded-')) {
+                        verwijderUitslagUitOpslag(id);
+                    } else {
+                        const deletedItems = JSON.parse(localStorage.getItem('vortex_deleted_episodes') || '[]');
+                        if (!deletedItems.includes(id)) {
+                            deletedItems.push(id);
+                            localStorage.setItem('vortex_deleted_episodes', JSON.stringify(deletedItems));
+                        }
+                    }
+                    checkEmpty();
+                }, 300);
+            }
+        }
+
+        function uploadAudio() {
+            const fileInput = document.getElementById('mp3File');
+            const status = document.getElementById('upload-status');
+            
+            if (fileInput.files.length === 0) {
+                status.style.color = 'var(--danger)';
+                status.innerText = 'Selecteer eerst een MP3-bestand!';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            status.style.color = 'var(--warning)';
+            status.innerText = `Bezig met converteren en opslaan van "${file.name}"...`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                const uniqueId = 'item-uploaded-' + Date.now();
+                
+                const newEp = { id: uniqueId, name: file.name, data: base64Data };
+                
+                const savedUploads = JSON.parse(localStorage.getItem('vortex_saved_uploads') || '[]');
+                savedUploads.push(newEp);
+                localStorage.setItem('vortex_saved_uploads', JSON.stringify(savedUploads));
+
+                renderAflevering(newEp);
+
+                status.style.color = 'var(--success)';
+                status.innerText = `Succesvol opgeslagen in browsergeheugen!`;
+                fileInput.value = '';
+                checkEmpty();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function laadGeuploadeAfleveringen() {
+            const savedUploads = JSON.parse(localStorage.getItem('vortex_saved_uploads') || '[]');
+            const container = document.getElementById('playlist-container');
+            savedUploads.forEach(ep => {
+                const deletedItems = JSON.parse(localStorage.getItem('vortex_deleted_episodes') || '[]');
+                if (!deletedItems.includes(ep.id)) {
+                    const newItem = document.createElement('div');
+                    newItem.className = 'episode-item';
+                    newItem.id = ep.id;
+                    newItem.innerHTML = `
+                        <div class="episode-header">
+                            <span class="episode-title">🎵 ${ep.name} (Opgeslagen)</span>
+                            <button class="btn-delete" onclick="verwijderItem('${ep.id}')">🗑️ Verwijder</button>
+                        </div>
+                        <audio controls src="${ep.data}"></audio>
+                    `;
+                    container.prepend(newItem);
+                }
+            });
+        }
+
+        function renderAflevering(ep) {
+            const container = document.getElementById('playlist-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'episode-item';
+            newItem.id = ep.id;
+            newItem.innerHTML = `
+                <div class="episode-header">
+                    <span class="episode-title">🎵 ${ep.name} (Opgeslagen)</span>
+                    <button class="btn-delete" onclick="verwijderItem('${ep.id}')">🗑️ Verwijder</button>
+                </div>
+                <audio controls src="${ep.data}"></audio>
+            `;
+            container.prepend(newItem);
+        }
+
+        function verwijderUitslagUitOpslag(id) {
+            let savedUploads = JSON.parse(localStorage.getItem('vortex_saved_uploads') || '[]');
+            savedUploads = savedUploads.filter(ep => ep.id !== id);
+            localStorage.setItem('vortex_saved_uploads', JSON.stringify(savedUploads));
+        }
+
+        function checkEmpty() {
+            const container = document.getElementById('playlist-container');
+            const emptyMsg = document.getElementById('empty-msg');
+            if (container.children.length === 0) {
+                emptyMsg.style.display = 'block';
+            } else {
+                emptyMsg.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

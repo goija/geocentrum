@@ -1,0 +1,163 @@
+<div class="vortex-flower-container" style="background: #070a0f; padding: 15px; border-radius: 8px; border: 1px solid #00e5ff; color: #fff; font-family: 'Courier New', monospace; max-width: 600px; margin: auto;">
+  <h3 style="color: #ffcc33; text-align: center; margin-top: 0; font-size: 0.95rem;">
+    🌸 VORTEX MODULAR FLOWER ENGINE (N = 260 / N = 60)
+  </h3>
+  
+  <div style="display: flex; justify-content: space-around; margin-bottom: 10px; font-size: 0.8rem;">
+    <label><input type="radio" name="flowerMode" value="A" checked> A: $x^2 \pmod{260}$ (42 residuen)</label>
+    <label><input type="radio" name="flowerMode" value="B"> B: $7x \pmod{260}$ (Epicycloïde)</label>
+    <label><input type="radio" name="flowerMode" value="C"> C: $x^3 \pmod{260}$ (75 residuen)</label>
+    <label><input type="radio" name="flowerMode" value="D"> D: $13k \pmod{60}$ (Jiazi)</label>
+  </div>
+
+  <div style="position: relative; width: 100%; aspect-ratio: 1; background: #040609; border: 1px solid #1e293b; border-radius: 50%;">
+    <canvas id="flowerCanvas" style="width: 100%; height: 100%; display: block;"></canvas>
+  </div>
+
+  <div id="flowerStats" style="margin-top: 10px; font-size: 0.75rem; color: #94a3b8; text-align: center;">
+    Status: Actieve bijectie / attractor geladen (Fraunhofer D-lock 589 nm)
+  </div>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('flowerCanvas');
+  const ctx = canvas.getContext('2d');
+  const radios = document.querySelectorAll('input[name="flowerMode"]');
+  const statsDiv = document.getElementById('flowerStats');
+
+  // Canvas resolutie aanpassen voor haarscherpe weergave
+  function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    drawVortexFlower();
+  }
+
+  function drawVortexFlower() {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const cx = width / 2;
+    const cy = height / 2;
+    const radius = Math.min(cx, cy) - 25;
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Bepaal actieve mode
+    let mode = 'A';
+    radios.forEach(r => { if (r.checked) mode = r.value; });
+
+    const N_tzolkin = 260;
+    const N_jiazi = 60;
+
+    // 1. Genereer cirkelpunten voor Tzolk'in (260)
+    let ptsTzolkin = [];
+    for (let i = 0; i < N_tzolkin; i++) {
+      let angle = (Math.PI / 2) - (2 * Math.PI * i / N_tzolkin);
+      ptsTzolkin.push({
+        x: cx + radius * Math.cos(angle),
+        y: cy - radius * Math.sin(angle)
+      });
+    }
+
+    // Genereer cirkelpunten voor Jiazi (60)
+    let ptsJiazi = [];
+    for (let i = 0; i < N_jiazi; i++) {
+      let angle = (Math.PI / 2) - (2 * Math.PI * i / N_jiazi);
+      let rJiazi = radius * 0.65;
+      ptsJiazi.push({
+        x: cx + rJiazi * Math.cos(angle),
+        y: cy - rJiazi * Math.sin(angle)
+      });
+    }
+
+    // Teken buitenste cirkelrand
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // 2. Teken koorden op basis van gekozen mode
+    ctx.lineWidth = 0.5;
+    
+    if (mode === 'A') {
+      // Panel A: x^2 mod 260
+      ctx.strokeStyle = 'rgba(255, 204, 51, 0.25)';
+      for (let x = 0; x < N_tzolkin; x++) {
+        let target = (x * x) % N_tzolkin;
+        let p1 = ptsTzolkin[x];
+        let p2 = ptsTzolkin[target];
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      }
+      statsDiv.innerText = "Panel A: Kwadratische Bloem — 42 residuen, 8 idempotente ankers";
+    } 
+    else if (mode === 'B') {
+      // Panel B: 7x mod 260 (Epicycloïde)
+      ctx.strokeStyle = 'rgba(0, 255, 204, 0.3)';
+      for (let x = 0; x < N_tzolkin; x++) {
+        let target = (7 * x) % N_tzolkin;
+        let p1 = ptsTzolkin[x];
+        let p2 = ptsTzolkin[target];
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      }
+      statsDiv.innerText = "Panel B: Multiplicatieve Envelope — 6-bladerige epicycloïde (faktorisatie m=7)";
+    } 
+    else if (mode === 'C') {
+      // Panel C: x^3 mod 260
+      ctx.strokeStyle = 'rgba(80, 255, 176, 0.25)';
+      for (let x = 0; x < N_tzolkin; x++) {
+        let target = (x * x * x) % N_tzolkin;
+        let p1 = ptsTzolkin[x];
+        let p2 = ptsTzolkin[target];
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      }
+      statsDiv.innerText = "Panel C: Derdegraads Resonantie — 75 kubische residuen, 27 vaste punten";
+    } 
+    else if (mode === 'D') {
+      // Panel D: Jiazi (60) -> Tzolkin (260) via 13k mod 260
+      // Teken eerst de binnenste Jiazi cirkel
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 0.65, 0, 2 * Math.PI);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255, 100, 200, 0.35)';
+      for (let k = 0; k < N_jiazi; k++) {
+        let target = (13 * k) % N_tzolkin;
+        let p1 = ptsJiazi[k];
+        let p2 = ptsTzolkin[target];
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.stroke();
+      }
+      statsDiv.innerText = "Panel D: Inter-Cyclische Koppeling — Jiazi (60) naar Tzolk'in (260) op 20 ankers";
+    }
+
+    // 3. Teken knooppunten op de rand
+    for (let i = 0; i < ptsTzolkin.length; i++) {
+      ctx.fillStyle = (mode === 'D' && i < N_jiazi) ? '#ffcc33' : '#00e5ff';
+      ctx.beginPath();
+      ctx.arc(ptsTzolkin[i].x, ptsTzolkin[i].y, 1.5, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+
+  radios.forEach(r => r.addEventListener('change', drawVortexFlower));
+  window.addEventListener('resize', resizeCanvas);
+  
+  // Initialiseer direct
+  setTimeout(resizeCanvas, 50);
+})();
+</script>

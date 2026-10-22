@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VORTEX OS | Techniek & Versies</title>
+    <style>
+        :root { --bg-base: #070b14; --bg-panel: #111a2f; --bg-hover: #1a2744; --text-main: #4dc5d6; --text-light: #e0e6ed; --text-muted: #8ab4f8; --border-color: #23375c; --accent: #ffb84d; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: var(--bg-base); color: var(--text-light); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 800px; width: 100%; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
+        .title { color: var(--text-main); font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        .back-btn { background-color: transparent; color: var(--text-muted); text-decoration: none; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 4px; font-size: 0.9rem; transition: all 0.2s ease; }
+        .back-btn:hover { background-color: var(--bg-hover); color: var(--text-light); }
+        .grid-menu { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media (min-width: 600px) { .grid-menu { grid-template-columns: 1fr 1fr; } }
+        .menu-card { background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; text-decoration: none; color: var(--text-light); display: flex; flex-direction: column; gap: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .menu-card:hover { background-color: var(--bg-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-color: var(--text-main); }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: var(--text-main); }
+        .card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🔧 Techniek & Versies</h1>
+            <a href="../../index.html" class="back-btn">⬅ Terug naar Cockpit</a>
+        </div>
+        
+        <p style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-muted);">
+            Dossier voor de actuele systeemstructuur, repository-beheer en uitgerolde releases.
+        </p>
+
+        <div class="grid-menu">
+            <a href="git_status.md" class="menu-card">
+                <span class="card-title">🗃️ Git Status & Repository</span>
+                <span class="card-desc">Status van branches, pull requests en lokale repository wijzigingen.</span>
+            </a>
+            <a href="actuele_structuur.md" class="menu-card">
+                <span class="card-title">📂 Actuele Mappenstructuur</span>
+                <span class="card-desc">Overzicht van de actuele bestandshiërarchie van het GeoCentrum.</span>
+            </a>
+            <a href="changelog_releases.md" class="menu-card">
+                <span class="card-title">🚀 Changelog & Releases</span>
+                <span class="card-desc">Versiebeheer en logboek van systeemupdates (bijv. V158.2).</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

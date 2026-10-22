@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Native Viewports (Multi-Monitor)</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --accent: #00b4d8;
+            --border-color: rgba(0, 180, 216, 0.4);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: #fff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: #0d1b2a;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            height: 40px;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .nav-back {
+            color: #8d99ae;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border: 1px solid #8d99ae;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .nav-back:hover {
+            color: #fff;
+            border-color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Viewport Grid */
+        .viewport-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 4px;
+            flex-grow: 1;
+            background: #111;
+            padding: 4px;
+        }
+
+        .viewport-container {
+            position: relative;
+            background: #0d1b2a;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viewport-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .viewport-header select {
+            background: #000;
+            color: var(--accent);
+            border: 1px solid rgba(0, 180, 216, 0.5);
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: monospace;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .viewport-header select:focus {
+            border-color: #fff;
+        }
+
+        .viewport-content {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <h1>Native Viewports // Multi-Monitor Array</h1>
+        <a href="../index.html" class="nav-back">Afsluiten</a>
+    </div>
+
+    <div class="viewport-grid">
+        <!-- Viewport 1 -->
+        <div class="viewport-container" id="vp-container-1">
+            <div class="viewport-header">
+                <span style="font-family: monospace; opacity: 0.7;">[VP-1]</span>
+                <select onchange="loadViewport('vp-1', this.value)">
+                    <option value="mapglobe.html" selected>Mapglobe 3D</option>
+                    <option value="vortex_matrix_simulator_v156.html">Matrix Simulator</option>
+                    <option value="rekenmachine.html">Geodetisch Rekencentrum</option>
+                    <option value="procesdossier.html">Procesdossier</option>
+                    <option value="../beheercentrum/actuele_structuur.md">Ruwe Structuur (Markdown)</option>
+                </select>
+            </div>
+            <div class="viewport-content">
+                <iframe id="vp-1" src="mapglobe.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Viewport 2 -->
+        <div class="viewport-container" id="vp-container-2">
+            <div class="viewport-header">
+                <span style="font-family: monospace; opacity: 0.7;">[VP-2]</span>
+                <select onchange="loadViewport('vp-2', this.value)">
+                    <option value="mapglobe.html">Mapglobe 3D</option>
+                    <option value="vortex_matrix_simulator_v156.html" selected>Matrix Simulator</option>
+                    <option value="rekenmachine.html">Geodetisch Rekencentrum</option>
+                    <option value="procesdossier.html">Procesdossier</option>
+                    <option value="../beheercentrum/actuele_structuur.md">Ruwe Structuur (Markdown)</option>
+                </select>
+            </div>
+            <div class="viewport-content">
+                <iframe id="vp-2" src="vortex_matrix_simulator_v156.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Viewport 3 -->
+        <div class="viewport-container" id="vp-container-3">
+            <div class="viewport-header">
+                <span style="font-family: monospace; opacity: 0.7;">[VP-3]</span>
+                <select onchange="loadViewport('vp-3', this.value)">
+                    <option value="mapglobe.html">Mapglobe 3D</option>
+                    <option value="vortex_matrix_simulator_v156.html">Matrix Simulator</option>
+                    <option value="rekenmachine.html" selected>Geodetisch Rekencentrum</option>
+                    <option value="procesdossier.html">Procesdossier</option>
+                    <option value="../beheercentrum/actuele_structuur.md">Ruwe Structuur (Markdown)</option>
+                </select>
+            </div>
+            <div class="viewport-content">
+                <iframe id="vp-3" src="rekenmachine.html"></iframe>
+            </div>
+        </div>
+
+        <!-- Viewport 4 -->
+        <div class="viewport-container" id="vp-container-4">
+            <div class="viewport-header">
+                <span style="font-family: monospace; opacity: 0.7;">[VP-4]</span>
+                <select onchange="loadViewport('vp-4', this.value)">
+                    <option value="mapglobe.html">Mapglobe 3D</option>
+                    <option value="vortex_matrix_simulator_v156.html">Matrix Simulator</option>
+                    <option value="rekenmachine.html">Geodetisch Rekencentrum</option>
+                    <option value="procesdossier.html" selected>Procesdossier</option>
+                    <option value="../beheercentrum/actuele_structuur.md">Ruwe Structuur (Markdown)</option>
+                </select>
+            </div>
+            <div class="viewport-content">
+                <iframe id="vp-4" src="procesdossier.html"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loadViewport(iframeId, url) {
+            document.getElementById(iframeId).src = url;
+            console.log(`[VIEWPORTS] ${iframeId} geladen met: ${url}`);
+        }
+    </script>
+</body>
+</html>

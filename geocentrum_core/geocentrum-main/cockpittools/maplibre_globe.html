@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🌍 MapLibre Globe</title>
+  <style>
+    body { margin: 0; padding: 0; background: #030712; font-family: monospace; overflow: hidden; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    .overlay { position: absolute; top: 15px; left: 15px; right: 15px; background: rgba(15,23,42,0.8); border: 1px solid #ffcc33; padding: 10px; border-radius: 6px; color: #ffcc33; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+    .back-btn { color: #000; background: #ffcc33; padding: 5px 10px; text-decoration: none; font-weight: bold; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <span>GEOCENTRUM 3D GLOBE</span>
+    <a href="/rekencentrum/tijdscapsule/tijdscapsule_index.html" class="back-btn">X</a>
+  </div>
+  <div id="map"><div style="color: #fff; padding: 80px 20px; text-align: center;">(MapLibre GL JS Container Ready)</div></div>
+</body>
+</html>

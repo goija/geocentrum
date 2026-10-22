@@ -1,0 +1,799 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Onderzoek: Ptolemaeus, Nerthus en Tacitus</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+	/* Paint a complete callout box on every PDF page fragment. */
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+}
+
+/* For default-background callouts, render the border outline. */
+.callout.block-color-default_background {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+/*
+ * Toggles and callouts hold arbitrary content, so they can easily be taller
+ * than a page. They must stay breakable: avoiding breaks inside them makes
+ * Chromium push the whole block onto the next page, which leaves the previous
+ * page mostly empty before every long toggle.
+ */
+details,
+aside {
+	margin: 1.25em 0;
+}
+
+/* Keep a toggle's title on the same page as the start of its content. */
+summary {
+	page-break-after: avoid;
+	break-after: avoid;
+}
+
+/*
+ * Toggle headings render as <h1/h2/h3 style="display:inline-block"> inside
+ * <summary>. Without this reset, the heading's margin-top pushes it below the
+ * ::marker (▼), so the triangle and the title appear on separate lines.
+ */
+summary h1,
+summary h2,
+summary h3,
+summary h4 {
+	margin-top: 0;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding-inline: 0.125rem;
+	padding-block: 0.375rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+/*
+ * Render emoji icons using a ::before pseudo-element to keep the glyph
+ * out of the DOM textContent traversal. This avoids double-rendering icons
+ * in callouts and page titles.
+ * NOTE(slim/html-export-pseudo-icons): I can't tagref this because it will
+ * flag as a duplicate tag after codegen.
+ */
+.icon[data-emoji]::before {
+	content: attr(data-emoji);
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	margin-right: 0.4em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.tab {
+	margin: 1.25em 0;
+	padding-inline: 1rem;
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style><style>@import url('https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex-swap.min.css')</style></head><body><article id="2fa0e5b9-44ae-4667-bea5-026545eb4048" class="page sans"><header><h1 class="page-title" dir="auto">Onderzoek: Ptolemaeus, Nerthus en Tacitus</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><h2 id="07401a40-cc36-4cb2-a413-d411849fe7ae" class="" dir="auto">Onderzoeksvraag</h2><p id="715122ea-2111-4310-b9fc-7dff5af8ea0e" class="" dir="auto">Hoe geven antieke geografische en historische bronnen — met name Ptolemaeus’ <em>Geographia</em> en Tacitus’ <em>Germania</em> — inzicht in het wereldbeeld, de religie en de geschiedschrijving van de Grieks-Romeinse oudheid, en hoe zijn deze ideeën later overgeleverd en geïnterpreteerd?</p><h2 id="de08099b-e3f9-4b06-ac5c-d17df9f1398c" class="" dir="auto">1. Ptolemaeus en de wereldkaart</h2><h3 id="e5d27e5d-7e30-4fff-a733-76dfc1142315" class="" dir="auto">Achtergrond</h3><p id="56517345-c9b3-4a52-8597-d9c0e4639f3c" class="" dir="auto">Claudius Ptolemaeus schreef de <em>Geographia</em> waarschijnlijk in de 2e eeuw n.Chr. Het werk ordende geografische kennis met coördinaten van lengte- en breedtegraden. De kaarten die met het werk worden geassocieerd, zijn reconstructies op basis van die beschrijvingen en coördinaten; de overdracht en datering van afzonderlijke kaarttradities vragen om nader onderzoek.</p><h3 id="3f4fb9a1-8ce8-4619-bf73-91112d38a5fd" class="" dir="auto">Weergave van de bekende wereld</h3><ul id="fdcf7c1e-e9f3-4c38-8505-4c5c8863f6fc" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De <em>Ecumene</em> strekt zich uit van de Canarische Eilanden in het westen tot gebieden die met China werden verbonden in het oosten.</li></ul><ul id="3c7cc223-2961-411f-a51d-818f2a2602ad" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Europa, Azië en Libië (Afrika) vormen de belangrijkste bekende landmassa’s.</li></ul><ul id="98dc161a-054c-446f-bd05-789f5f595e16" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Op veel Ptolemaeïsche wereldkaarten wordt de Indische Oceaan als grotendeels omsloten weergegeven, begrensd door onbekend zuidelijk land.</li></ul><ul id="c242848a-a819-40c8-ae42-432050f176b8" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De kaart bevat aanzienlijke vertekeningen. Onder meer de lengte van de Middellandse Zee en de verhoudingen tussen India en Sri Lanka wijken af van de werkelijkheid.</li></ul><ul id="54577cdf-c745-49f7-b82a-554d469e549b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Regionale namen, rivieren, bergketens en de klassieke windstreken tonen hoe geografische kennis en kaartconventies samenkwamen.</li></ul><h3 id="18f3d921-1ced-4eab-a605-733ffd8590f9" class="" dir="auto">Overlevering en invloed</h3><p id="b378acd0-1f17-4072-904f-00391ab26f0a" class="" dir="auto">De <em>Geographia</em> bleef in de Byzantijnse en Arabischtalige geleerdenwereld bekend en werd in de late middeleeuwen opnieuw invloedrijk in West-Europa. Jacopo d’Angelo maakte rond 1406 een Latijnse vertaling. Het werk stimuleerde de wiskundige cartografie en beïnvloedde het Europese geografische denken. De onnauwkeurige schatting van de aardomtrek en de uitgestrektheid van Azië droegen later bij aan Europese verwachtingen over afstanden naar het oosten.</p><h2 id="aa1dd99f-3c38-4480-9b4d-8fdfa3ba4b4f" class="" dir="auto">2. Nerthus en religieuze tradities</h2><h3 id="fa3b9cb7-d17c-4759-8b5f-a25a793e5cb1" class="" dir="auto">Wat Tacitus vermeldt</h3><p id="9aa056df-e12e-4fb2-8513-3ac6cad296f2" class="" dir="auto">Tacitus beschrijft Nerthus in <em>Germania</em> (hoofdstuk 40) als een godin die door verschillende Noord-Germaanse stammen werd vereerd. Volgens zijn relaas bevond haar heiligdom zich in een heilig woud op een eiland. Tijdens een processie werd een met een doek bedekte wagen, getrokken door koeien, rondgevoerd. Tacitus verbindt de aanwezigheid van de godin met vrede en het tijdelijk neerleggen van wapens. Na afloop zouden wagen en doek in een verborgen meer zijn gereinigd; Tacitus schrijft dat de slaven die daarbij hielpen werden verdronken.</p><figure id="3f4dfcf9-ea33-8002-a871-e81e09c165f0" dir="ltr"><a href="https://artsandculture.google.com/partner/zeeland-archives" class="bookmark source"><div class="bookmark-info"><div class="bookmark-text"><div class="bookmark-title">Zeeuws Archief | Zeeland Archives, Middelburg, Netherlands - Google Arts &amp; Culture</div><div class="bookmark-description">The Zeeland Archives is the place to be for your personal research and  discovery of the history of Zeeland. It manages and keeps the archives,  files, recor...</div></div><div class="bookmark-href"><img src="https://www.gstatic.com/culturalinstitute/stella/android-chrome-192x192-v1.png" class="icon bookmark-icon"/>https://artsandculture.google.com/partner/zeeland-archives</div></div><img src="https://lh3.googleusercontent.com/ci/AL18g_TYMeZnRxHkYZnNrPMjiLqW27ehsFVq6fJ_zuvylDagY8jozcG3jFEjxO1cEfc_uEI3X1nvI_g4" class="bookmark-image"/></a></figure><figure id="3f4dfcf9-ea33-80b3-b9bc-efc0a51ab1c5" class="image" data-notion-image="Onderzoek%20Ptolemaeus,%20Nerthus%20en%20Tacitus/afbeelding.png" dir="ltr"><a href="Onderzoek%20Ptolemaeus,%20Nerthus%20en%20Tacitus/afbeelding.png"><img style="width:517px" src="Onderzoek%20Ptolemaeus,%20Nerthus%20en%20Tacitus/afbeelding.png"/></a></figure><h3 id="516c783a-f6ca-4b2a-8c02-12428e3e1531" class="" dir="auto">Interpretatie en onzekerheden</h3><ul id="fd2120d5-05f5-4f26-b0c8-0ac70c735564" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De beschrijving komt van een Romeinse auteur en is geen rechtstreeks verslag van een Germaanse deelnemer.</li></ul><ul id="28df962e-d8a8-4ef9-8b40-bba614f949d3" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De identificatie van Nerthus met de Oudnoordse Njǫrðr is gebaseerd op etymologische verbanden, maar de relatie en de mogelijke verandering van een vrouwelijke naar een mannelijke godheid blijven onderwerp van debat.</li></ul><ul id="1db0bcac-9d8a-4c2d-bd54-a15572270407" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Theorieën over een oorspronkelijk dubbelgeslachtelijke godheid of een godenpaar zijn hypothesen, geen vastgestelde feiten.</li></ul><ul id="ffe7132b-46bc-4274-a09e-e3afbb74867e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De geografische locaties van de cultus en mogelijke verbanden met Scandinavische plaatsnamen zijn niet zonder meer zeker.</li></ul><h2 id="1fbd6a19-073c-495b-8d92-0baf4588941b" class="" dir="auto">3. Tacitus: leven, werken en methode</h2><p id="819e5d3b-60b2-4fa3-b107-48074809b2db" class="" dir="auto">Publius Cornelius Tacitus (ca. 56–ca. 120 n.Chr.) was een Romeins historicus en politicus. Hij bekleedde hoge ambten, waaronder het consulaat in 97 n.Chr. en later een gouverneurschap in de provincie Asia. Tot zijn werken behoren de <em>Annales</em>, de <em>Historiae</em>, <em>Agricola</em>, <em>Germania</em> en <em>Dialogus de oratoribus</em>.</p><p id="697a1e53-d210-42e8-9cce-8977ca1f026d" class="" dir="auto">Tacitus presenteert zijn historische werk als een streven naar verslaglegging “zonder woede of partijdigheid” (<em>sine ira et studio</em>). Zijn proza staat bekend om een scherpe, compacte stijl en zijn kritische analyse van macht, tirannie en politieke hypocrisie. Zijn beschrijvingen van niet-Romeinse volken moeten daarom zowel als historische informatie als door een Romeinse literaire en politieke lens worden gelezen.</p><h2 id="aa41bd3c-1d23-4644-93cf-5953c04bbdf2" class="" dir="auto">4. Verbanden en betekenis</h2><ul id="7dfbc9ff-07c4-4e80-a1b2-8c4b9f29e4ea" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Ptolemaeus en Tacitus laten verschillende manieren zien waarop Romeinse auteurs kennis ordenden: via geografische coördinaten enerzijds en historische of etnografische beschrijving anderzijds.</li></ul><ul id="6af4a3c7-59f7-478e-9b21-04a6238119ec" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Beide werken kregen invloed ver buiten hun oorspronkelijke context, mede dankzij vertaling, kopiëren en latere interpretatie.</li></ul><ul id="29d47bc2-5920-4d87-b759-446f5604c039" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Bij beide onderwerpen is onderscheid nodig tussen antieke gegevens, middeleeuwse overlevering en moderne reconstructie.</li></ul><ul id="d5951269-5cd4-4be4-bc0c-34e28f543d84" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De wereldkaart en het relaas over Nerthus zijn waardevol als bronnen voor historische denkbeelden, maar niet als ongefilterde weergaven van de werkelijkheid.</li></ul><h2 id="3e70fa54-938e-4895-b55e-fffd272bcd06" class="" dir="auto">5. Vragen voor vervolgonderzoek</h2><ol type="1" id="f7cf6218-b3b1-4f53-a461-7bd275ce11f5" class="numbered-list" start="1" dir="auto"><li>Welke manuscripttraditie ligt ten grondslag aan de specifieke Ptolemaeïsche kaart op de oorspronkelijke pagina?</li></ol><ol type="1" id="65306d04-d444-41f2-a8d6-31a3fda1603b" class="numbered-list" start="2" dir="auto"><li>Welke geografische en astronomische methoden beschrijft Ptolemaeus zelf, en welke zijn latere interpretaties?</li></ol><ol type="1" id="e5c8dd6e-b3ed-43ce-8cb2-7fa8fad75bf2" class="numbered-list" start="3" dir="auto"><li>Hoe betrouwbaar zijn de beweringen over de invloed van de <em>Geographia</em> op Columbus en de Europese ontdekkingsreizen?</li></ol><ol type="1" id="e23acf7e-93f7-4817-ba8e-f2f05b34254b" class="numbered-list" start="4" dir="auto"><li>Hoe beoordelen moderne onderzoekers Tacitus’ beschrijving van Nerthus en de interpretatie van de rituele verdrinkingen?</li></ol><ol type="1" id="7ae2fc24-d810-4de8-aa48-9d6d1e6a9a78" class="numbered-list" start="5" dir="auto"><li>Welke argumenten ondersteunen of weerspreken de taalkundige en religiehistorische verbinding tussen Nerthus en Njǫrðr?</li></ol><h2 id="66d2f943-8da7-47eb-bf0c-74ce29e686ac" class="" dir="auto">Bronnen om verder te controleren</h2><ul id="a1983bc5-62d8-409f-b29d-3c2a54fd97d1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><em><a href="https://nl.wikipedia.org/wiki/Geographia_(Ptolemaeus)">Geographia</a></em><a href="https://nl.wikipedia.org/wiki/Geographia_(Ptolemaeus)"> (Nederlandstalig overzicht)</a></li></ul><ul id="3b07a780-0990-46c1-aca6-db310a7fdc18" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://en.wikipedia.org/wiki/Ptolemy%27s_world_map">Ptolemaeus’ wereldkaart (Engelstalig overzicht)</a></li></ul><ul id="2db3eb1d-b466-4022-9b67-a21f2e817ce6" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De verwijzingen naar manuscripten en de Bibliothèque nationale de France op de oorspronkelijke pagina moeten afzonderlijk aan de hand van bibliotheekcatalogi of wetenschappelijke publicaties worden gecontroleerd.</li></ul><h2 id="3f4dfcf9-ea33-80e4-941f-d869ca15762f" class="" dir="auto">Biografie en Achtergrond</h2><ul id="3f4dfcf9-ea33-80e5-9e4e-dca985945bc6" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Identiteit:</strong> Claudius Ptolemaeus (ca. 100 – 160/170 n.Chr.) was een Grieks-Romeinse wetenschapper die leefde en werkte in Alexandrië, in de Romeinse provincie Egypte.</li></ul><ul id="3f4dfcf9-ea33-80e9-a506-c1530908d554" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Afkomst:</strong> Hij schreef in het Koinè-Grieks en maakte gebruik van Babylonische data. Zijn Latijnse naam (&#x27;Claudius&#x27;) suggereert Romeins burgerschap, terwijl zijn etnische achtergrond vermoedelijk Grieks of gehelleniseerd Egyptisch was.</li></ul><ul id="3f4dfcf9-ea33-8038-bf58-fa4b4bf95486" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Vakgebieden:</strong> Hij publiceerde toonaangevende verhandelingen over astronomie, geografie, astrologie, muziektheorie, optica en wiskunde.</li></ul><h2 id="3f4dfcf9-ea33-809d-9c2d-cd852b2bd58f" class="" dir="auto">Belangrijkste Werken</h2><ul id="3f4dfcf9-ea33-80c2-a713-fda83743e37b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Almagest (</strong><em><strong>Mathēmatikē Syntaxis</strong></em><strong>):</strong> Het enige overgebleven allesomvattende astronomische werk uit de oudheid. Het beschrijft een wiskundig onderbouwd, geocentrisch model van het zonnestelsel en bevat handige planeettabellen en een sterrencatalogus. Het werk bleef meer dan duizend jaar dé autoriteit in de westerse en islamitische wereld.</li></ul><ul id="3f4dfcf9-ea33-805e-bc4a-ed92dece5a9e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Geographia (</strong><em><strong>Geographike Hyphegesis</strong></em><strong>):</strong> Een pionierend handboek voor cartografie. Ptolemaeus verbeterde kaartprojecties en catalogiseerde 8.000 locaties voorzien van geografische coördinaten in een raster (lengte- en breedtegraden).</li></ul><ul id="3f4dfcf9-ea33-809e-8074-f1095a89a062" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Tetrabiblos (</strong><em><strong>Quadripartitum</strong></em><strong>):</strong> Een theorethisch en systematisch werk dat astrologie koppelde aan de Aristoteliaanse natuurfilosofie (gebaseerd op opwarmen, afkoelen, bevochtigen en drogen). Dit werd het absolute standaardwerk voor latere astrologen.</li></ul><h2 id="3f4dfcf9-ea33-80b5-bd89-eb800c739ec7" class="" dir="auto">Overige Wetenschappelijke Bijdragen</h2><ul id="3f4dfcf9-ea33-80a4-a3c9-ea1665c37eec" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Harmonica:</strong> Een studie naar muziektheorie. Ptolemaeus koppelde muzikale intervallen aan wiskundige verhoudingen en introduceerde empirische toetsing (vroege wetenschappelijke methode) door middel van een experimenteel instrument, het monochord.</li></ul><ul id="3f4dfcf9-ea33-8020-8d51-c44e0a987ac8" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Optica:</strong> Een werk over de eigenschappen van het zien, reflectie, refractie en kleur. Ptolemaeus stelde dat zicht voortkomt uit &#x27;stralen&#x27; die vanuit het oog een kegel vormen om afstand, oriëntatie en vorm te bepalen.</li></ul><ul id="3f4dfcf9-ea33-8073-b5ef-eb7d94c235e7" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Planetaire Hypothesen:</strong> Een kosmologisch model dat het universum fysiek beschrijft als een set in elkaar geneste sferen, inclusief schattingen van de afmetingen van het heelal.</li></ul><ul id="3f4dfcf9-ea33-80e2-b342-fb3b346000a7" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Epistemologie:</strong> In teksten zoals <em>Over het Criterium en Hegemonikon</em> stelde hij dat objectieve kennis voortkomt uit een combinatie van rede en zintuiglijke waarneming, en dat de wiskunde superieur is aan theologie en metafysica vanwege haar absolute zekerheid.</li></ul><h2 id="3f4dfcf9-ea33-8057-b76a-ec514b4cd5f1" class="" dir="auto">Moderne Controverse en Herwaardering</h2><ul id="3f4dfcf9-ea33-806c-8135-e51a8ca22010" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Beschuldiging van fraude:</strong> In de moderne tijd (onder andere door Robert R. Newton in 1977) werd Ptolemaeus beschuldigd van het fabriceren van observaties en het manipuleren van data van zijn voorganger Hipparchus, om deze passend te maken voor zijn eigen theorieën.</li></ul><ul id="3f4dfcf9-ea33-806a-a9aa-c3547df16eb7" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Weerlegging:</strong> Latere wetenschappers wezen erop dat meetfouten ook verklaard kunnen worden door atmosferische refractie of vervormde instrumenten. Een ontdekking in 2022 van originele fragmenten van Hipparchus&#x27; sterrencatalogus toonde definitief aan dat Ptolemaeus niet klakkeloos data kopieerde, maar meerdere bronnen en eigen observaties op een valide manier combineerde.</li></ul><p id="3f4dfcf9-ea33-8063-a3a5-e14c20489509" class="" dir="auto">
+</p><p id="3f4dfcf9-ea33-80bd-85c8-eb76b7790650" class="" dir="auto">De bijgeleverde afbeelding, &quot;afbeelding.jpg&quot;, toont een klassieke weergave van de bekende wereld (Oikoumene) gebaseerd op de <em>Geographia</em> van Claudius Ptolemaeus.</p><p id="3f4dfcf9-ea33-802e-9c59-d1bf6a1867c6" class="" dir="auto">Hier is een overzicht van de opvallendste geografische en structurele elementen die uit deze kaart te extraheren zijn:</p><h3 id="3f4dfcf9-ea33-808f-ac3b-f4a021430c23" class="" dir="auto">Projectie en Structuur</h3><ul id="3f4dfcf9-ea33-808c-aff1-eed6883c7d22" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De kaart maakt gebruik van een kegelprojectie, waarbij de lengte- en breedtegraden langs de gebogen marges in de randen zijn genummerd.</li></ul><ul id="3f4dfcf9-ea33-80e5-84c3-c55173285293" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Aan de uiterste linkerrand staan &#x27;klimaten&#x27; (zoals <em>Clima 1</em>, <em>Clima 2</em>) aangegeven, een klassiek systeem om breedtegraden in te delen op basis van de daglengte.</li></ul><h3 id="3f4dfcf9-ea33-8063-a44c-cc713950c9c9" class="" dir="auto">Continenten en Regio&#x27;s</h3><ul id="3f4dfcf9-ea33-8039-bdc6-f43be923c6d1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Europa:</strong> Zichtbaar in het kwadrant linksboven, ten noorden van de Middellandse Zee.</li></ul><ul id="3f4dfcf9-ea33-80e5-a3b0-fd6db9ea6fef" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Afrika:</strong> In het zuidwesten aangeduid met regio&#x27;s zoals <em>AFRICA</em>, <em>AEGYPTVS</em> (Egypte), en <em>AETHIOPIA INTERIOR</em> in het binnenland.</li></ul><ul id="3f4dfcf9-ea33-8082-ac54-cb95bb36bda3" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Azië:</strong> Beslaat de gehele rechterhelft van de kaart. Grote regio&#x27;s zijn onder andere <em>ARABIA</em> (het Arabisch schiereiland), <em>SCYTHIA</em> (de noordelijke steppen), <em>INDIA INTRA GANGEM</em> (India ten westen van de rivier de Ganges) en <em>INDIA EXTRA GANGEM</em> (het gebied ten oosten van de Ganges).</li></ul><ul id="3f4dfcf9-ea33-80d4-bb05-f9b193d3dc78" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Terra Incognita (Zuidelijke landmassa):</strong> Kenmerkend voor Ptolemeïsche kaarten loopt er in het uiterste zuiden een landbrug die Afrika verbindt met Zuidoost-Azië.</li></ul><h3 id="3f4dfcf9-ea33-8079-b598-e5eefbd64fb2" class="" dir="auto">Opvallende Eilanden en Wateren</h3><ul id="3f4dfcf9-ea33-8005-9570-c864dd73b88c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Taprobana Insula:</strong> Een disproportioneel groot getekend eiland ten zuiden van India, wat overeenkomt met het huidige Sri Lanka.</li></ul><ul id="3f4dfcf9-ea33-801c-813b-f5ac86ceef61" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Mare Indicum:</strong> De Indische Oceaan, die op deze kaart door de zuidelijke landbrug wordt afgebeeld als een gigantische, door land omsloten binnenzee.</li></ul><ul id="3f4dfcf9-ea33-808d-bd4f-c7b46fd31b88" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Mare Atlanticvm / Oceanvs Occidentalis:</strong> De Atlantische Oceaan aan de westelijke rand van de bekende wereld.</li></ul><ul id="3f4dfcf9-ea33-8078-85aa-f6b5817cae8e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Sinus Gangeticvs:</strong> De grote baai ten oosten van India (de huidige Golf van Bengalen).</li></ul><p id="3f4dfcf9-ea33-8075-8f8f-ca16e2072c21" class="" dir="auto"><strong>Unieke plaatsnamen</strong></p><ul id="3f4dfcf9-ea33-8004-bfc4-e8fd8c2fa054" class="bulleted-list" dir="auto"><li style="list-style-type:disc">AEGYPTVS</li></ul><ul id="3f4dfcf9-ea33-8066-a675-d65ef0dbe33b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">AETHIOPIA INTERIOR</li></ul><ul id="3f4dfcf9-ea33-80f5-9fc4-e188eea9fbc2" class="bulleted-list" dir="auto"><li style="list-style-type:disc">AFRICA</li></ul><ul id="3f4dfcf9-ea33-801c-9691-d65a906c1dcf" class="bulleted-list" dir="auto"><li style="list-style-type:disc">ARABIA DESERTA</li></ul><ul id="3f4dfcf9-ea33-8008-95c2-f9b55746608b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">ARABIA FELIX</li></ul><ul id="3f4dfcf9-ea33-803b-a62b-cea65cb31009" class="bulleted-list" dir="auto"><li style="list-style-type:disc">ARACHOSIA</li></ul><ul id="3f4dfcf9-ea33-802d-adc3-ea15e9b9424b" class="bulleted-list" dir="auto"><li style="list-style-type:disc">ARMENIA</li></ul><ul id="3f4dfcf9-ea33-80cf-a754-c64a9c9690f1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">ASIA</li></ul><ul id="3f4dfcf9-ea33-805b-b5b0-ffffde2a8a31" class="bulleted-list" dir="auto"><li style="list-style-type:disc">CARMANIA</li></ul><ul id="3f4dfcf9-ea33-80c9-8e91-c00542bc8917" class="bulleted-list" dir="auto"><li style="list-style-type:disc">DACIA</li></ul><ul id="d6161cd8-18a8-4578-a864-0e8881fd62db" class="bulleted-list" dir="auto"><li style="list-style-type:disc">GEDROSIA</li></ul><ul id="1d27716d-fa09-404d-980b-65a1d2c45746" class="bulleted-list" dir="auto"><li style="list-style-type:disc">INDIA EXTRA GANGEM</li></ul><ul id="ff8792e6-8228-446d-a10a-3122d6ac3c60" class="bulleted-list" dir="auto"><li style="list-style-type:disc">INDIA INTRA GANGEM</li></ul><ul id="bc82e520-4f58-4370-a78e-2d147b3791e1" class="bulleted-list" dir="auto"><li style="list-style-type:disc">LIBYA</li></ul><ul id="48522ccf-c0c6-4b5e-ab00-50f1c1ef5531" class="bulleted-list" dir="auto"><li style="list-style-type:disc">MACEDONIA</li></ul><ul id="a14b90cc-3e08-410a-b974-ba9fe85222f5" class="bulleted-list" dir="auto"><li style="list-style-type:disc">MARE ATLANTICVM</li></ul><ul id="cb5596fb-48ff-4d45-ab47-39e749b2f772" class="bulleted-list" dir="auto"><li style="list-style-type:disc">MARE INDICVM</li></ul><ul id="5a60fa7f-f98f-44d8-acea-8157f25807f5" class="bulleted-list" dir="auto"><li style="list-style-type:disc">MARE RVBRVM</li></ul><ul id="0fe0de18-1fa3-4127-ba8a-da36e5198d9f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">OCEANVS OCCIDENTALIS</li></ul><ul id="88f510c7-cf0d-4765-a755-c53c54ea8c32" class="bulleted-list" dir="auto"><li style="list-style-type:disc">PARTHIA</li></ul><ul id="ad059b68-7524-44be-9250-e3de9c2931b6" class="bulleted-list" dir="auto"><li style="list-style-type:disc">PERSIS</li></ul><ul id="f0163bff-c2da-4367-8d0c-59f6f53ed8cd" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SCYTHIA EXTRA IMAVM</li></ul><ul id="87054c00-6546-4239-8ce2-f3041f91afcd" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SCYTHIA INTRA IMAVM</li></ul><ul id="2f674c33-d588-415d-bc88-211580b0d5ce" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SINVS BARBARICVS</li></ul><ul id="d9151d9b-b82c-4363-ade0-9199dcfe07fd" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SINVS GANGETICVS</li></ul><ul id="80e42adf-8e5f-469d-8fb8-a1c5f352dfde" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SINVS HESPERIVS</li></ul><ul id="bee9386c-67ad-4a08-97c0-b00f5d2a3792" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SINVS PERSICVS</li></ul><ul id="03654058-5771-4936-8498-89f7aed8257f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SOGDIANA</li></ul><ul id="f59c8cc0-8b63-447a-b8b5-0850ce58f4f7" class="bulleted-list" dir="auto"><li style="list-style-type:disc">SYRIA</li></ul><ul id="9ba40d59-43c1-4734-98ea-354444a04d06" class="bulleted-list" dir="auto"><li style="list-style-type:disc">TAPROBANA INSVLA</li></ul><figure id="3f4dfcf9-ea33-80ea-b4cc-e8e22d0b55b0" dir="ltr"><a href="https://acm5.blogs.rice.edu/page-c/" class="bookmark source"><div class="bookmark-info"><div class="bookmark-text"><div class="bookmark-title">Ptolemy’s Geographia</div><div class="bookmark-description">The Greek text of Ptolemy’s Geography appeared in Florence in 1397, and it was translated into Latin in the first decade of the fifteenth century. Ptolemy’s Geōgraphikē became Geographia or Cosmographia in Latin and many editions–first manuscript then print–appeared during the Renaissance. Nicolò Germano created an illuminated manuscript version of Ptolemy’s Geography for Borso d’ Este, see Cosmografia courtesy of the Estense Digital Library, Biblioteca Estense Universitaria, Modena. Printed editions circulated more widely. This printed edition of Ptolemy’s Geography (Cosmographia, Ulm: 1486), courtesy of Stanford University, provides access to all of the maps, beginning with the world map and including all 26 regional maps originally described by Ptolemy (as well as several additional maps).</div></div><div class="bookmark-href"><img src="https://bpb-us-e1.wpmucdn.com/blogs.rice.edu/dist/a/6063/files/2020/03/cropped-noun_Globe_2953920-192x192.png" class="icon bookmark-icon"/>https://acm5.blogs.rice.edu/page-c/</div></div></a></figure><h2 id="3f4dfcf9-ea33-804a-9445-c341d203c048" class="" dir="auto">Christiana religio</h2><p id="3f4dfcf9-ea33-80bb-86df-f910950b0a44" class="" dir="auto"><mark class="highlight-gray" data-notion-highlight="gray">Uit Wiki Munten en papiergeld</mark></p><figure id="3f4dfcf9-ea33-800e-b558-f4d2d57f11af" class="image" data-notion-image="https://wiki.muntenenpapiergeld.nl/images/thumb/2/2d/Christiana_religio_Lodewijk_de_vrome_penning.jpg/300px-Christiana_religio_Lodewijk_de_vrome_penning.jpg" dir="ltr"><a href="https://wiki.muntenenpapiergeld.nl/images/thumb/2/2d/Christiana_religio_Lodewijk_de_vrome_penning.jpg/300px-Christiana_religio_Lodewijk_de_vrome_penning.jpg"><img style="width:284px" src="https://wiki.muntenenpapiergeld.nl/images/thumb/2/2d/Christiana_religio_Lodewijk_de_vrome_penning.jpg/300px-Christiana_religio_Lodewijk_de_vrome_penning.jpg"/></a></figure><blockquote id="3f4dfcf9-ea33-80df-a046-cef7c5a825c2" class="" dir="auto"><strong>Christiana religio,</strong> het Christelijk geloof, tekst (steeds gespeld met XP voor Chr aan het begin) die voor het eerst voorkomt als omschrift rond een kerkgebouw op de kz. van zilveren penningen van Karel de Grote, kort na 800.<p id="253a5d33-a3c4-4693-b554-fa3387f3e079" class="" dir="auto">Het is vooral bekend door het gebruik op de kz. van de enorme emissie van Lodewijk de Vrome (814-840), zonder vermelding van muntplaats (in de numismatiek bekend als monnaies à la légende chrétienne of Reichsdenare).</p><p id="be2793a9-dc9b-4a44-b349-9c4a927d2364" class="" dir="auto">Ook door Lodewijks opvolgers werd het type nog gebruikt en er zijn imitaties tot in de 11e eeuw; <a href="https://wiki.muntenenpapiergeld.nl/index.php?title=Karolingische_muntslag">Karolingische muntslag</a>.</p><figure id="3f4dfcf9-ea33-8070-9ac2-de05c0d2e1da" class="image" data-notion-image="Onderzoek%20Ptolemaeus,%20Nerthus%20en%20Tacitus/afbeelding%201.png" dir="ltr"><a href="Onderzoek%20Ptolemaeus,%20Nerthus%20en%20Tacitus/afbeelding%201.png"><img style="width:656.9833374023438px" src="Onderzoek%20Ptolemaeus,%20Nerthus%20en%20Tacitus/afbeelding%201.png"/></a></figure></blockquote><h2 id="3f4dfcf9-ea33-80e1-ba22-f2568f14bfb9" class="" dir="auto">Onderzoek naar a–b: oude toeschrijving en bewijs</h2><h3 id="3f4dfcf9-ea33-8005-bc38-f357a6ea30dc" class="" dir="auto">Onderzoeksvraag</h3><p id="3f4dfcf9-ea33-80a8-9995-e780cbfe9744" class="" dir="auto">Zijn munten a en b werkelijk in Gallia Belgica geslagen en bedoeld als herinnering aan een Romeinse overwinning in Gallië, en wat toont de aangehaalde verwijzing naar abbé Ghesquière aan?</p><h3 id="3f4dfcf9-ea33-80f3-8813-cd30baa7534a" class="" dir="auto">Wat de Ghesquière-verwijzing aantoont</h3><p id="3f4dfcf9-ea33-8012-a6e2-e4d64efe41e2" class="" dir="auto">Bibliografische catalogi identificeren Joseph-Hippolyte Ghesquière als auteur van <em>Dissertation de M. l’abbé Ghesquière sur les différens genres de médailles antiques</em>, verschenen in 1779. Het is een achttiende-eeuwse verhandeling over antieke medailles. Dat maakt de verwijzing relevant voor de geschiedenis van de numismatiek, maar bevestigt op zichzelf niet de datering, vindplaats, authenticiteit of herdenkingsfunctie van a en b. De korte notitie noemt geen volledige editie, afbeelding of controleerbare passage; de opgegeven pagina’s 31–39 moeten daarom nog naast de oorspronkelijke uitgave worden gelegd. <a href="https://books.google.be/books?id=e8dbAAAAQAAJ">Google Books-catalogus</a> · <a href="https://collections-ressources.chateaudefontainebleau.fr/document/dissertation-de-m-l-abb-ghesquiere-sur-les-differens-genres-de-mdailles-antiques-ou-examen-critique-des-nouvelles-recherches-sur-la-science-des-mdailles-par-m-poinsinet-de-sivry/64ac04b4e55ded3595f2204d">Catalogus Château de Fontainebleau</a></p><h3 id="3f4dfcf9-ea33-8023-9f29-cda00f7d1014" class="" dir="auto">Wat moderne numismatiek vereist</h3><p id="3f4dfcf9-ea33-8064-a25c-e37cf5ba7b04" class="" dir="auto">Louis-Pol Delestrée benadrukt dat Gallische munten, op uitzonderingen na, vaak geen verklarende inscriptie dragen. Hij plaatst ze binnen de protohistorie en betoogt dat hun interpretatie moet steunen op samenhangende archeologische en numismatische gegevens. In zijn bespreking van onderzoek in Picardië noemt hij circa 22.000 Gallische munten met zekere herkomst; exemplaren die tijdens opgravingen <em>in situ</em> in hun stratigrafische context zijn gevonden, leveren juist daardoor bruikbare chronologische informatie op. Dat onderstreept waarom een losse oude toeschrijving of een motief alleen geen bewijs is voor een concrete historische gebeurtenis. <a href="https://www.persee.fr/doc/pica_0752-5656_1994_num_3_1_2142">Delestrée, </a><em><a href="https://www.persee.fr/doc/pica_0752-5656_1994_num_3_1_2142">Revue archéologique de Picardie</a></em><a href="https://www.persee.fr/doc/pica_0752-5656_1994_num_3_1_2142"> (1994), pp. 19–30</a> · <a href="https://www.persee.fr/doc/numi_0484-8942_1994_num_6_36_1994">Delestrée, </a><em><a href="https://www.persee.fr/doc/numi_0484-8942_1994_num_6_36_1994">Revue Numismatique</a></em><a href="https://www.persee.fr/doc/numi_0484-8942_1994_num_6_36_1994"> (1994), pp. 7–25</a></p><p id="f91c722e-8f5b-4450-be16-7e54d63a78ef" class="" dir="auto">Ook is “België” dubbelzinnig: de antieke regio Gallia Belgica valt niet zonder meer samen met de grenzen van het huidige België. De geografische toeschrijving moet daarom worden gekoppeld aan een specifieke muntgroep en haar archeologische verspreiding, niet aan een moderne landsnaam alleen.</p><h3 id="e2ddf2c0-b8f0-4e92-acdf-9701f96892f3" class="" dir="auto">Voorlopige beoordeling</h3><p id="01cb3c1c-9199-490a-bc8b-d556ee7ed0f9" class="" dir="auto">Op basis van de huidige notitie zijn de toeschrijvingen van a en b <strong>niet bevestigd</strong>. De formulering over een Romeinse overwinning moet voorlopig worden behandeld als een oudere interpretatie, niet als een vastgesteld doel van de muntslag. De aangehaalde Ghesquière-verhandeling bewijst dat er een achttiende-eeuwse numismatische discussie bestond; zonder de exacte passage en identificatie van de afgebeelde exemplaren bewijst zij niet dat deze twee munten bij die gebeurtenis horen.</p><h3 id="f2c7e070-1907-4efa-8112-3a963b9ae702" class="" dir="auto">Nodig voor een sluitender identificatie</h3><ul id="bf943451-4d00-4bd6-bdfe-df18265624d5" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Afbeeldingen van beide zijden van a en b, met schaal.</li></ul><ul id="aa335757-dd4c-4045-99db-4de475e369be" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Volledige transcriptie van zichtbare letters en symbolen.</li></ul><ul id="af4da902-8ad3-4cae-959d-8948c4a07d9f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Metaal, gewicht, diameter en eventuele stempel- of typekenmerken.</li></ul><ul id="f269ec98-b74a-4b63-b9c8-30e0ccaa563a" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Vindplaats, archeologische laag en herkomstgeschiedenis.</li></ul><ul id="3c013b27-0519-4614-a131-d7a806db517a" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De precieze editie van Ghesquière’s verhandeling en controle van pagina’s 31–39.</li></ul><ul id="0706ed69-0fb3-4ba3-9810-ca939f2bcc41" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Vergelijking met typologische catalogi en archeologisch gedocumenteerde vondsten uit de betreffende muntgroep.</li></ul><h4 id="be7e24ac-f997-4f76-9b96-9a6eebd3b057" class="" dir="auto">c. De munt van Lodewijk de Vrome</h4><p id="e0fcb4b9-b68c-409c-9d77-754c55da04da" class="" dir="auto">Lodewijk de Vrome regeerde van 814 tot 840. Zijn muntuitgiften veranderden tijdens zijn regering: na vroege portretmunten volgden vanaf ongeveer 816 munten met muntnaam, en rond 822/823 een type met een kerk- of tempelgebouw en de legende <em>Christiana religio</em>. Bij dat laatste type ontbreekt de muntnaam; onderzoekers leiden mogelijke muntplaatsen af uit stijlkenmerken. Die toeschrijvingen blijven voor sommige groepen onzeker. Een naam als <em>HLVDOWICVS IMP</em> ondersteunt dus een verband met Lodewijk, maar zonder een nauwkeurige lezing van de volledige legende, beide zijden en de muntkenmerken identificeert die tekst niet automatisch één specifiek type of muntatelier. <a href="https://ora.ox.ac.uk/objects/uuid:35c63060-2932-47ba-9748-66bb259d4382/files/m64eafa800b1b3627819721e23b085a4f">Elina Screen, “Coining it? Carolingian rulers and the Frankish coinage, c. 750–900” (2019)</a></p><p id="29d3218f-db29-4f85-a934-bacbe59ac037" class="" dir="auto">Een catalogusvoorbeeld van een vroege denier geeft de legende als <em>✠ HLVDOVVICVS IMP AVG</em> en dateert het exemplaar op 814–818; het toont waarom exacte lettervormen en de complete munt, niet een verkorte transcriptie alleen, nodig zijn voor identificatie. Dit is een vergelijkingsobject en geen bewijs dat munt c hetzelfde exemplaar of dezelfde variant is. <a href="https://en.numista.com/267288">Numista, denier van Lodewijk I</a></p><h4 id="59339b0e-7a81-42a3-b31f-c9f89de3b5de" class="" dir="auto">d. Toeschrijving op basis van een kruis</h4><p id="cc1cc6bd-075d-451d-9bdf-f381c6623367" class="" dir="auto">Een kruis is op zichzelf onvoldoende om een munt aan Lodewijk de Vrome toe te schrijven: het motief komt op veel middeleeuwse munten voor. De toeschrijving moet worden getoetst aan de volledige omschriften, de voorstelling op beide zijden, metaal, gewicht, diameter, stempelstijl en — waar beschikbaar — vindplaats en archeologische context. De literatuur over de <em>Christiana religio</em>-munten laat bovendien zien dat zelfs deskundige stilistische toeschrijvingen aan een muntplaats niet altijd zeker zijn.</p><h3 id="be190f5e-b3ee-4ad8-9204-90bfba5b4dbb" class="" dir="auto">Voorlopige conclusie</h3><ul id="b5ee85f8-6911-4c90-b907-8d70f253f6c7" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De identificatie van c met Lodewijk de Vrome is <strong>mogelijk</strong>, maar de precieze muntsoort en muntplaats zijn met de huidige omschrijving niet vast te stellen.</li></ul><ul id="3c4dc6bc-86c5-40f9-a423-f72db3202a6c" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De herkomst en herdenkingsbetekenis van a en b zijn <strong>onbewezen</strong> zonder de munten zelf en een controleerbare bronpassage.</li></ul><ul id="765c021b-bd83-4342-82fe-85eed53f2d8e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De toeschrijving van d aan Lodewijk op grond van alleen de kruisvorm is <strong>onvoldoende onderbouwd</strong>.</li></ul><ul id="27ad0a91-0b8e-4ba7-9348-905940cf6eeb" class="bulleted-list" dir="auto"><li style="list-style-type:disc">De dubbele vermeldingen van c en d in de eerdere notitie zijn samengevoegd; de onbevestigde claims zijn hier als voorlopige hypotheses behandeld.</li></ul><h3 id="be1116b3-b66f-4c19-ac0d-0661d9b8476d" class="" dir="auto">Benodigd voor definitieve identificatie</h3><ol type="1" id="16808217-a043-4b03-8dac-9b5beeccd7e2" class="numbered-list" start="1" dir="auto"><li>Scherpe foto’s van voor- en keerzijde van elk exemplaar, met schaal.</li></ol><ol type="1" id="404c73db-9e72-411f-b5f9-4dd6b96291dd" class="numbered-list" start="2" dir="auto"><li>Volledige en letterlijke transcriptie van beide omschriften.</li></ol><ol type="1" id="af117b84-aaf3-4b8a-a162-f17a94eb62ff" class="numbered-list" start="3" dir="auto"><li>Metaal, gewicht en diameter.</li></ol><ol type="1" id="bf71cc70-6a15-4ce7-84a5-9f363132ca4e" class="numbered-list" start="4" dir="auto"><li>Vindplaats of herkomstgeschiedenis.</li></ol><ol type="1" id="52fd4888-c2f6-425b-82ce-e1f94397c5f6" class="numbered-list" start="5" dir="auto"><li>Volledige bibliografische verwijzing bij Ghesquière, inclusief titel, editie en de bedoelde pagina’s.</li></ol><h3 id="d8d78c19-b225-4ec2-927b-5cd3ce1f4888" class="" dir="auto">Bronnen</h3><ul id="f2bce8cc-5a9c-48ee-9d8a-f1072194f9b5" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://ora.ox.ac.uk/objects/uuid:35c63060-2932-47ba-9748-66bb259d4382/files/m64eafa800b1b3627819721e23b085a4f">Elina Screen, “Coining it? Carolingian rulers and the Frankish coinage, c. 750–900”</a> — bespreekt de opeenvolgende muntuitgiften, de <em>Christiana religio</em>-serie en onzekerheden rond muntattributies.</li></ul><ul id="955eb1a6-ba42-42cd-b672-23ad06f88ac5" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://www.persee.fr/doc/numi_0484-8942_1994_num_6_36_1994">Louis-Pol Delestrée, “La numismatique gauloise en Gaule Belgique. Problématique et axes de recherche”</a> — wetenschappelijke bespreking van de interpretatie van Gallische munten.<ul id="df3f5bb8-bea1-45aa-a590-1b66aa0bc0fc" class="bulleted-list" dir="auto"><li style="list-style-type:circle"><a href="https://en.numista.com/267288">Numista-catalogusrecord van een denier van Lodewijk I</a> — bruikbaar als vergelijkingsobject; raadpleeg voor definitieve identificatie ook de daarin vermelde specialistische catalogi.</li></ul></li></ul><ul id="be8a7be6-7fdc-4c15-a9e8-4eea3fa21528" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><a href="https://collections-ressources.chateaudefontainebleau.fr/document/dissertation-de-m-l-abbe-ghesquiere-sur-les-differens-genres-de-medailles-antiques-ou-examen-critique-des-nouvelles-recherches-sur-la-science-des-medailles-par-m-poinsinet-de-sivry/64ac04b4e55ded3595f2204d?pageId=64de17b35673696b55421f8b&amp;v=list&amp;s=date&amp;so=asc&amp;pos=7739&amp;pgn=515">Catalogusrecord van Ghesquière’s verhandeling</a>.</li></ul><p id="3f4dfcf9-ea33-8030-8d21-f19c332cf29e" class="" dir="auto">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>

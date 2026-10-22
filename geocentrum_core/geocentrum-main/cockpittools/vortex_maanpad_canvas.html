@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VORTEX OS — Realtime Locatie, Coördinaten, Tijd & Ruimte Engine</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.8.0/suncalc.min.js"></script>
+  <style>
+    :root {
+      --bg: #030712;
+      --panel: rgba(15,23,42,0.96);
+      --cyan: #00e5ff;
+      --gold: #ffcc33;
+      --green: #00ff88;
+      --magenta: #ff3385;
+      --text: #f1f5f9;
+      --font: 'Fira Code', monospace;
+    }
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); padding: 1rem; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    header { width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cyan); padding-bottom: 0.6rem; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 10px; }
+    h1 { font-size: 1.2rem; color: var(--gold); letter-spacing: 0.5px; }
+    .status-tag { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid var(--green); padding: 3px 10px; border-radius: 4px; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; }
+    .pulse-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
+
+    .main-container { width: 100%; max-width: 1100px; background: var(--panel); border: 1px solid #1e293b; border-radius: 8px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1.2rem; box-shadow: 0 0 30px rgba(0,229,255,0.15); }
+    
+    .dual-search-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #02040a; border: 1px solid var(--cyan); padding: 14px; border-radius: 6px; }
+    @media (max-width: 768px) { .dual-search-grid { grid-template-columns: 1fr; } }
+    
+    .search-box-group { display: flex; flex-direction: column; gap: 6px; }
+    .search-label { font-size: 0.8rem; color: var(--gold); font-weight: bold; display: flex; align-items: center; gap: 6px; }
+    .input-wrapper { display: flex; gap: 6px; }
+    .input-wrapper input { flex: 1; background: #0f172a; border: 1px solid #334155; color: #fff; padding: 8px 12px; border-radius: 4px; font-family: var(--font); font-size: 0.82rem; }
+    .input-wrapper input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+    .btn-search { background: rgba(0,229,255,0.2); border: 1px solid var(--cyan); color: #fff; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-family: var(--font); font-size: 0.8rem; font-weight: bold; transition: all 0.2s; white-space: nowrap; }
+    .btn-search:hover { background: var(--cyan); color: #000; }
+    
+    .quick-tags { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.75rem; border-top: 1px dashed rgba(255,204,51,0.2); padding-top: 10px; margin-top: 4px; align-items: center; }
+    .tag { background: rgba(255,204,51,0.1); border: 1px solid var(--gold); color: var(--gold); padding: 4px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; font-size: 0.75rem; }
+    .tag:hover { background: var(--gold); color: #000; font-weight: bold; }
+
+    .canvas-wrapper { position: relative; width: 100%; height: 480px; background: #02040a; border: 1px solid var(--cyan); border-radius: 6px; overflow: hidden; }
+    canvas { width: 100%; height: 100%; display: block; }
+    
+    .controls-bar { display: flex; gap: 12px; align-items: center; justify-content: space-between; background: rgba(15,23,42,0.9); padding: 0.8rem 1rem; border-radius: 6px; border: 1px solid #1e293b; flex-wrap: wrap; }
+    input[type=range] { flex: 1; accent-color: var(--cyan); min-width: 180px; cursor: pointer; }
+    .btn-realtime { background: rgba(0,255,136,0.15); border: 1px solid #00ff88; color: #fff; padding: 6px 14px; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: var(--font); font-size: 0.8rem; transition: all 0.2s; }
+    .btn-realtime:hover { background: #00ff88; color: #000; }
+    
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.8rem; margin-bottom: 1rem; }
+    .metric-card { background: rgba(2,4,10,0.85); border: 1px solid #1e293b; border-radius: 6px; padding: 0.8rem; font-size: 0.78rem; position: relative; overflow: hidden; }
+    .metric-card.highlight { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,229,255,0.1); }
+    .metric-label { color: #94a3b8; font-size: 0.7rem; margin-bottom: 3px; }
+    .metric-val { color: var(--cyan); font-weight: bold; font-size: 0.92rem; }
+    
+    .data-panel { background: #02040a; border: 1px solid #334155; border-radius: 6px; padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
+    .data-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+    .data-title { font-size: 0.9rem; color: var(--gold); font-weight: bold; }
+    .btn-data { background: rgba(0,229,255,0.1); border: 1px solid var(--cyan); color: var(--cyan); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-family: var(--font); font-size: 0.75rem; transition: all 0.2s; }
+    .btn-data:hover { background: var(--cyan); color: #000; }
+    .btn-export { background: rgba(255,51,133,0.1); border: 1px solid var(--magenta); color: var(--magenta); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-family: var(--font); font-size: 0.75rem; transition: all 0.2s; }
+    .btn-export:hover { background: var(--magenta); color: #000; }
+    
+    table.telemetry-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; }
+    .telemetry-table th { color: #94a3b8; border-bottom: 1px solid #334155; padding: 6px; }
+    .telemetry-table td { padding: 6px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+    .table-container { max-height: 200px; overflow-y: auto; border: 1px solid #1e293b; border-radius: 4px; background: rgba(15,23,42,0.5); }
+    
+    a.btn-back { display: inline-block; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; transition: all 0.2s; }
+    a.btn-back:hover { background: var(--gold); color: #000; }
+    .feedback-msg { font-size: 0.78rem; color: var(--green); min-height: 1.2em; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🌕 VORTEX OS — DATA-ANALYSE & TELEMETRIE</h1>
+    <a href="/rekencentrum/tijdscapsule/tijdscapsule_index.html" class="btn-back">⬅️ Terug naar Tijdscapsule</a>
+  </div>
+  <div class="status-tag">
+    <span class="pulse-dot"></span>
+    <span id="engineStatus">ASTRONOMIE & TELEMETRIE ACTIEF</span>
+  </div>
+</header>
+
+<div class="main-container">
+  <div class="dual-search-grid">
+    <div class="search-box-group">
+      <div class="search-label">🏙️ Plaats / Locatie Zoeken:</div>
+      <div class="input-wrapper">
+        <input type="text" id="placeInput" placeholder="Typ plaatsnaam..." onkeydown="if(event.key==='Enter') searchByPlace()">
+        <button class="btn-search" onclick="searchByPlace()">🔎 Zoeken</button>
+      </div>
+    </div>
+    <div class="search-box-group">
+      <div class="search-label">🌐 Coördinaten (WGS84 / RD):</div>
+      <div class="input-wrapper">
+        <input type="text" id="coordInput" placeholder="Lat, Lon of RD..." onkeydown="if(event.key==='Enter') searchByCoord()">
+        <button class="btn-search" onclick="searchByCoord()">⚡ Koppelen</button>
+      </div>
+    </div>
+    <div class="quick-tags">
+      <span class="tag" onclick="setPreset(52.2500, 5.2200, 'Poolanker P (Laren/NL)')">📍 Poolanker P</span>
+      <span class="tag" onclick="setPreset(51.9244, 4.4777, 'Rotterdam (Zuid)')">⚓ Rotterdam</span>
+      <span class="tag" onclick="setPreset(-33.8698, 151.2083, 'Sydney (AU)')">🦘 Sydney</span>
+      <span class="tag" onclick="setPreset(19.6922, -98.8433, 'Teotihuacán (MX)')">🌞 Teotihuacán</span>
+    </div>
+  </div>
+
+  <div id="feedbackBox" class="feedback-msg">📍 Actief gekoppeld aan: Poolanker P (Laren/NL)</div>
+
+  <div class="canvas-wrapper">
+    <canvas id="moonCanvas"></canvas>
+  </div>
+
+  <div class="controls-bar">
+    <button id="btnRealtime" class="btn-realtime" onclick="setRealtime()">⏱️ Live (Realtime)</button>
+    <label style="font-size:0.78rem; color:var(--gold); font-weight:bold;">Tijd Simulatielus:</label>
+    <input type="range" id="timeSlider" min="0" max="23.99" step="0.05" value="12" oninput="updateTimeFromSlider(this.value)">
+    <span id="timeDisplay" style="font-size:0.88rem; color:var(--green); font-weight:bold; min-width:95px;">--:-- CEST</span>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card"><div class="metric-label">Geografische Coördinaten</div><div class="metric-val" id="valWgs">Laden...</div></div>
+    <div class="metric-card"><div class="metric-label">RD Grid Coördinaten</div><div class="metric-val" id="valRd">Laden...</div></div>
+    <div class="metric-card"><div class="metric-label">Maan Azimut & Elevatie</div><div class="metric-val" id="valAzEl">Laden...</div></div>
+    <div class="metric-card"><div class="metric-label">Maan RA / Dec (Equatoriaal)</div><div class="metric-val" id="valRaDec">Laden...</div></div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card highlight">
+      <div class="metric-label">Culminatie (Hoogste Punt Vandaag)</div>
+      <div class="metric-val" id="valCulm" style="color:var(--gold);">Berekenen...</div>
+    </div>
+    <div class="metric-card highlight">
+      <div class="metric-label">Orbitale Afstand & Parallax</div>
+      <div class="metric-val" id="valDist">Berekenen...</div>
+    </div>
+    <div class="metric-card highlight">
+      <div class="metric-label">Δ Kinematica (Az/El Snelheid)</div>
+      <div class="metric-val" id="valDelta">Berekenen...</div>
+    </div>
+    <div class="metric-card highlight">
+      <div class="metric-label">Maanfase & Belichting</div>
+      <div class="metric-val" id="valPhase" style="color:var(--magenta);">Laden...</div>
+    </div>
+  </div>
+
+  <div class="data-panel">
+    <div class="data-header">
+      <span class="data-title">📊 Realtime Telemetrie Logger</span>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn-data" onclick="captureTelemetry()">📸 Handmatig Snapshot</button>
+        <button class="btn-data" onclick="clearTelemetry()" style="color:#94a3b8; border-color:#334155;">Tabel Wissen</button>
+        <button class="btn-export" onclick="exportCSV()">💾 Exporteer CSV</button>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="telemetry-table" id="telemetryTable">
+        <thead>
+          <tr>
+            <th>Locatie / Tijdstip</th>
+            <th>Lat, Lon</th>
+            <th>Azimut</th>
+            <th>Elevatie</th>
+            <th>Afstand (km)</th>
+            <th>Fase (%)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('moonCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  let isRealtime = true;
+  let simulatedHour = new Date().getHours() + new Date().getMinutes()/60;
+  
+  let currentLat = 52.2500;
+  let currentLon = 5.2200;
+  let locationName = "Poolanker P (Laren/NL)";
+  
+  let telemetryLog = [];
+  let currentMetrics = {};
+
+  function wgsToRd(lat, lon) {
+    const dLat = 0.36 * (lat - 52.15517440);
+    const dLon = 0.36 * (lon - 5.38720621);
+    const x = 155000 + 190094.945 * dLon - 11832.228 * dLat * dLon - 114.221 * Math.pow(dLat, 2) * dLon;
+    const y = 463000 + 309056.544 * dLat + 3638.893 * Math.pow(dLon, 2) - 157.984 * Math.pow(dLat, 2);
+    return { x: Math.round(x), y: Math.round(y) };
+  }
+  function rdToWgs(x, y) {
+    const dX = (x - 155000) * 1e-5;
+    const dY = (y - 463000) * 1e-5;
+    const lat = 52.15517440 + 3.23564 * dY - 0.01601 * Math.pow(dX, 2) - 0.00010 * Math.pow(dY, 2) - 0.00005 * Math.pow(dX, 2) * dY;
+    const lon = 5.38720621 + 5.25130 * dX + 0.15594 * dX * dY + 0.00241 * Math.pow(dY, 2) - 0.00005 * Math.pow(dX, 3) + 0.00006 * dX * Math.pow(dY, 2);
+    return { lat: parseFloat(lat.toFixed(6)), lon: parseFloat(lon.toFixed(6)) };
+  }
+
+  function getLST(date, lon) {
+    const jd = (date.getTime() / 86400000) + 2440587.5;
+    const d = jd - 2451545.0;
+    let gmst = 280.46061837 + 360.98564736629 * d;
+    let lst = (gmst + lon) % 360;
+    if (lst < 0) lst += 360;
+    return lst;
+  }
+
+  function getDirectionStr(azimuth) {
+    const dirs = ["N", "NNO", "NO", "ONO", "O", "OZO", "ZO", "ZZO", "Z", "ZZW", "ZW", "WZW", "W", "WNW", "NW", "NNW"];
+    const idx = Math.round(azimuth / 22.5) % 16;
+    return dirs[idx];
+  }
+
+  async function searchByPlace() {
+    const raw = document.getElementById('placeInput').value.trim();
+    if (!raw) return;
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(raw)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setPreset(parseFloat(data[0].lat), parseFloat(data[0].lon), data[0].display_name.split(',')[0]);
+      }
+    } catch(e) {}
+  }
+
+  function searchByCoord() {
+    const val = document.getElementById('coordInput').value.trim();
+    if (!val) return;
+    const parts = val.replace(/[^\d.,-]/g, ' ').trim().split(/\s+/);
+    if (parts.length >= 2) {
+      let v1 = parseFloat(parts[0]); let v2 = parseFloat(parts[1]);
+      if (v1 > 1000) {
+        const wgs = rdToWgs(v1, v2);
+        setPreset(wgs.lat, wgs.lon, `RD Grid (${v1}, ${v2})`);
+      } else {
+        setPreset(v1, v2, `WGS (${v1.toFixed(4)}°, ${v2.toFixed(4)}°)`);
+      }
+    }
+  }
+
+  function setPreset(lat, lon, name) {
+    currentLat = lat; currentLon = lon; locationName = name;
+    document.getElementById('placeInput').value = name;
+    document.getElementById('coordInput').value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+    document.getElementById('valWgs').textContent = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+    document.getElementById('feedbackBox').textContent = `📍 Actief gekoppeld aan: ${name}`;
+    
+    if (lat >= 50.0 && lat <= 54.0 && lon >= 2.5 && lon <= 7.5) {
+      const rd = wgsToRd(lat, lon);
+      document.getElementById('valRd').textContent = `X: ${rd.x} | Y: ${rd.y}`;
+    } else {
+      document.getElementById('valRd').textContent = `Buiten RD Grid`;
+    }
+    setTimeout(() => { captureTelemetry(); }, 100);
+  }
+
+  function updateTimeFromSlider(val) {
+    isRealtime = false; simulatedHour = parseFloat(val);
+    document.getElementById('btnRealtime').style.borderColor = '#334155';
+    document.getElementById('btnRealtime').style.background = 'rgba(255,255,255,0.05)';
+  }
+  function setRealtime() {
+    isRealtime = true;
+    document.getElementById('btnRealtime').style.borderColor = '#00ff88';
+    document.getElementById('btnRealtime').style.background = 'rgba(0,255,136,0.15)';
+  }
+
+  function captureTelemetry() {
+    telemetryLog.push({ ...currentMetrics });
+    renderTable();
+  }
+
+  function clearTelemetry() {
+    telemetryLog = [];
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.querySelector("#telemetryTable tbody");
+    tbody.innerHTML = "";
+    telemetryLog.forEach(row => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong style="color:var(--gold);">${row.name}</strong><br>${row.time}</td>
+        <td>${row.lat.toFixed(4)}°, ${row.lon.toFixed(4)}°</td>
+        <td>${row.az.toFixed(2)}°</td>
+        <td>${row.el.toFixed(2)}°</td>
+        <td>${row.dist.toLocaleString()}</td>
+        <td>${row.phase.toFixed(1)}%</td>
+      `;
+      tbody.prepend(tr);
+    });
+  }
+
+  function exportCSV() {
+    if (telemetryLog.length === 0) return alert("Geen data om te exporteren.");
+    const headers = ["Location", "Timestamp", "Latitude", "Longitude", "Azimuth_deg", "Elevation_deg", "Distance_km", "Phase_percent"];
+    const rows = telemetryLog.map(r => 
+      `"${r.name}",${r.time},${r.lat},${r.lon},${r.az.toFixed(4)},${r.el.toFixed(4)},${Math.round(r.dist)},${r.phase.toFixed(2)}`
+    );
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `VORTEX_telemetry_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function resizeCanvas() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function render() {
+    const w = canvas.parentElement.clientWidth;
+    const h = canvas.parentElement.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+
+    let targetDate = new Date();
+    if (!isRealtime) {
+      targetDate.setHours(Math.floor(simulatedHour), Math.floor((simulatedHour % 1) * 60), 0);
+    } else {
+      simulatedHour = targetDate.getHours() + targetDate.getMinutes()/60 + targetDate.getSeconds()/3600;
+      document.getElementById('timeSlider').value = simulatedHour;
+    }
+
+    const formatTime = (d) => d ? d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'}) : '--:--:--';
+    document.getElementById('timeDisplay').textContent = formatTime(targetDate) + (isRealtime ? ' LIVE' : ' SIM');
+
+    const moonPos = SunCalc.getMoonPosition(targetDate, currentLat, currentLon);
+    const moonIllum = SunCalc.getMoonIllumination(targetDate);
+    const lst = getLST(targetDate, currentLon);
+
+    const altitude = moonPos.altitude * 180 / Math.PI;
+    const azimuth = (moonPos.azimuth * 180 / Math.PI + 180) % 360; 
+    const distanceKm = moonPos.distance; 
+    const parallaxRad = moonPos.parallacticAngle * 180 / Math.PI;
+
+    const dateMinus1m = new Date(targetDate.getTime() - 60000);
+    const posMinus1m = SunCalc.getMoonPosition(dateMinus1m, currentLat, currentLon);
+    const deltaAz = (azimuth - ((posMinus1m.azimuth * 180 / Math.PI + 180) % 360)) * 60; 
+    const deltaAlt = (altitude - (posMinus1m.altitude * 180 / Math.PI)) * 60; 
+
+    const latRad = currentLat * Math.PI / 180;
+    const altRad = moonPos.altitude;
+    const azRad = azimuth * Math.PI / 180;
+    const sinDec = Math.sin(latRad) * Math.sin(altRad) + Math.cos(latRad) * Math.cos(altRad) * Math.cos(azRad);
+    const decDeg = Math.asin(sinDec) * 180 / Math.PI;
+    const sinH = -Math.sin(azRad) * Math.cos(altRad) / Math.cos(Math.asin(sinDec));
+    const cosH = (Math.sin(altRad) - Math.sin(latRad) * sinDec) / (Math.cos(latRad) * Math.cos(Math.asin(sinDec)));
+    let raDeg = (lst - (Math.atan2(sinH, cosH) * 180 / Math.PI)) % 360;
+    if (raDeg < 0) raDeg += 360;
+
+    let maxAlt = -90; let culminTime = "";
+    for (let t = 0; t <= 24; t += 0.1) {
+      let loopD = new Date(targetDate);
+      loopD.setHours(Math.floor(t), (t%1)*60, 0, 0);
+      let pAlt = SunCalc.getMoonPosition(loopD, currentLat, currentLon).altitude * 180 / Math.PI;
+      if (pAlt > maxAlt) { maxAlt = pAlt; culminTime = loopD.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+    }
+
+    document.getElementById('valAzEl').textContent = `${azimuth.toFixed(1)}° ${getDirectionStr(azimuth)} / ${altitude.toFixed(1)}° Elev`;
+    document.getElementById('valRaDec').textContent = `RA: ${raDeg.toFixed(1)}° | Dec: ${(decDeg>0?'+':'')}${decDeg.toFixed(1)}°`;
+    document.getElementById('valCulm').textContent = `${culminTime} (${maxAlt.toFixed(1)}° Elevatie)`;
+    document.getElementById('valDist').textContent = `${Math.round(distanceKm).toLocaleString()} km | PA: ${parallaxRad.toFixed(1)}°`;
+    document.getElementById('valDelta').textContent = `Az: ${(deltaAz>0?'+':'')}${deltaAz.toFixed(2)}°/h | El: ${(deltaAlt>0?'+':'')}${deltaAlt.toFixed(2)}°/h`;
+    document.getElementById('valPhase').textContent = `${(moonIllum.fraction*100).toFixed(1)}% Verlicht`;
+
+    currentMetrics = {
+      name: locationName, time: formatTime(targetDate), lat: currentLat, lon: currentLon, 
+      az: azimuth, el: altitude, dist: distanceKm, phase: moonIllum.fraction*100
+    };
+
+    const cx = w / 2; const cy = h * 0.72; const r = Math.min(w, h) * 0.42;
+    const viewAz = currentLat >= 0 ? 180 : 0; 
+    
+    const skyGrad = ctx.createRadialGradient(cx, cy, 10, cx, cy, r*1.5);
+    skyGrad.addColorStop(0, '#0a1128'); skyGrad.addColorStop(1, '#02040a');
+    ctx.fillStyle = skyGrad; ctx.fillRect(0,0,w,h);
+
+    ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+    ctx.strokeStyle = 'rgba(0,229,255,0.25)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI, 0); ctx.stroke();
+
+    ctx.fillStyle = '#ffcc33'; ctx.font = '11px Fira Code';
+    ctx.fillText(viewAz===180?'Oost':'West', cx - r - 30, cy + 18);
+    ctx.fillText(viewAz===180?'Zuid':'Noord', cx - 15, cy - r - 12);
+    ctx.fillText(viewAz===180?'West':'Oost', cx + r - 30, cy + 18);
+
+    ctx.strokeStyle = 'rgba(0, 229, 255, 0.4)'; ctx.lineWidth = 2; ctx.beginPath();
+    let pathStarted = false;
+    for (let t = 0; t <= 24; t += 0.25) {
+      let loopDate = new Date(targetDate);
+      loopDate.setHours(Math.floor(t), (t%1)*60, 0, 0);
+      let pos = SunCalc.getMoonPosition(loopDate, currentLat, currentLon);
+      let pAz = (pos.azimuth * 180 / Math.PI + 180) % 360;
+      let delta = pAz - viewAz; if (delta > 180) delta -= 360; if (delta < -180) delta += 360;
+      let px = cx + (delta / 90) * r;
+      let py = cy - ((pos.altitude * 180 / Math.PI) / 90) * (r * 1.3);
+      if (!pathStarted) { ctx.moveTo(px, py); pathStarted = true; } else { ctx.lineTo(px, py); }
+    }
+    ctx.stroke();
+
+    let dAz = azimuth - viewAz; if (dAz > 180) dAz -= 360; if (dAz < -180) dAz += 360;
+    const moonX = cx + (dAz / 90) * r;
+    const moonY = cy - (altitude / 90) * (r * 1.3);
+
+    const rMoon = 10;
+    let rightLit = currentLat < 0 ? (moonIllum.phase%1) > 0.5 : (moonIllum.phase%1) <= 0.5;
+    let frac = moonIllum.fraction; let eWidth = rMoon * Math.abs(1 - frac * 2);
+
+    ctx.fillStyle = '#090d16'; ctx.beginPath(); ctx.arc(moonX, moonY, rMoon, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 12; ctx.shadowColor = '#00e5ff'; ctx.fillStyle = '#f1f5f9'; 
+    ctx.beginPath(); ctx.arc(moonX, moonY, rMoon, rightLit?-Math.PI/2:Math.PI/2, rightLit?Math.PI/2:-Math.PI/2); ctx.fill();
+    if (frac >= 0.5) { ctx.beginPath(); ctx.ellipse(moonX, moonY, eWidth, rMoon, 0, -Math.PI/2, Math.PI/2, rightLit); ctx.fill(); }
+    ctx.shadowBlur = 0;
+    if (frac < 0.5) { ctx.fillStyle = '#090d16'; ctx.beginPath(); ctx.ellipse(moonX, moonY, eWidth, rMoon, 0, -Math.PI/2, Math.PI/2, !rightLit); ctx.fill(); }
+
+    ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(moonX, moonY, 16, 0, Math.PI * 2);
+    ctx.moveTo(moonX - 20, moonY); ctx.lineTo(moonX + 20, moonY); ctx.moveTo(moonX, moonY - 20); ctx.lineTo(moonX, moonY + 20); ctx.stroke();
+
+    requestAnimationFrame(render);
+  }
+
+  setPreset(currentLat, currentLon, locationName);
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS - Operationeel Procesdossier</title>
+    <!-- Marked.js voor het renderen van Markdown naar HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0d1b2a;
+            --panel-bg: #1b263b;
+            --text-main: #e0e1dd;
+            --accent: #00b4d8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--panel-bg);
+            padding: 20px;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(0, 180, 216, 0.3);
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .menu-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            text-align: left;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .menu-btn:hover, .menu-btn.active {
+            background: rgba(0, 180, 216, 0.1);
+            border-left: 4px solid var(--accent);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #0d1b2a 0%, #000000 100%);
+        }
+
+        .document-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.02);
+            padding: 40px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            line-height: 1.6;
+        }
+
+        /* Markdown Styling */
+        .document-container h1, .document-container h2, .document-container h3 {
+            color: var(--accent);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 5px;
+        }
+        
+        .document-container pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            overflow-x: auto;
+            color: #00ffcc;
+        }
+
+        .document-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .document-container th, .document-container td {
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .document-container th {
+            background: rgba(0, 180, 216, 0.1);
+            color: var(--accent);
+        }
+
+        .nav-back {
+            display: inline-block;
+            margin-top: auto;
+            color: #8d99ae;
+            text-decoration: none;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-back:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Procesdossier</h2>
+        <button class="menu-btn active" onclick="loadDoc('../beheercentrum/git_status_dossier.md', 'markdown', this)">📊 Git Status Dossier</button>
+        <button class="menu-btn" onclick="loadDoc('../docs/beheer/team_rollen_communicatie.md', 'markdown', this)">👥 8. Team, Rollen & Communicatie</button>
+        <button class="menu-btn" onclick="loadDoc('../beheercentrum/kalender_historie.md', 'markdown', this)">📅 Kalender & Historielog</button>
+        <button class="menu-btn" onclick="loadDoc('../docs/beheer/workload_dossier_1121am.md', 'markdown', this)">⏱️ Workload Dossier (11:21 AM)</button>
+        <button class="menu-btn" onclick="loadDoc('../beheercentrum/actuele_structuur.md', 'markdown', this)">📂 Actuele Structuur</button>
+        <button class="menu-btn" onclick="loadDoc('../beheercentrum/changelog_vortex.md', 'markdown', this)">📜 Changelog / Versies</button>
+        <button class="menu-btn" onclick="loadDoc('../docs/beheer/projectcharter_vortex.md', 'markdown', this)">📋 Projectcharter</button>
+        <button class="menu-btn" onclick="loadDoc('../docs/beheer/raci_matrix_beheercentrum.md', 'markdown', this)">👥 RACI-Matrix</button>
+        <button class="menu-btn" onclick="loadDoc('../docs/beheer/risicoregister_mitigatie.md', 'markdown', this)">⚠️ Risicoregister</button>
+        <button class="menu-btn" onclick="loadDoc('../docs/compliance/juridisch_register.json', 'json', this)">⚖️ Juridisch Register</button>
+        <button class="menu-btn" onclick="loadDoc('../docs/compliance/avg_verwerkingsregister.md', 'markdown', this)">🛡️ AVG Verwerkingsregister</button>
+        
+        <a href="../index.html" class="nav-back">← Terug naar Hoofdmenu</a>
+    </div>
+
+    <div class="main-content">
+        <div class="document-container" id="content-viewer">
+            <h1>Welkom in het Procesdossier</h1>
+            <p>Selecteer een document in de zijbalk om deze live in te laden via de lokale server.</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadDoc(url, type, btnElement) {
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+
+            const viewer = document.getElementById('content-viewer');
+            viewer.innerHTML = '<p style="color: var(--accent);">⏳ Document laden...</p>';
+
+            try {
+                const response = await fetch(`${url}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const text = await response.text();
+
+                if (type === 'markdown') {
+                    viewer.innerHTML = marked.parse(text);
+                } else if (type === 'json') {
+                    const jsonObj = JSON.parse(text);
+                    viewer.innerHTML = `<h2>${url.split('/').pop()}</h2><pre>${JSON.stringify(jsonObj, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                viewer.innerHTML = `
+                    <h2 style="color: #e76f51;">❌ Fout bij laden</h2>
+                    <p>Kon het bestand <code>${url}</code> niet laden.</p>
+                    <p style="opacity: 0.7;">Reden: ${error.message}</p>
+                    <div style="background: rgba(231, 111, 81, 0.1); padding: 15px; border-radius: 4px; margin-top: 20px;">
+                        <strong>Tip:</strong> Draait de lokale webserver? (<code>./scripts/start_vortex.sh</code>)
+                    </div>
+                `;
+            }
+        }
+
+        window.onload = () => {
+            loadDoc('../beheercentrum/git_status_dossier.md', 'markdown', document.querySelector('.menu-btn'));
+        };
+    </script>
+</body>
+</html>

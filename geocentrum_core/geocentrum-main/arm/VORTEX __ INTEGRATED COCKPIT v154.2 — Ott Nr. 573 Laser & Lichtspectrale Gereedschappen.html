@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX // INTEGRATED COCKPIT v154.2 — Ott Nr. 573 Laser & Lichtspectrale Gereedschappen</title>
+    <style>
+        :root {
+            --bg: #050608;
+            --panel: #0a0d11;
+            --border: #1a2228;
+            --main: #00ffcc;
+            --ai-glow: #00a2ff;
+            --accent: #ff9900;
+            --magenta: #ff3385;
+            --gold: #ffcc33;
+            --brass: #d4af37;
+            --danger: #ef4444;
+            --laser-col: #10ff60;
+            --text: #cbd5e1;
+            --grid-fine: rgba(0, 210, 255, 0.12);
+            --grid-major: rgba(0, 210, 255, 0.28);
+            --font-mono: 'Fira Code', 'Courier New', monospace;
+        }
+
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--ai-glow); border-radius: 10px; }
+
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            background: var(--bg); color: var(--text);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow: hidden; user-select: none;
+        }
+
+        header {
+            height: 45px; border-bottom: 1px solid var(--border); background: var(--panel);
+            display: flex; align-items: center; padding: 0 20px; justify-content: space-between;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.5); z-index: 20; position: relative;
+        }
+
+        main {
+            display: grid; height: calc(100vh - 45px); gap: 1px; background: var(--border);
+            grid-template-columns: 23vw 25vw 52vw;
+        }
+
+        @media (max-width: 1150px) {
+            main { grid-template-columns: 36vw 64vw; }
+            .column:nth-child(2) { display: none; }
+        }
+
+        .column { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+        .col-header {
+            padding: 9px 12px; font-size: 0.64rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.5); letter-spacing: 1.5px;
+            color: var(--ai-glow); display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Column 1: Sources, Laser Spectral Tools & Planimeter HUD */
+        .left-scroll { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 7px; }
+        .source-item {
+            padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
+            font-size: 0.66rem; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.01);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .source-item:hover { background: rgba(0, 255, 204, 0.06); border-color: var(--main); }
+        .source-item.active { border-left: 3px solid var(--main); background: rgba(0, 255, 204, 0.04); }
+
+        .hud-box {
+            background: rgba(10, 16, 28, 0.88); border: 1px solid var(--border);
+            border-radius: 4px; padding: 8px 10px; font-family: var(--font-mono); font-size: 0.65rem;
+        }
+        .hud-title {
+            color: var(--gold); font-size: 0.63rem; font-weight: bold; text-transform: uppercase;
+            border-bottom: 1px solid rgba(255, 204, 51, 0.25); padding-bottom: 4px; margin-bottom: 6px;
+            letter-spacing: 0.8px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .kv { display: flex; justify-content: space-between; margin: 2.5px 0; }
+        .kv span:first-child { color: #94a3b8; }
+        .kv span:last-child { color: var(--main); font-weight: bold; }
+
+        /* Spectrale Balk & Presets */
+        .spectrum-bar-wrap {
+            position: relative; height: 18px; width: 100%; border-radius: 3px;
+            margin: 6px 0; cursor: pointer; border: 1px solid #334155;
+            background: linear-gradient(90deg,
+                #610061 0%,   /* 380 nm UV-Violet */
+                #7900ff 12%,  /* 425 nm Violet-Blauw */
+                #004cff 24%,  /* 470 nm Blauw */
+                #00ffcc 33%,  /* 500 nm Cyaan */
+                #1eff00 45%,  /* 545 nm Groen */
+                #ffff00 56%,  /* 580 nm Geel */
+                #ff7700 68%,  /* 620 nm Oranje */
+                #ff0000 82%,  /* 670 nm Rood */
+                #660000 100%  /* 750 nm IR-Rood */
+            );
+        }
+        .spectrum-marker {
+            position: absolute; top: -3px; bottom: -3px; width: 4px;
+            background: #ffffff; border: 1px solid #000; border-radius: 2px;
+            transform: translateX(-50%); pointer-events: none;
+            box-shadow: 0 0 8px #fff;
+        }
+        .fraunhofer-line {
+            position: absolute; top: 0; bottom: 0; width: 1px;
+            background: rgba(0,0,0,0.65); pointer-events: none;
+        }
+
+        .preset-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+        .chip {
+            flex: 1 1 30%; font-size: 0.58rem; padding: 3px 4px; text-align: center;
+            background: #0d1526; border: 1px solid #233b63; border-radius: 3px;
+            cursor: pointer; color: #cbd5e1; transition: 0.15s;
+        }
+        .chip:hover { border-color: #fff; color: #fff; }
+
+        .hex-box {
+            display: flex; justify-content: space-around; text-align: center;
+            margin-top: 6px; padding-top: 5px; border-top: 1px dashed var(--border);
+        }
+        .bit-bar { width: 25px; height: 3.5px; margin: 2px auto; background: var(--gold); }
+        .bit-0 {
+            background: linear-gradient(90deg, var(--gold) 0%, var(--gold) 40%, transparent 40%, transparent 60%, var(--gold) 60%, var(--gold) 100%);
+        }
+
+        .chk-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; cursor: pointer; font-size: 0.63rem; }
+        .chk-row input { accent-color: var(--main); cursor: pointer; margin: 0; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 5px; }
+        .btn-grid-4 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 5px; }
+        .btn {
+            background: #101c30; color: var(--text); border: 1px solid #233b63;
+            border-radius: 3px; padding: 5px 6px; font-size: 0.6rem; font-family: var(--font-mono);
+            cursor: pointer; transition: 0.15s; text-align: center; font-weight: bold;
+        }
+        .btn:hover { border-color: var(--main); color: #fff; background: #162a4a; }
+        .btn-stop { background: rgba(239, 68, 68, 0.22); border-color: #ef4444; color: #fca5a5; }
+        .btn-start { background: rgba(16, 185, 129, 0.22); border-color: #10b981; color: #6ee7b7; }
+        .btn-accent { background: rgba(0, 255, 204, 0.12); border-color: var(--main); color: var(--main); }
+        .btn-laser-active {
+            background: rgba(16, 255, 96, 0.18); border-color: var(--laser-col); color: #fff;
+            box-shadow: inset 0 0 8px rgba(16, 255, 96, 0.35);
+        }
+
+        /* Column 2: AI Synth */
+        .ai-engine { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .ai-terminal { flex: 1; overflow-y: auto; padding: 12px; font-size: 0.74rem; line-height: 1.5; font-family: var(--font-mono); }
+        .ai-response {
+            margin-bottom: 10px; padding: 9px 10px; border: 1px solid rgba(0, 162, 255, 0.18);
+            background: rgba(0, 162, 255, 0.03); border-radius: 4px;
+        }
+        .input-bar { padding: 10px 12px; background: #000; border-top: 1px solid var(--border); display: flex; gap: 8px; align-items: center; }
+        .v-input { flex: 1; background: transparent; border: none; color: var(--main); font-family: var(--font-mono); outline: none; font-size: 0.76rem; }
+
+        /* Column 3: Omni-Bridge Viewport + Integrated Cockpit */
+        .viewport-frame { flex: 1; background: #04070d; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        #svg-stage {
+            flex: 1; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; position: relative; perspective: 1200px;
+            background: radial-gradient(circle at center, #101a2e 0%, #050811 100%);
+        }
+        #geo-svg {
+            width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+            cursor: crosshair; transition: transform 0.08s ease-out;
+        }
+        #geo-svg.mirrored-h { transform: scaleX(-1); }
+        #geo-svg.mirrored-v { transform: scaleY(-1); }
+
+        .viewport-hud-overlay {
+            position: absolute; top: 10px; left: 12px; pointer-events: none;
+            font-family: var(--font-mono); font-size: 0.65rem; color: var(--main);
+            background: rgba(5, 8, 15, 0.84); border: 1px solid var(--border);
+            padding: 7px 10px; border-radius: 4px; line-height: 1.45; z-index: 5;
+        }
+
+        .viewport-QuickActions {
+            position: absolute; top: 10px; right: 12px; display: flex; gap: 5px; z-index: 5;
+        }
+
+        /* Live Toetsenbord HUD onderin de Viewport */
+        .key-bar {
+            position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 5px; align-items: center; z-index: 6;
+            background: rgba(5, 8, 15, 0.9); border: 1px solid var(--border);
+            padding: 5px 9px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.6rem;
+            white-space: nowrap;
+        }
+        .kbd-key {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 22px; height: 21px; padding: 0 5px;
+            background: #0f172a; border: 1px solid #334155; border-bottom: 2px solid #475569;
+            border-radius: 4px; color: #e2e8f0; font-weight: bold; font-size: 0.59rem;
+            cursor: pointer; transition: 0.08s;
+        }
+        .kbd-key:hover { border-color: var(--main); color: var(--main); }
+        .kbd-key.pressed {
+            background: var(--main); color: #000; border-color: #fff;
+            transform: translateY(1px); box-shadow: 0 0 10px var(--main);
+        }
+        .kbd-key.stop-active {
+            background: var(--danger); color: #fff; border-color: #fca5a5;
+            box-shadow: 0 0 10px var(--danger);
+        }
+        .kbd-key.run-active {
+            background: #10b981; color: #000; border-color: #a7f3d0;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        /* Cockpit Sliders onderin het viewport paneel (4 kolommen inclusief Golflengte) */
+        .cockpit-controls {
+            padding: 10px 14px; background: rgba(10, 13, 17, 0.96);
+            border-top: 1px solid var(--border);
+            display: grid; grid-template-columns: 1fr 1fr 1.15fr 0.85fr; gap: 12px;
+        }
+        .slider-box { display: flex; flex-direction: column; gap: 4px; }
+        .slider-info { display: flex; justify-content: space-between; font-size: 0.58rem; color: var(--main); font-family: var(--font-mono); }
+        input[type="range"] { width: 100%; accent-color: var(--main); height: 4px; cursor: pointer; }
+        #lambda-slider {
+            appearance: none; -webkit-appearance: none; height: 5px; border-radius: 3px;
+            background: linear-gradient(90deg, #7900ff, #004cff, #00ffcc, #1eff00, #ffff00, #ff7700, #ff0000);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-weight: bold; letter-spacing: 1px;">
+        VORTEX <span style="color:var(--main)">COCKPIT_INTEGRATION</span>
+        <span style="color:var(--ai-glow); font-size: 0.65rem;">v154.2 // OTT NR. 573 LASER & SPECTRALE OPTICA</span>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <span id="laser-badge" style="font-family:var(--font-mono); font-size:0.64rem; padding:2px 8px; border:1px solid #10ff60; color:#10ff60; border-radius:3px;">LASER: 532.0 nm [COLLIMATOR]</span>
+        <span id="mode-badge" style="font-family:var(--font-mono); font-size:0.64rem; padding:2px 8px; border:1px solid var(--gold); color:var(--gold); border-radius:3px;">MODUS: MUIS + TOETSEN</span>
+        <span id="arm-badge" style="font-family:var(--font-mono); font-size:0.64rem; padding:2px 8px; border:1px solid var(--main); color:var(--main); border-radius:3px;">ARM: ACTIEF (G)</span>
+        <div id="clock" style="font-family: var(--font-mono); color: var(--main); font-size: 0.75rem;">00:00:00</div>
+    </div>
+</header>
+
+<main>
+    <!-- KOLOM 1: LASER & LICHTSPECTRALE GEREEDSCHAPPEN + OTT NR. 573 HUD -->
+    <section class="column">
+        <div class="col-header">
+            <span>Laser, Spectrum & Planimeter HUD</span>
+            <span style="color:var(--gold)">f=0.1</span>
+        </div>
+        <div class="left-scroll">
+            <!-- 1. NIEUW: LASER & LICHTSPECTRALE GEREEDSCHAPPEN PANEEL -->
+            <div class="hud-box" style="border-color: rgba(0, 255, 204, 0.45);">
+                <div class="hud-title">
+                    <span>🔬 Laser & Lichtspectrale Tools</span>
+                    <span id="lbl-laser-state" style="color:#10ff60">AAN [L]</span>
+                </div>
+
+                <!-- Interactieve Zichtbaar-Licht Spectrumbalk (380 - 750 nm) -->
+                <div class="spectrum-bar-wrap" id="spectrum-bar" title="Klik om golflengte λ (380-750 nm) te kiezen">
+                    <!-- Fraunhofer absorptielijnen markeringen -->
+                    <div class="fraunhofer-line" style="left:28.6%" title="Hβ 486.1 nm"></div>
+                    <div class="fraunhofer-line" style="left:56.5%" title="Na-D 589.3 nm"></div>
+                    <div class="fraunhofer-line" style="left:74.6%" title="Hα 656.3 nm"></div>
+                    <div class="spectrum-marker" id="spectrum-marker" style="left:41.0%"></div>
+                </div>
+
+                <!-- Fraunhofer & Metrologie Laser Presets -->
+                <div class="preset-chips">
+                    <div class="chip" onclick="setWavelength(405.0, 'Violet Diode')" style="border-bottom:2px solid #8b00ff">405nm Violet</div>
+                    <div class="chip" onclick="setWavelength(486.1, 'Fraunhofer Hβ')" style="border-bottom:2px solid #00e5ff">486.1nm Hβ</div>
+                    <div class="chip" onclick="setWavelength(532.0, 'Nd:YAG Groen')" style="border-bottom:2px solid #1eff00">532nm Nd:YAG</div>
+                    <div class="chip" onclick="setWavelength(589.3, 'Fraunhofer Na-D')" style="border-bottom:2px solid #ffcc00">589.3nm Na-D</div>
+                    <div class="chip" onclick="setWavelength(632.8, 'HeNe Metrologie')" style="border-bottom:2px solid #ff2a00">632.8nm HeNe</div>
+                    <div class="chip" onclick="setWavelength(656.3, 'Fraunhofer Hα')" style="border-bottom:2px solid #cc0000">656.3nm Hα</div>
+                </div>
+
+                <!-- 4 Optische Laser-Modi op de Planimeter-arm -->
+                <div class="btn-grid-4" style="margin-top:6px;">
+                    <button class="btn btn-laser-active" id="lmode-collimator" onclick="setLaserMode('collimator')">🔦 1. Collimator</button>
+                    <button class="btn" id="lmode-prisma" onclick="setLaserMode('prisma')">🌈 2. Prisma Waaier</button>
+                    <button class="btn" id="lmode-interferometer" onclick="setLaserMode('interferometer')">〰️ 3. Staande Golf</button>
+                    <button class="btn" id="lmode-cavity" onclick="setLaserMode('cavity')">💎 4. Spiegel-Cavity</button>
+                </div>
+
+                <!-- Spectrale Telemetrie Uitlezing -->
+                <div style="margin-top:6px; padding-top:5px; border-top:1px dashed var(--border);">
+                    <div class="kv"><span>Golflengte (λ) / Kleur:</span><span id="spec-lambda">532.0 nm (Nd:YAG Groen)</span></div>
+                    <div class="kv"><span>Frequentie (f = c/λ):</span><span id="spec-freq">563.52 THz</span></div>
+                    <div class="kv"><span>Foton-energie (E = hc/λ):</span><span id="spec-ev">2.330 eV</span></div>
+                    <div class="kv"><span>BK7 Prisma Index n(λ):</span><span id="spec-refr">1.5194 (Δθ Dispersie)</span></div>
+                    <div class="kv"><span>Laser Trefpunt (Rand):</span><span id="spec-hit" style="color:var(--gold)">#28 (162.0°)</span></div>
+                </div>
+            </div>
+
+            <!-- 2. Toetsenbord & Arm Besturing Paneel -->
+            <div class="hud-box" style="border-color: rgba(255, 204, 51, 0.35);">
+                <div class="hud-title">
+                    <span>⌨️ Arm Start / Stop & Pijltjes</span>
+                    <span id="step-indicator" style="color:var(--main)">Stap: 1.0°</span>
+                </div>
+                <div class="btn-grid">
+                    <button class="btn btn-stop" id="btn-stop-arm" onclick="stopPlanimeterArm()">🛑 ZET STIL [S / Spatie]</button>
+                    <button class="btn btn-start" id="btn-start-arm" onclick="startPlanimeterArm()">▶️ START VRIJ [G]</button>
+                    <button class="btn btn-accent" id="btn-sweep" onclick="toggleAutoSweep()">🔄 START SWEEP [R]</button>
+                    <button class="btn" id="btn-rec" onclick="toggleOmtrekRecording()">✏️ OMTREK [O]</button>
+                </div>
+            </div>
+
+            <!-- 3. Vector Presets met sneltoets 1, 2, 3 -->
+            <div class="source-item active" id="src-1" onclick="snapToVector(29, 10.749, 'NYC_TWIN_TOWERS', this)">
+                <div><b>NYC_TWIN_TOWERS</b> — <span style="opacity:0.7">29.0° Vector</span></div>
+                <span class="kbd-key">1</span>
+            </div>
+            <div class="source-item" id="src-2" onclick="snapToVector(82.5, 10.749, 'THOLEN_CHURCH', this)">
+                <div><b>THOLEN_CHURCH</b> — <span style="opacity:0.7">82.5° Ground Lock</span></div>
+                <span class="kbd-key">2</span>
+            </div>
+            <div class="source-item" id="src-3" onclick="snapToVector(108, 10.749, 'SIRIUS_ANKER', this)">
+                <div><b>SIRIUS_ANKER</b> — <span style="opacity:0.7">108.0° Galactisch Anker</span></div>
+                <span class="kbd-key">3</span>
+            </div>
+
+            <!-- 4. Live Ott Nr. 573 & Shao Yong Telemetrie -->
+            <div class="hud-box">
+                <div class="hud-title"><span>Ott Nr. 573 & Exact Chain Helper</span></div>
+                <div class="kv"><span>Azimut (θ) / Straal (ρ):</span><span id="hud-angle">162.00° | 10.75 cm</span></div>
+                <div class="kv"><span>Cumulatieve Nonius:</span><span id="hud-nonius">1634 / 3630 (163.4 cm²)</span></div>
+                <div class="kv"><span>Shao Yong (0..63):</span><span id="hud-sy-idx">#28 (100011)</span></div>
+                <div class="kv"><span>Jiazi Cyclus (1..60):</span><span id="hud-jiazi">Wu-Chen (#28/60)</span></div>
+                <div class="kv"><span>Nucleaire Kern (b₃,b₄):</span><span id="hud-core">00 → N²=000000</span></div>
+
+                <div class="hex-box">
+                    <div>
+                        <div style="color:#94a3b8;font-size:0.56rem;margin-bottom:2px;">H (6-bit)</div>
+                        <div id="vis-H"></div>
+                        <div id="lbl-H" style="margin-top:2px;color:var(--main);">111111</div>
+                    </div>
+                    <div>
+                        <div style="color:#94a3b8;font-size:0.56rem;margin-bottom:2px;">N (Hu Gua)</div>
+                        <div id="vis-N"></div>
+                        <div id="lbl-N" style="margin-top:2px;color:var(--gold);">111111</div>
+                    </div>
+                    <div>
+                        <div style="color:#94a3b8;font-size:0.56rem;margin-bottom:2px;">N² (Attractor)</div>
+                        <div id="vis-N2"></div>
+                        <div id="lbl-N2" style="margin-top:2px;color:var(--magenta);">111111</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Omtrek Integratie & Lagen -->
+            <div class="hud-box">
+                <div class="hud-title"><span>Omtrek Integratie & Lagen</span></div>
+                <div class="kv"><span>Gemeten Vlak (Omtrek):</span><span id="lbl-omtrek-area">0.00 cm² (0 punten)</span></div>
+                <div class="btn-grid">
+                    <button class="btn" onclick="calcOmtrekArea()">📐 Bereken Opp.</button>
+                    <button class="btn" onclick="clearOmtrek()">🗑️ Wis Omtrek [C]</button>
+                    <button class="btn" style="grid-column: span 2;" onclick="exportCADReport()">📥 Exporteer CAD + Spectrale Data (TXT)</button>
+                </div>
+                <div style="margin-top:5px; border-top:1px solid var(--border); padding-top:4px;">
+                    <label class="chk-row"><input type="checkbox" id="chk-laser" checked> Toon Laser & Lichtspectrale Kop [L]</label>
+                    <label class="chk-row"><input type="checkbox" id="chk-planimeter" checked> Toon A. Ott Nr. 573 Planimeter</label>
+                    <label class="chk-row"><input type="checkbox" id="chk-spinor" checked> Toon Shao Yong / Möbius Spinor</label>
+                    <label class="chk-row"><input type="checkbox" id="chk-jiazi" checked> Toon 60 Jiazi & 16-Kompasroos</label>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KOLOM 2: AI SYNTHESIS TERMINAL -->
+    <section class="column" style="border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+        <div class="col-header">
+            <span>AI Synthesis Terminal</span>
+            <span id="ai-status" style="color:var(--main)">LASER_SPECTRAL // SYNC</span>
+        </div>
+        <div class="ai-engine">
+            <div class="ai-terminal" id="ai-terminal">
+                <div class="ai-response">
+                    <b>SYSTEM_READY [v154.2]:</b> De <b>A. Ott Nr. 573 Planimeter-arm</b> is uitgerust met een <b>Optische Laser-Kop & Lichtspectrale Analyzer</b>.<br><br>
+                    • <b>[P] Wissel Laser-Modus:</b><br>
+                    &nbsp;&nbsp;1. <i>Collimator:</i> Rijarm-laserstraal + rand-intersectie.<br>
+                    &nbsp;&nbsp;2. <i>Prisma Waaier:</i> 7-bands spectrale dispersie (BK7).<br>
+                    &nbsp;&nbsp;3. <i>Staande Golf:</i> Interferometer fasemodulatie.<br>
+                    &nbsp;&nbsp;4. <i>Spiegel-Cavity:</i> 3-voudige biljart-reflectie in de 64-ring.<br>
+                    • <b>[ [ ] / [ ] ]</b> Stem golflengte $\lambda$ af (380–750 nm) of druk op <b>[F]</b> voor Fraunhofer-lijnen.<br>
+                    • <b>[S / Spatie]</b> Zet arm stil | <b>[G]</b> Start vrij | <b>[←↑↓→]</b> Stuur arm.
+                </div>
+            </div>
+            <div class="input-bar">
+                <span style="color:var(--ai-glow); font-family:var(--font-mono);">></span>
+                <input type="text" class="v-input" id="ai-query" placeholder="Typ hoek (bijv. 29°) of golflengte (bijv. 632.8nm)..." onkeypress="handleQuery(event)">
+            </div>
+        </div>
+    </section>
+
+    <!-- KOLOM 3: OMNI-BRIDGE VIEWPORT [INTEGRATED PLANIMETER + LASER OPTICS] -->
+    <section class="column">
+        <div class="col-header">
+            <span>Omni-Bridge Viewport [OTT NR. 573 + LASER SPECTRUM]</span>
+            <span id="hud-coord-mini" style="color:var(--main); font-family:var(--font-mono);">[X: 0.00 cm | Y: 0.00 cm]</span>
+        </div>
+        <div class="viewport-frame">
+            <div id="svg-stage">
+                <!-- Live Overlay linksboven in de Viewport -->
+                <div class="viewport-hud-overlay">
+                    <div>OTT NR. 573 NONIUS: <b id="vp-nonius" style="color:var(--gold)">1634</b> / 3630</div>
+                    <div>AZIMUT (θ): <b id="vp-az">162.00°</b> | STRAAL (ρ): <b id="vp-rho">10.75 cm</b></div>
+                    <div>LASER (λ): <b id="vp-laser" style="color:#10ff60">532.0 nm (563.5 THz | 2.33 eV)</b></div>
+                    <div>DOEL-VECTOR: <b id="vp-hit" style="color:var(--gold)">#28 (100011)</b> | <b id="vp-core" style="color:var(--magenta)">N²=000000</b></div>
+                </div>
+
+                <!-- Spiegel & Laser knoppen rechtsboven in de Viewport -->
+                <div class="viewport-QuickActions">
+                    <button class="btn" onclick="toggleLaserPower()">🔦 Laser [L]</button>
+                    <button class="btn" onclick="cycleLaserMode()">🌈 Modus [P]</button>
+                    <button class="btn" onclick="setMirror('none')">Normaal</button>
+                    <button class="btn" onclick="setMirror('h')">Spiegel H [M]</button>
+                </div>
+
+                <!-- Interactieve Toetsenbord-Balk onderin de Viewport -->
+                <div class="key-bar">
+                    <span class="kbd-key" id="key-left" onclick="stepPolar(-1, 0)" title="Azimut Links (←)">←</span>
+                    <span class="kbd-key" id="key-up" onclick="stepPolar(0, 0.25)" title="Straal Vergroten (↑)">↑</span>
+                    <span class="kbd-key" id="key-down" onclick="stepPolar(0, -0.25)" title="Straal Verkleinen (↓)">↓</span>
+                    <span class="kbd-key" id="key-right" onclick="stepPolar(1, 0)" title="Azimut Rechts (→)">→</span>
+                    <span style="color:#475569">|</span>
+                    <span class="kbd-key" id="key-s" onclick="stopPlanimeterArm()" title="Zet Arm Stil (S of Spatie)">S:STOP</span>
+                    <span class="kbd-key run-active" id="key-g" onclick="startPlanimeterArm()" title="Start / Geef Vrij (G)">G:START</span>
+                    <span class="kbd-key" id="key-r" onclick="toggleAutoSweep()" title="3630 Sweep (R)">R:SWEEP</span>
+                    <span style="color:#475569">|</span>
+                    <span class="kbd-key run-active" id="key-l" onclick="toggleLaserPower()" title="Laser Aan/Uit (L)">L:LASER</span>
+                    <span class="kbd-key" id="key-p" onclick="cycleLaserMode()" title="Wissel Laser-Modus (P)">P:MODUS</span>
+                    <span class="kbd-key" id="key-f" onclick="cycleFraunhofer()" title="Fraunhofer Kalibratielijnen (F)">F:λ-LIJN</span>
+                </div>
+
+                <!-- DE GEÏNTEGREERDE TECHNISCHE GEO-TEKENING, LASER-OPTICA & OTT NR. 573 PLANIMETER -->
+                <svg id="geo-svg" viewBox="-480 -480 960 960" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <!-- 0.5 cm Fijn Raster (20x20 px) -->
+                        <pattern id="grid-05cm" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="var(--grid-fine)" stroke-width="0.7"/>
+                            <path d="M 0 0 L 20 20" fill="none" stroke="rgba(0, 210, 255, 0.05)" stroke-width="0.5"/>
+                        </pattern>
+                        <!-- 2.5 cm Hoofdraster (100x100 px = 5 vakjes) -->
+                        <pattern id="grid-25cm" width="100" height="100" patternUnits="userSpaceOnUse">
+                            <rect width="100" height="100" fill="url(#grid-05cm)"/>
+                            <path d="M 100 0 L 0 0 0 100" fill="none" stroke="var(--grid-major)" stroke-width="1.1"/>
+                        </pattern>
+                        <!-- Optische Laser Glow Filter -->
+                        <filter id="laser-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3.2" result="blur1"/>
+                            <feGaussianBlur stdDeviation="7.5" result="blur2"/>
+                            <feMerge>
+                                <feMergeNode in="blur2"/>
+                                <feMergeNode in="blur1"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <marker id="arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#ffcc33"/>
+                        </marker>
+                        <marker id="arrow-magenta" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff3385"/>
+                        </marker>
+                    </defs>
+
+                    <!-- 1. RASTER LAAG (0.5 cm eenheden) -->
+                    <rect x="-480" y="-480" width="960" height="960" fill="url(#grid-25cm)"/>
+
+                    <!-- Coördinaat-assen -->
+                    <g id="axes" stroke="#2dd4bf" stroke-width="0.8" opacity="0.7">
+                        <line x1="-480" y1="0" x2="480" y2="0" stroke-dasharray="6,3"/>
+                        <line x1="0" y1="-480" x2="0" y2="480" stroke-dasharray="6,3"/>
+                    </g>
+
+                    <!-- 2. SHAO YONG 64 & JIAZI 60 GEOMETRIE -->
+                    <g id="kompas-layers"></g>
+
+                    <!-- 3. MÖBIUS / HINGE SPINOR QI-FLOW CURVE -->
+                    <g id="spinor-layer"></g>
+
+                    <!-- 4. OMTREK PAD LAAG -->
+                    <g id="omtrek-layer"></g>
+
+                    <!-- 5. A. OTT NR. 573 PLANIMETER KINEMATICA LAAG -->
+                    <g id="planimeter-layer"></g>
+
+                    <!-- 6. NIEUW: OPTISCHE LASER & LICHTSPECTRALE LAAG OP DE PLANO-ARM -->
+                    <g id="laser-layer"></g>
+                </svg>
+            </div>
+
+            <!-- COCKPIT CONTROLS ONDERIN DE VIEWPORT -->
+            <div class="cockpit-controls">
+                <div class="slider-box">
+                    <div class="slider-info">YAW (AZIMUTH ←/→) <span id="yaw-deg">162.0°</span></div>
+                    <input type="range" min="0" max="360" step="0.1" value="162" id="yaw-slider" oninput="processKinematica('yaw', this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">STRAAL (ρ VOLGSTIFT ↑/↓) <span id="rho-val">10.75 cm</span></div>
+                    <input type="range" min="0.5" max="11.8" step="0.05" value="10.75" id="rho-slider" oninput="processKinematica('rho', this.value)">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">GOLFLENGTE (λ [ / ]) <span id="lambda-val" style="color:#10ff60">532.0 nm</span></div>
+                    <input type="range" min="380" max="750" step="0.5" value="532" id="lambda-slider" oninput="setWavelength(this.value, 'Handmatig')">
+                </div>
+                <div class="slider-box">
+                    <div class="slider-info">PITCH (3D) <span id="pitch-deg">0°</span></div>
+                    <input type="range" min="0" max="60" step="1" value="0" id="pitch-slider" oninput="processKinematica('pitch', this.value)">
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+    // --- CONSTANTES & SCHAAL ---
+    // 1 cm = 40 px | 1 vakje (0.5 cm) = 20 px
+    const PX_PER_CM = 40;
+    const R_KOMPAS_CM = Math.sqrt(363.0 / Math.PI); // 10.74905 cm
+    const R_KOMPAS_PX = R_KOMPAS_CM * PX_PER_CM;    // 429.96 px
+    const R_JIAZI_PX  = 355;                        // Binnenring 60 Jiazi
+    const R_NUC_PX    = (R_KOMPAS_CM / 4) * PX_PER_CM; // 2.687 cm = 107.5 px (4/64 kern)
+
+    const STEMS = ["Jia","Yi","Bing","Ding","Wu","Ji","Geng","Xin","Ren","Gui"];
+    const BRANCHES = ["Zi","Chou","Yin","Mao","Chen","Si","Wu","Wei","Shen","You","Xu","Hai"];
+    const CORE_COLORS = {
+        "00": "#3b82f6", // Noord / Winter / Kun
+        "10": "#eab308", // Oost / Lente / JiJi
+        "01": "#ec4899", // West / Herfst / WeiJi
+        "11": "#ef4444"  // Zuid / Zomer / Qian
+    };
+
+    const FRAUNHOFER_PRESETS = [
+        { nm: 405.0, name: "Violet Diode Laser" },
+        { nm: 486.1, name: "Fraunhofer Hβ (Waterstof-Cyaan)" },
+        { nm: 532.0, name: "Nd:YAG Groen Geodetisch" },
+        { nm: 589.3, name: "Fraunhofer Na-D (Natrium Goud)" },
+        { nm: 632.8, name: "HeNe Rood Metrologie" },
+        { nm: 656.3, name: "Fraunhofer Hα (Waterstof-Rood)" }
+    ];
+    const LASER_MODES = ['collimator', 'prisma', 'interferometer', 'cavity'];
+
+    const kompasGroup = document.getElementById('kompas-layers');
+    const spinorGroup = document.getElementById('spinor-layer');
+    const omtrekGroup = document.getElementById('omtrek-layer');
+    const planimeterGroup = document.getElementById('planimeter-layer');
+    const laserGroup = document.getElementById('laser-layer');
+    const terminal = document.getElementById('ai-terminal');
+    const aiStatus = document.getElementById('ai-status');
+    const svgEl = document.getElementById('geo-svg');
+
+    // State
+    const state = {
+        azDeg: 162.0,
+        rhoCm: R_KOMPAS_CM,
+        txPx: 0,
+        tyPx: 0,
+        gxPx: 0,
+        gyPx: 0,
+        pitchDeg: 0,
+        armStopped: false,
+        mouseFollow: true,
+        recordingOmtrek: false,
+        omtrekPoints: [],
+        autoSweepTimer: null,
+        mirrorMode: 'none',
+        lastTriggeredAz: null,
+        // Laser & Spectrale State
+        laserEnabled: true,
+        laserMode: 'collimator', // 'collimator' | 'prisma' | 'interferometer' | 'cavity'
+        wavelengthNm: 532.0,
+        wavelengthLabel: 'Nd:YAG Groen',
+        fraunhoferIdx: 2,
+        lastHitHex: 28,
+        lastHitAngle: 162.0
+    };
+
+    // --- FYSISCHE GOLFLENGTE (380-750 nm) NAAR EXACTE RGB HEX CONVERSIE ---
+    function wavelengthToHex(nm) {
+        let r = 0, g = 0, b = 0, factor = 1;
+        if (nm >= 380 && nm < 440) {
+            r = -(nm - 440) / (440 - 380); g = 0; b = 1;
+        } else if (nm >= 440 && nm < 490) {
+            r = 0; g = (nm - 440) / (490 - 440); b = 1;
+        } else if (nm >= 490 && nm < 510) {
+            r = 0; g = 1; b = -(nm - 510) / (510 - 490);
+        } else if (nm >= 510 && nm < 580) {
+            r = (nm - 510) / (580 - 510); g = 1; b = 0;
+        } else if (nm >= 580 && nm < 645) {
+            r = 1; g = -(nm - 645) / (645 - 580); b = 0;
+        } else if (nm >= 645 && nm <= 750) {
+            r = 1; g = 0; b = 0;
+        }
+        if (nm >= 380 && nm < 420) factor = 0.35 + 0.65 * (nm - 380) / (420 - 380);
+        else if (nm > 700 && nm <= 750) factor = 0.35 + 0.65 * (750 - nm) / (750 - 700);
+
+        const toHex = c => Math.round(255 * Math.pow(c * factor, 0.8)).toString(16).padStart(2, '0');
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    // Snijpunt van een straal P + t*D (t > 0) met de buitenste Shao Yong cirkel (straal R)
+    function intersectCircleForward(px, py, dx, dy, R) {
+        const b = 2 * (px * dx + py * dy);
+        const c = (px * px + py * py) - R * R;
+        const disc = b * b - 4 * c;
+        if (disc < 0) return null;
+        const sqrtD = Math.sqrt(disc);
+        let t = (-b + sqrtD) / 2;
+        if (t < 1e-3) t = (-b - sqrtD) / 2;
+        return { x: px + t * dx, y: py + t * dy, t };
+    }
+
+    function getShaoYongBits(idx) {
+        const val = idx < 32 ? (63 - idx) : (idx - 32);
+        return val.toString(2).padStart(6, '0');
+    }
+
+    function computeNuclear(bits) {
+        const b2 = bits[1], b3 = bits[2], b4 = bits[3], b5 = bits[4];
+        const N = `${b2}${b3}${b4}${b3}${b4}${b5}`;
+        const N2 = `${b3}${b4}${b3}${b4}${b3}${b4}`;
+        const core = `${b3}${b4}`;
+        return { N, N2, core };
+    }
+
+    // --- 1. BOUW TECHNISCHE KOMPASROOS (64 SHAO YONG & 60 JIAZI) ---
+    function buildTechnicalDrawing() {
+        let html = '';
+
+        html += `<circle cx="0" cy="0" r="${R_KOMPAS_PX}" fill="rgba(0, 180, 216, 0.05)" stroke="#00e5ff" stroke-width="2.2"/>`;
+        html += `<circle cx="0" cy="0" r="${R_KOMPAS_PX - 38}" fill="none" stroke="#00e5ff" stroke-width="1"/>`;
+
+        [
+            { ang: 29, lbl: "29° NYC [1]", col: "#00ffcc" },
+            { ang: 82.5, lbl: "82.5° THOLEN [2]", col: "#ffcc33" },
+            { ang: 108, lbl: "108° SIRIUS [3]", col: "#ff3385" }
+        ].forEach(v => {
+            const rad = (v.ang - 90) * Math.PI / 180;
+            const x2 = Math.cos(rad) * (R_KOMPAS_PX + 16);
+            const y2 = Math.sin(rad) * (R_KOMPAS_PX + 16);
+            html += `<line x1="0" y1="0" x2="${x2}" y2="${y2}" stroke="${v.col}" stroke-width="1" stroke-dasharray="3,4" opacity="0.65"/>`;
+            html += `<text x="${x2 * 1.05}" y="${y2 * 1.05}" fill="${v.col}" font-size="9" font-weight="bold" text-anchor="middle">${v.lbl}</text>`;
+        });
+
+        // 64 Shao Yong Sectoren (Δθ = 5.625°)
+        for (let i = 0; i < 64; i++) {
+            const a1 = (i * 5.625 - 90) * Math.PI / 180;
+            const am = ((i + 0.5) * 5.625 - 90) * Math.PI / 180;
+
+            const bits = getShaoYongBits(i);
+            const { core } = computeNuclear(bits);
+            const col = CORE_COLORS[core];
+
+            const x1 = Math.cos(a1) * (R_KOMPAS_PX - 38), y1 = Math.sin(a1) * (R_KOMPAS_PX - 38);
+            const x2 = Math.cos(a1) * R_KOMPAS_PX, y2 = Math.sin(a1) * R_KOMPAS_PX;
+            html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1e40af" stroke-width="0.8"/>`;
+
+            const bx = Math.cos(am) * (R_KOMPAS_PX - 12), by = Math.sin(am) * (R_KOMPAS_PX - 12);
+            html += `<circle cx="${bx}" cy="${by}" r="3.5" fill="${col}" opacity="0.9"/>`;
+
+            for (let b = 0; b < 6; b++) {
+                const rBit = (R_KOMPAS_PX - 35) + b * 3.5;
+                const dAngle = 0.032;
+                const lx1 = Math.cos(am - dAngle) * rBit, ly1 = Math.sin(am - dAngle) * rBit;
+                const lx2 = Math.cos(am + dAngle) * rBit, ly2 = Math.sin(am + dAngle) * rBit;
+                if (bits[b] === '1') {
+                    html += `<line x1="${lx1}" y1="${ly1}" x2="${lx2}" y2="${ly2}" stroke="#ffcc33" stroke-width="1.5"/>`;
+                } else {
+                    const lxm1 = Math.cos(am - dAngle * 0.25) * rBit, lym1 = Math.sin(am - dAngle * 0.25) * rBit;
+                    const lxm2 = Math.cos(am + dAngle * 0.25) * rBit, lym2 = Math.sin(am + dAngle * 0.25) * rBit;
+                    html += `<line x1="${lx1}" y1="${ly1}" x2="${lxm1}" y2="${lym1}" stroke="#38bdf8" stroke-width="1.5"/>`;
+                    html += `<line x1="${lxm2}" y1="${lym2}" x2="${lx2}" y2="${ly2}" stroke="#38bdf8" stroke-width="1.5"/>`;
+                }
+            }
+        }
+
+        // 60 Jiazi Ring (Δθ = 6.00°)
+        html += `<g id="jiazi-group">`;
+        html += `<circle cx="0" cy="0" r="${R_JIAZI_PX}" fill="none" stroke="#a855f7" stroke-width="1.4"/>`;
+        html += `<circle cx="0" cy="0" r="${R_JIAZI_PX - 28}" fill="none" stroke="#a855f7" stroke-width="1"/>`;
+        for (let j = 0; j < 60; j++) {
+            const a1 = (j * 6 - 90) * Math.PI / 180;
+            const am = ((j + 0.5) * 6 - 90) * Math.PI / 180;
+            const x1 = Math.cos(a1) * (R_JIAZI_PX - 28), y1 = Math.sin(a1) * (R_JIAZI_PX - 28);
+            const x2 = Math.cos(a1) * R_JIAZI_PX, y2 = Math.sin(a1) * R_JIAZI_PX;
+            html += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#7e22ce" stroke-width="0.7"/>`;
+
+            const tx = Math.cos(am) * (R_JIAZI_PX - 14), ty = Math.sin(am) * (R_JIAZI_PX - 14);
+            const rot = (j + 0.5) * 6;
+            const label = `${STEMS[j % 10][0]}${BRANCHES[j % 12][0]}${j+1}`;
+            html += `<text x="${tx}" y="${ty}" fill="#e9d5ff" font-size="7.5" text-anchor="middle" dominant-baseline="central" transform="rotate(${rot}, ${tx}, ${ty})">${label}</text>`;
+        }
+
+        // 16-puntige Kompasroos Ster
+        for (let s = 0; s < 16; s++) {
+            const ang = (s * 22.5 - 90) * Math.PI / 180;
+            const angL = ((s * 22.5 - 6) - 90) * Math.PI / 180;
+            const angR = ((s * 22.5 + 6) - 90) * Math.PI / 180;
+            const rTip = (s % 4 === 0) ? (R_JIAZI_PX - 30) : (s % 2 === 0 ? 275 : 215);
+            const rBase = R_NUC_PX;
+
+            const px = Math.cos(ang) * rTip, py = Math.sin(ang) * rTip;
+            const lx = Math.cos(angL) * rBase, ly = Math.sin(angL) * rBase;
+            const rx = Math.cos(angR) * rBase, ry = Math.sin(angR) * rBase;
+            const fillCol = (s % 2 === 0) ? "rgba(0, 229, 255, 0.28)" : "rgba(168, 85, 247, 0.24)";
+            const strCol  = (s % 4 === 0) ? "#ffcc33" : "#00e5ff";
+
+            html += `<polygon points="0,0 ${lx},${ly} ${px},${py}" fill="${fillCol}" stroke="${strCol}" stroke-width="0.9"/>`;
+            html += `<polygon points="0,0 ${px},${py} ${rx},${ry}" fill="rgba(15, 23, 42, 0.65)" stroke="${strCol}" stroke-width="0.9"/>`;
+        }
+        html += `</g>`;
+
+        // 4 Nucleaire N² Kern-Cirkel (r = 2.687 cm = 107.5 px)
+        html += `<circle cx="0" cy="0" r="${R_NUC_PX}" fill="rgba(15, 23, 42, 0.9)" stroke="#ff9900" stroke-width="2"/>`;
+        [
+            { code: "11", ang: -45, col: CORE_COLORS["11"] },
+            { code: "01", ang: 45, col: CORE_COLORS["01"] },
+            { code: "00", ang: 135, col: CORE_COLORS["00"] },
+            { code: "10", ang: -135, col: CORE_COLORS["10"] }
+        ].forEach(c => {
+            const rad = c.ang * Math.PI / 180;
+            const cx = Math.cos(rad) * (R_NUC_PX * 0.58);
+            const cy = Math.sin(rad) * (R_NUC_PX * 0.58);
+            html += `<circle cx="${cx}" cy="${cy}" r="22" fill="rgba(0,0,0,0.6)" stroke="${c.col}" stroke-width="1.8"/>`;
+            html += `<text x="${cx}" y="${cy - 3}" fill="${c.col}" font-size="11" font-weight="bold" text-anchor="middle">${c.code}</text>`;
+            html += `<text x="${cx}" y="${cy + 9}" fill="#cbd5e1" font-size="7.5" text-anchor="middle">90,75cm²</text>`;
+        });
+
+        // Maatvoering onderin
+        html += `<line x1="${-R_KOMPAS_PX}" y1="455" x2="${R_KOMPAS_PX}" y2="455" stroke="#ffcc33" stroke-width="1" marker-start="url(#arrow-gold)" marker-end="url(#arrow-gold)"/>`;
+        html += `<text x="0" y="470" fill="#ffcc33" font-size="11" text-anchor="middle">D = 21,50 cm (43,0 vakjes van 0,5 cm) | A = 363,0 cm² (Nonius: 3630)</text>`;
+
+        kompasGroup.innerHTML = html;
+
+        // Möbius Spinor Qi-Flow
+        let spinorHtml = '';
+        spinorHtml += `<path d="M 0 ${-R_KOMPAS_PX} A ${R_KOMPAS_PX/2} ${R_KOMPAS_PX/2} 0 0 1 0 0 A ${R_KOMPAS_PX/2} ${R_KOMPAS_PX/2} 0 0 0 0 ${R_KOMPAS_PX}" fill="none" stroke="#ff3385" stroke-width="2.2" stroke-dasharray="6,4" marker-end="url(#arrow-magenta)"/>`;
+        spinorHtml += `<path d="M ${-R_KOMPAS_PX} 0 C ${-R_KOMPAS_PX*0.4} ${-R_KOMPAS_PX*0.55}, ${R_KOMPAS_PX*0.4} ${R_KOMPAS_PX*0.55}, ${R_KOMPAS_PX} 0" fill="none" stroke="#ffcc33" stroke-width="1.6" stroke-dasharray="4,4" marker-end="url(#arrow-gold)"/>`;
+        spinorGroup.innerHTML = spinorHtml;
+    }
+
+    // --- 2. RENDER OPTISCHE LASER & LICHTSPECTRALE GEREEDSCHAPPEN OP DE PLANO-ARM ---
+    function renderLaserOptics(gx, gy, tx, ty) {
+        if (!state.laserEnabled) {
+            laserGroup.innerHTML = '';
+            return;
+        }
+
+        const laserHex = wavelengthToHex(state.wavelengthNm);
+        document.documentElement.style.setProperty('--laser-col', laserHex);
+
+        // Richtingsvector van de Rijarm (van Scharnier G door Volgstift T)
+        const armLen = Math.hypot(tx - gx, ty - gy) || 1;
+        const ux = (tx - gx) / armLen;
+        const uy = (ty - gy) / armLen;
+
+        // Bereken waar deze rijarm-laserstraal de Shao Yong cirkelrand raakt
+        const hitFwd = intersectCircleForward(tx, ty, ux, uy, R_KOMPAS_PX) || { x: tx + ux * 300, y: ty + uy * 300 };
+        const hitBack = intersectCircleForward(gx, gy, -ux, -uy, R_KOMPAS_PX) || { x: gx - ux * 200, y: gy - uy * 200 };
+
+        const hitDeg = (Math.atan2(hitFwd.y, hitFwd.x) * 180 / Math.PI + 90 + 360) % 360;
+        const hitSyIdx = Math.floor(hitDeg / 5.625) % 64;
+        const hitBits = getShaoYongBits(hitSyIdx);
+        state.lastHitHex = hitSyIdx;
+        state.lastHitAngle = hitDeg;
+
+        let lHtml = `<g filter="url(#laser-glow)">`;
+
+        if (state.laserMode === 'collimator') {
+            // MODUS 1: Gecollimeerde Laserbundel langs de Rijarm + Orthogonale Tangens-as
+            lHtml += `<line x1="${gx}" y1="${gy}" x2="${hitFwd.x}" y2="${hitFwd.y}" stroke="${laserHex}" stroke-width="2.8" opacity="0.95"/>`;
+            lHtml += `<line x1="${gx}" y1="${gy}" x2="${hitFwd.x}" y2="${hitFwd.y}" stroke="#ffffff" stroke-width="1.0" opacity="0.9"/>`;
+            // Antipodale achterwaartse referentie-lijn
+            lHtml += `<line x1="${gx}" y1="${gy}" x2="${hitBack.x}" y2="${hitBack.y}" stroke="${laserHex}" stroke-width="1.2" stroke-dasharray="5,5" opacity="0.55"/>`;
+            // Loodrechte optische meet-as op de volgstift (Nonius-as)
+            const nx = -uy, ny = ux;
+            lHtml += `<line x1="${tx - nx * 85}" y1="${ty - ny * 85}" x2="${tx + nx * 85}" y2="${ty + ny * 85}" stroke="${laserHex}" stroke-width="1.1" stroke-dasharray="2,4" opacity="0.75"/>`;
+            // Laser Trefpunt Reticle op de 64 Shao Yong Ring
+            lHtml += `<circle cx="${hitFwd.x}" cy="${hitFwd.y}" r="9" fill="none" stroke="${laserHex}" stroke-width="2"/>`;
+            lHtml += `<circle cx="${hitFwd.x}" cy="${hitFwd.y}" r="3" fill="#ffffff"/>`;
+            lHtml += `<text x="${hitFwd.x * 0.86}" y="${hitFwd.y * 0.86}" fill="#ffffff" font-size="9.5" font-weight="bold" text-anchor="middle">λ→#${hitSyIdx} (${hitDeg.toFixed(1)}°)</text>`;
+
+        } else if (state.laserMode === 'prisma') {
+            // MODUS 2: Lichtspectrale Prisma-Waaier (7-bands Cauchy dispersie vanaf de Volgstift)
+            // Hoofdbundel van Scharnier G naar het Prisma op Volgstift T
+            lHtml += `<line x1="${gx}" y1="${gy}" x2="${tx}" y2="${ty}" stroke="#ffffff" stroke-width="2.4" opacity="0.9"/>`;
+
+            const baseAng = Math.atan2(uy, ux);
+            const spectralBands = [405, 445, 486.1, 532, 589.3, 632.8, 680];
+
+            // Teken een gevuld dispersie-waaier vlak + individuele spectrale stralen
+            let firstPt = null, lastPt = null;
+            spectralBands.forEach((wNm, idx) => {
+                // Fysische Cauchy brekings-afwijking (kortere golflengte buigt sterker)
+                const dispersionRad = ((idx - 3) * 4.5) * Math.PI / 180;
+                const rayAng = baseAng + dispersionRad;
+                const rdx = Math.cos(rayAng), rdy = Math.sin(rayAng);
+                const hit = intersectCircleForward(tx, ty, rdx, rdy, R_KOMPAS_PX) || { x: tx + rdx * 320, y: ty + rdy * 320 };
+                const bandCol = wavelengthToHex(wNm);
+
+                if (idx === 0) firstPt = hit;
+                if (idx === spectralBands.length - 1) lastPt = hit;
+
+                const isCurrent = Math.abs(wNm - state.wavelengthNm) < 22;
+                lHtml += `<line x1="${tx}" y1="${ty}" x2="${hit.x}" y2="${hit.y}" stroke="${bandCol}" stroke-width="${isCurrent ? 3.0 : 1.7}" opacity="${isCurrent ? 1.0 : 0.82}"/>`;
+                lHtml += `<circle cx="${hit.x}" cy="${hit.y}" r="${isCurrent ? 5 : 3}" fill="${bandCol}"/>`;
+            });
+
+            if (firstPt && lastPt) {
+                lHtml += `<polygon points="${tx},${ty} ${firstPt.x},${firstPt.y} ${lastPt.x},${lastPt.y}" fill="${laserHex}" opacity="0.09"/>`;
+            }
+
+            // Teken het optische BK7 Prisma-driehoekje op de Volgstift (tx, ty)
+            const pSize = 16;
+            const p1x = tx + Math.cos(baseAng) * pSize, p1y = ty + Math.sin(baseAng) * pSize;
+            const p2x = tx + Math.cos(baseAng + 2.1) * pSize, p2y = ty + Math.sin(baseAng + 2.1) * pSize;
+            const p3x = tx + Math.cos(baseAng - 2.1) * pSize, p3y = ty + Math.sin(baseAng - 2.1) * pSize;
+            lHtml += `<polygon points="${p1x},${p1y} ${p2x},${p2y} ${p3x},${p3y}" fill="rgba(255,255,255,0.22)" stroke="#ffffff" stroke-width="1.6"/>`;
+
+        } else if (state.laserMode === 'interferometer') {
+            // MODUS 3: Staande Golf / Michelson-Interferometer tussen Centrum (0,0), Scharnier en Volgstift
+            const dist = Math.hypot(tx, ty) || 1;
+            const rx = tx / dist, ry = ty / dist;
+            const nx = -ry, ny = rx;
+
+            // Golflengte op schaal voor visuele sinusoïde
+            const waveStepPx = (state.wavelengthNm / 532.0) * 28;
+            let wavePath1 = `M 0 0`, wavePath2 = `M 0 0`;
+            const steps = Math.max(20, Math.floor(dist / 3));
+            for (let i = 1; i <= steps; i++) {
+                const s = (i / steps) * dist;
+                const amp = Math.sin((s / waveStepPx) * Math.PI * 2) * 14;
+                const px1 = rx * s + nx * amp, py1 = ry * s + ny * amp;
+                const px2 = rx * s - nx * amp, py2 = ry * s - ny * amp;
+                wavePath1 += ` L ${px1.toFixed(1)} ${py1.toFixed(1)}`;
+                wavePath2 += ` L ${px2.toFixed(1)} ${py2.toFixed(1)}`;
+            }
+            lHtml += `<path d="${wavePath1}" fill="none" stroke="${laserHex}" stroke-width="2.2" opacity="0.95"/>`;
+            lHtml += `<path d="${wavePath2}" fill="none" stroke="#ffffff" stroke-width="1.1" stroke-dasharray="3,3" opacity="0.7"/>`;
+            // Concentrische fase-ringen rond de Volgstift
+            for (let rRing = 18; rRing <= 54; rRing += 18) {
+                lHtml += `<circle cx="${tx}" cy="${ty}" r="${rRing}" fill="none" stroke="${laserHex}" stroke-width="1.1" opacity="${0.75 - rRing/90}"/>`;
+            }
+
+        } else if (state.laserMode === 'cavity') {
+            // MODUS 4: Spiegel-Resonator (3x Fysische Wet van Reflectie θ_i = θ_r binnen de 64 Shao Yong Cirkel)
+            let curX = tx, curY = ty;
+            let dirX = ux, dirY = uy;
+            let polyPts = `${curX.toFixed(1)},${curY.toFixed(1)}`;
+
+            for (let b = 0; b < 4; b++) {
+                const hit = intersectCircleForward(curX, curY, dirX, dirY, R_KOMPAS_PX);
+                if (!hit) break;
+                polyPts += ` ${hit.x.toFixed(1)},${hit.y.toFixed(1)}`;
+
+                // Hoek & Shao Yong Hexagram op elk stuitpunt
+                const bDeg = (Math.atan2(hit.y, hit.x) * 180 / Math.PI + 90 + 360) % 360;
+                const bIdx = Math.floor(bDeg / 5.625) % 64;
+                lHtml += `<circle cx="${hit.x}" cy="${hit.y}" r="6" fill="#ffffff" stroke="${laserHex}" stroke-width="2"/>`;
+                lHtml += `<text x="${hit.x * 0.9}" y="${hit.y * 0.9}" fill="${laserHex}" font-size="9" font-weight="bold" text-anchor="middle">#${bIdx}</text>`;
+
+                // Normaalvector op de cirkelwand (wijzend naar binnen)
+                const normLen = Math.hypot(hit.x, hit.y) || 1;
+                const nx = -hit.x / normLen, ny = -hit.y / normLen;
+                const dot = dirX * nx + dirY * ny;
+                dirX = dirX - 2 * dot * nx;
+                dirY = dirY - 2 * dot * ny;
+                curX = hit.x + dirX * 0.5;
+                curY = hit.y + dirY * 0.5;
+            }
+            lHtml += `<polyline points="${polyPts}" fill="none" stroke="${laserHex}" stroke-width="2.2" opacity="0.92"/>`;
+        }
+
+        // Laser-Diode Kop op de Volgstift
+        lHtml += `<circle cx="${tx}" cy="${ty}" r="14" fill="none" stroke="${laserHex}" stroke-width="1.6" stroke-dasharray="4,2"/>`;
+        lHtml += `</g>`;
+
+        laserGroup.innerHTML = lHtml;
+
+        // Update Spectrale Telemetrie in de HUD
+        const freqTHz = 299792.458 / state.wavelengthNm;
+        const energyEv = 1239.84193 / state.wavelengthNm;
+        const nBK7 = 1.5046 + 4200 / (state.wavelengthNm * state.wavelengthNm);
+
+        document.getElementById('spec-lambda').textContent = `${state.wavelengthNm.toFixed(1)} nm (${state.wavelengthLabel})`;
+        document.getElementById('spec-lambda').style.color = laserHex;
+        document.getElementById('spec-freq').textContent = `${freqTHz.toFixed(2)} THz`;
+        document.getElementById('spec-ev').textContent = `${energyEv.toFixed(3)} eV`;
+        document.getElementById('spec-refr').textContent = `n = ${nBK7.toFixed(4)} (BK7)`;
+        document.getElementById('spec-hit').textContent = `#${hitSyIdx} (${hitBits}) @ ${hitDeg.toFixed(1)}°`;
+
+        document.getElementById('vp-laser').textContent = `${state.wavelengthNm.toFixed(1)} nm (${freqTHz.toFixed(1)} THz | ${energyEv.toFixed(2)} eV)`;
+        document.getElementById('vp-laser').style.color = laserHex;
+        document.getElementById('vp-hit').textContent = `#${hitSyIdx} (${hitBits})`;
+
+        document.getElementById('laser-badge').textContent = `LASER: ${state.wavelengthNm.toFixed(1)} nm [${state.laserMode.toUpperCase()}]`;
+        document.getElementById('laser-badge').style.borderColor = laserHex;
+        document.getElementById('laser-badge').style.color = laserHex;
+    }
+
+    // --- 3. UPDATE OTT NR. 573 PLANIMETER & TELEMETRIE ---
+    function updatePlanimeter(tx, ty, syncSliders = true) {
+        const px = 0, py = -300; // Poolanker 15 vakjes boven centrum
+        const R = 300;           // Poolarm straal
+        const L = 430;           // Rijarm lengte
+
+        const dx = tx - px, dy = ty - py;
+        let d = Math.hypot(dx, dy);
+        if (d > R + L - 2) d = R + L - 2;
+        if (d < Math.abs(R - L) + 2) d = Math.abs(R - L) + 2;
+
+        // Snijpunt van twee cirkels voor het scharnierpunt G
+        const a = (R * R - L * L + d * d) / (2 * d);
+        const h = Math.sqrt(Math.max(0, R * R - a * a));
+        const mx = px + a * (dx / d);
+        const my = py + a * (dy / d);
+        const gx = mx - h * (dy / d);
+        const gy = my + h * (dx / d);
+
+        // Verlengde rijarm voor de meetrol en nonius-trommel
+        const ux = (tx - gx) / L, uy = (ty - gy) / L;
+        const wx = gx + ux * (L + 75);
+        const wy = gy + uy * (L + 75);
+
+        let deg = (Math.atan2(ty, tx) * 180 / Math.PI + 90 + 360) % 360;
+        const rhoCm = Math.hypot(tx, ty) / PX_PER_CM;
+        const cumNonius = Math.round((deg / 360) * 3630);
+
+        state.azDeg = deg;
+        state.rhoCm = rhoCm;
+        state.txPx = tx;
+        state.tyPx = ty;
+        state.gxPx = gx;
+        state.gyPx = gy;
+
+        const armColor = state.armStopped ? "#ef4444" : "#eab308";
+        const tracerStroke = state.armStopped ? "#ef4444" : wavelengthToHex(state.wavelengthNm);
+
+        let pHtml = '';
+        const endRad = (deg - 90) * Math.PI / 180;
+        const arcX = Math.cos(endRad) * R_KOMPAS_PX;
+        const arcY = Math.sin(endRad) * R_KOMPAS_PX;
+        const largeArc = deg > 180 ? 1 : 0;
+        pHtml += `<path d="M 0 ${-R_KOMPAS_PX} A ${R_KOMPAS_PX} ${R_KOMPAS_PX} 0 ${largeArc} 1 ${arcX} ${arcY} L 0 0 Z" fill="rgba(0, 255, 204, 0.06)" stroke="rgba(0, 255, 204, 0.3)" stroke-width="1"/>`;
+
+        // Poolarm
+        pHtml += `<line x1="${px}" y1="${py}" x2="${gx}" y2="${gy}" stroke="#d4af37" stroke-width="16" stroke-linecap="round" opacity="0.88"/>`;
+        pHtml += `<line x1="${px}" y1="${py}" x2="${gx}" y2="${gy}" stroke="#785c12" stroke-width="1.2" stroke-dasharray="2,8"/>`;
+        pHtml += `<circle cx="${px}" cy="${py}" r="8" fill="#92400e" stroke="#fde047" stroke-width="2"/>`;
+        pHtml += `<text x="${px + 14}" y="${py + 4}" fill="#fde047" font-size="10" font-weight="bold">Poolanker (Ott Nr. 573)</text>`;
+
+        // Rijarm + Scharnier
+        pHtml += `<line x1="${gx}" y1="${gy}" x2="${wx}" y2="${wy}" stroke="${armColor}" stroke-width="10" stroke-linecap="round" opacity="0.92"/>`;
+        pHtml += `<circle cx="${gx}" cy="${gy}" r="10" fill="#451a03" stroke="#facc15" stroke-width="2.5"/>`;
+
+        // Volgstift (Tracer + Laser-Emitter Kop) op (tx, ty)
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="10" fill="rgba(0,0,0,0.6)" stroke="${tracerStroke}" stroke-width="2.6"/>`;
+        pHtml += `<circle cx="${tx}" cy="${ty}" r="3.5" fill="#ffffff"/>`;
+
+        // Meetrol & Nonius-telwerk
+        pHtml += `<circle cx="${wx}" cy="${wy}" r="19" fill="#fef3c7" stroke="#92400e" stroke-width="2.5"/>`;
+        pHtml += `<text x="${wx}" y="${wy + 3}" fill="#000" font-size="8.5" font-weight="bold" text-anchor="middle">${cumNonius}</text>`;
+
+        planimeterGroup.innerHTML = pHtml;
+
+        // Render de Optische Laser & Lichtspectrale Laag op de Plano-arm
+        renderLaserOptics(gx, gy, tx, ty);
+
+        if (state.recordingOmtrek) {
+            state.omtrekPoints.push({ x_px: tx, y_px: ty, x_cm: tx / PX_PER_CM, y_cm: -ty / PX_PER_CM });
+            renderOmtrekPath();
+        }
+
+        const syIdx = Math.floor(deg / 5.625) % 64;
+        const jiaziIdx = Math.floor(deg / 6.0) % 60;
+        const bits = getShaoYongBits(syIdx);
+        const { N, N2, core } = computeNuclear(bits);
+
+        document.getElementById('hud-angle').textContent = `${deg.toFixed(2)}° | ${rhoCm.toFixed(2)} cm`;
+        document.getElementById('hud-nonius').textContent = `${cumNonius} / 3630 (${(cumNonius * 0.1).toFixed(1)} cm²)`;
+        document.getElementById('hud-sy-idx').textContent = `#${syIdx} (${bits})`;
+        document.getElementById('hud-jiazi').textContent = `${STEMS[jiaziIdx%10]}-${BRANCHES[jiaziIdx%12]} (#${jiaziIdx+1}/60)`;
+        document.getElementById('hud-core').textContent = `${core} → N²=${N2}`;
+
+        document.getElementById('vp-nonius').textContent = cumNonius;
+        document.getElementById('vp-az').textContent = `${deg.toFixed(2)}°`;
+        document.getElementById('vp-rho').textContent = `${rhoCm.toFixed(2)} cm`;
+        document.getElementById('vp-core').textContent = `N²=${N2}`;
+        document.getElementById('hud-coord-mini').textContent = `[X: ${(tx/PX_PER_CM).toFixed(2)} cm | Y: ${(-ty/PX_PER_CM).toFixed(2)} cm]`;
+
+        renderHexBars('vis-H', bits);
+        renderHexBars('vis-N', N);
+        renderHexBars('vis-N2', N2);
+        document.getElementById('lbl-H').textContent = bits;
+        document.getElementById('lbl-N').textContent = N;
+        document.getElementById('lbl-N2').textContent = N2;
+
+        if (syncSliders) {
+            document.getElementById('yaw-slider').value = deg.toFixed(1);
+            document.getElementById('yaw-deg').innerText = `${deg.toFixed(1)}°`;
+            document.getElementById('rho-slider').value = Math.min(11.8, Math.max(0.5, rhoCm)).toFixed(2);
+            document.getElementById('rho-val').innerText = `${rhoCm.toFixed(2)} cm`;
+        }
+
+        checkTriggers(Math.round(deg), syIdx, bits, N2, cumNonius);
+    }
+
+    function renderHexBars(elId, bits) {
+        let h = '';
+        for (let i = 0; i < 6; i++) {
+            h += `<div class="bit-bar ${bits[i] === '0' ? 'bit-0' : ''}"></div>`;
+        }
+        document.getElementById(elId).innerHTML = h;
+    }
+
+    // --- 4. LASER & LICHTSPECTRALE BEDIENING ---
+    function setWavelength(nm, label = 'Spectrum') {
+        const clamped = Math.min(750, Math.max(380, parseFloat(nm)));
+        state.wavelengthNm = clamped;
+        state.wavelengthLabel = label;
+
+        const pct = ((clamped - 380) / (750 - 380)) * 100;
+        document.getElementById('spectrum-marker').style.left = `${pct.toFixed(1)}%`;
+        document.getElementById('lambda-slider').value = clamped;
+        const col = wavelengthToHex(clamped);
+        const lblEl = document.getElementById('lambda-val');
+        lblEl.textContent = `${clamped.toFixed(1)} nm`;
+        lblEl.style.color = col;
+
+        updatePlanimeter(state.txPx, state.tyPx, false);
+    }
+
+    function setLaserMode(mode) {
+        state.laserMode = mode;
+        state.laserEnabled = true;
+        document.getElementById('chk-laser').checked = true;
+        LASER_MODES.forEach(m => {
+            const btn = document.getElementById('lmode-' + m);
+            if (btn) btn.classList.toggle('btn-laser-active', m === mode);
+        });
+        updatePlanimeter(state.txPx, state.tyPx, false);
+        injectAI(`<b>🔬 LASER-MODUS GEACTIVEERD [${mode.toUpperCase()}]:</b> Golflengte λ = <b>${state.wavelengthNm.toFixed(1)} nm</b> | Rand-trefpunt op Shao Yong <b>#${state.lastHitHex}</b> (${state.lastHitAngle.toFixed(1)}°).`);
+    }
+
+    function cycleLaserMode() {
+        const nextIdx = (LASER_MODES.indexOf(state.laserMode) + 1) % LASER_MODES.length;
+        setLaserMode(LASER_MODES[nextIdx]);
+    }
+
+    function toggleLaserPower() {
+        state.laserEnabled = !state.laserEnabled;
+        document.getElementById('chk-laser').checked = state.laserEnabled;
+        document.getElementById('key-l').classList.toggle('run-active', state.laserEnabled);
+        document.getElementById('lbl-laser-state').textContent = state.laserEnabled ? "AAN [L]" : "UIT [L]";
+        document.getElementById('lbl-laser-state').style.color = state.laserEnabled ? "#10ff60" : "#ef4444";
+        updatePlanimeter(state.txPx, state.tyPx, false);
+    }
+
+    function cycleFraunhofer() {
+        state.fraunhoferIdx = (state.fraunhoferIdx + 1) % FRAUNHOFER_PRESETS.length;
+        const p = FRAUNHOFER_PRESETS[state.fraunhoferIdx];
+        setWavelength(p.nm, p.name);
+        injectAI(`<b>🌈 SPECTRAAL FILTER [F]:</b> Gekalibreerd op <b>${p.nm.toFixed(1)} nm</b> — <i>${p.name}</i>.`);
+    }
+
+    // Klik of sleep op de Spectrumbalk
+    const specBar = document.getElementById('spectrum-bar');
+    specBar.addEventListener('click', (e) => {
+        const rect = specBar.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const nm = 380 + ratio * (750 - 380);
+        setWavelength(nm, 'Spectrogram');
+    });
+
+    // --- 5. START / STOP FUNCTIES & PIJLTJESTOETSEN BESTURING ---
+    function stopPlanimeterArm() {
+        state.armStopped = true;
+        state.mouseFollow = false;
+        if (state.autoSweepTimer) {
+            clearInterval(state.autoSweepTimer);
+            state.autoSweepTimer = null;
+            document.getElementById('btn-sweep').textContent = "🔄 START SWEEP [R]";
+            document.getElementById('key-r').classList.remove('run-active');
+        }
+        updateStatusBadges();
+        updatePlanimeter(state.txPx, state.tyPx, false);
+        injectAI(`<b>🛑 PLANIMETER STILGEZET [STOP]:</b> Arm & Laser vergrendeld op θ = <b>${state.azDeg.toFixed(2)}°</b>, λ = <b>${state.wavelengthNm.toFixed(1)} nm</b>.`);
+    }
+
+    function startPlanimeterArm() {
+        state.armStopped = false;
+        state.mouseFollow = true;
+        updateStatusBadges();
+        updatePlanimeter(state.txPx, state.tyPx, false);
+        injectAI(`<b>▶️ PLANIMETER GESTART [ACTIEF]:</b> Arm & Laser vrijgegeven voor muis- en toetsenbordbesturing.`);
+    }
+
+    function updateStatusBadges() {
+        const armBadge = document.getElementById('arm-badge');
+        const modeBadge = document.getElementById('mode-badge');
+        const keyS = document.getElementById('key-s');
+        const keyG = document.getElementById('key-g');
+
+        if (state.armStopped) {
+            armBadge.textContent = "ARM: STILGEZET (S)";
+            armBadge.style.borderColor = "#ef4444";
+            armBadge.style.color = "#fca5a5";
+            keyS.classList.add('stop-active');
+            keyG.classList.remove('run-active');
+        } else {
+            armBadge.textContent = "ARM: ACTIEF (G)";
+            armBadge.style.borderColor = "var(--main)";
+            armBadge.style.color = "var(--main)";
+            keyS.classList.remove('stop-active');
+            keyG.classList.add('run-active');
+        }
+
+        if (state.autoSweepTimer) {
+            modeBadge.textContent = "MODUS: AUTO-SWEEP (R)";
+        } else if (state.armStopped) {
+            modeBadge.textContent = "MODUS: VERGRENDELD";
+        } else if (!state.mouseFollow) {
+            modeBadge.textContent = "MODUS: PIJLTJESTOETSEN";
+        } else {
+            modeBadge.textContent = "MODUS: MUIS + TOETSEN";
+        }
+    }
+
+    function stepPolar(dAzDeg, dRhoCm) {
+        state.armStopped = false;
+        state.mouseFollow = false;
+        updateStatusBadges();
+
+        let newAz = (state.azDeg + dAzDeg + 360) % 360;
+        let newRho = Math.min(11.8, Math.max(0.25, state.rhoCm + dRhoCm));
+
+        const rad = (newAz - 90) * Math.PI / 180;
+        const tx = Math.cos(rad) * (newRho * PX_PER_CM);
+        const ty = Math.sin(rad) * (newRho * PX_PER_CM);
+        updatePlanimeter(tx, ty, true);
+    }
+
+    function stepCartesian(dxCm, dyCm) {
+        state.armStopped = false;
+        state.mouseFollow = false;
+        updateStatusBadges();
+
+        const tx = Math.max(-460, Math.min(460, state.txPx + dxCm * PX_PER_CM));
+        const ty = Math.max(-460, Math.min(460, state.tyPx - dyCm * PX_PER_CM));
+        updatePlanimeter(tx, ty, true);
+    }
+
+    function flashKeyButton(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('pressed');
+        setTimeout(() => el.classList.remove('pressed'), 140);
+    }
+
+    // Globale Toetsenbord Listener (inclusief L, P, F, [ en ] voor de Laser)
+    window.addEventListener('keydown', (e) => {
+        if (document.activeElement && document.activeElement.id === 'ai-query') {
+            if (e.key === 'Escape') document.activeElement.blur();
+            return;
+        }
+
+        const azStep = e.altKey ? 5.625 : (e.shiftKey ? 0.1 : 1.0);
+        const rhoStep = e.shiftKey ? 0.05 : 0.25;
+        const nmStep = e.shiftKey ? 1.0 : 5.0;
+        document.getElementById('step-indicator').textContent = `Stap: ${azStep}°`;
+
+        switch (e.key) {
+            case 'ArrowLeft':
+                e.preventDefault(); flashKeyButton('key-left'); stepPolar(-azStep, 0); break;
+            case 'ArrowRight':
+                e.preventDefault(); flashKeyButton('key-right'); stepPolar(azStep, 0); break;
+            case 'ArrowUp':
+                e.preventDefault(); flashKeyButton('key-up'); stepPolar(0, rhoStep); break;
+            case 'ArrowDown':
+                e.preventDefault(); flashKeyButton('key-down'); stepPolar(0, -rhoStep); break;
+            case ' ':
+            case 's':
+            case 'S':
+                e.preventDefault(); flashKeyButton('key-s'); stopPlanimeterArm(); break;
+            case 'g':
+            case 'G':
+                e.preventDefault(); flashKeyButton('key-g'); startPlanimeterArm(); break;
+            case 'r':
+            case 'R':
+                e.preventDefault(); flashKeyButton('key-r'); toggleAutoSweep(); break;
+            case 'l':
+            case 'L':
+                e.preventDefault(); flashKeyButton('key-l'); toggleLaserPower(); break;
+            case 'p':
+            case 'P':
+                e.preventDefault(); flashKeyButton('key-p'); cycleLaserMode(); break;
+            case 'f':
+            case 'F':
+                e.preventDefault(); flashKeyButton('key-f'); cycleFraunhofer(); break;
+            case '[':
+                e.preventDefault(); setWavelength(state.wavelengthNm - nmStep, 'Toets ['); break;
+            case ']':
+                e.preventDefault(); setWavelength(state.wavelengthNm + nmStep, 'Toets ]'); break;
+            case 'o':
+            case 'O':
+                e.preventDefault(); toggleOmtrekRecording(); break;
+            case 'c':
+            case 'C':
+                e.preventDefault(); clearOmtrek(); break;
+            case 'w':
+            case 'W':
+                e.preventDefault(); stepCartesian(0, 0.5); break;
+            case 'x':
+            case 'X':
+                e.preventDefault(); stepCartesian(0, -0.5); break;
+            case 'a':
+            case 'A':
+                e.preventDefault(); stepCartesian(-0.5, 0); break;
+            case 'd':
+            case 'D':
+                e.preventDefault(); stepCartesian(0.5, 0); break;
+            case '1':
+                e.preventDefault(); snapToVector(29, R_KOMPAS_CM, 'NYC_TWIN_TOWERS', document.getElementById('src-1')); break;
+            case '2':
+                e.preventDefault(); snapToVector(82.5, R_KOMPAS_CM, 'THOLEN_CHURCH', document.getElementById('src-2')); break;
+            case '3':
+                e.preventDefault(); snapToVector(108, R_KOMPAS_CM, 'SIRIUS_ANKER', document.getElementById('src-3')); break;
+            case 'm':
+            case 'M':
+                e.preventDefault();
+                const nextM = state.mirrorMode === 'none' ? 'h' : (state.mirrorMode === 'h' ? 'v' : 'none');
+                setMirror(nextM);
+                break;
+        }
+    });
+
+    // --- 6. KINEMATICA SLIDERS & PRESET VECTORS ---
+    function processKinematica(axis, val) {
+        const numVal = parseFloat(val);
+        if (axis === 'yaw') {
+            state.azDeg = numVal;
+            document.getElementById('yaw-deg').innerText = `${numVal.toFixed(1)}°`;
+        } else if (axis === 'rho') {
+            state.rhoCm = numVal;
+            document.getElementById('rho-val').innerText = `${numVal.toFixed(2)} cm`;
+        } else if (axis === 'pitch') {
+            state.pitchDeg = numVal;
+            document.getElementById('pitch-deg').innerText = `${numVal}°`;
+            svgEl.style.transform = `rotateX(${numVal}deg)`;
+            return;
+        }
+
+        const rad = (state.azDeg - 90) * Math.PI / 180;
+        const tx = Math.cos(rad) * (state.rhoCm * PX_PER_CM);
+        const ty = Math.sin(rad) * (state.rhoCm * PX_PER_CM);
+        updatePlanimeter(tx, ty, false);
+    }
+
+    function snapToVector(deg, rhoCm, label, el) {
+        document.querySelectorAll('.source-item').forEach(item => item.classList.remove('active'));
+        if (el) el.classList.add('active');
+
+        state.armStopped = false;
+        state.mouseFollow = false;
+        updateStatusBadges();
+
+        const rad = (deg - 90) * Math.PI / 180;
+        const tx = Math.cos(rad) * (rhoCm * PX_PER_CM);
+        const ty = Math.sin(rad) * (rhoCm * PX_PER_CM);
+        updatePlanimeter(tx, ty, true);
+    }
+
+    function checkTriggers(azInt, syIdx, bits, N2, nonius) {
+        if (state.lastTriggeredAz === azInt) return;
+        if (azInt === 29) {
+            state.lastTriggeredAz = 29;
+            injectAI(`<b>DETECTIE: 29° AS (NYC_TWIN_TOWERS)</b><br>Laser (${state.wavelengthNm.toFixed(1)} nm) op 29.0° | Nonius: <b>${nonius}</b> | Doel-Hexagram: <b>#${state.lastHitHex}</b>.`);
+        } else if (azInt === 82 || azInt === 83) {
+            state.lastTriggeredAz = azInt;
+            injectAI(`<b>DETECTIE: 82.5° AS (THOLEN_CHURCH)</b><br>Grote Kerk resonantie stabiel | Nonius: <b>${nonius}</b> | Shao Yong #${syIdx} (${bits}).`);
+        } else if (azInt === 108) {
+            state.lastTriggeredAz = 108;
+            injectAI(`<b>SYNC_LOCK: 108° SIRIUS_ANKER</b><br>Galactisch anker vergrendeld | Nonius: <b>${nonius}</b> | Attractor N²=${N2}.`);
+        }
+    }
+
+    function injectAI(content) {
+        aiStatus.innerText = "LASER_SPECTRAL // LOCK";
+        aiStatus.style.color = "var(--main)";
+        terminal.innerHTML += `<div class="ai-response">${content}</div>`;
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function handleQuery(e) {
+        if (e.key === 'Enter' && e.target.value.trim()) {
+            const q = e.target.value.trim().toLowerCase();
+            terminal.innerHTML += `<div style="color:var(--main); font-size:0.72rem; margin-bottom:8px;">USER_QUERY: ${q}</div>`;
+            e.target.value = '';
+            e.target.blur();
+
+            const num = parseFloat(q.replace(',', '.'));
+            if (q.includes('nm') && !isNaN(num)) {
+                setWavelength(num, 'Terminal Query');
+                injectAI(`<b>SPECTRALE AFSTEMMING: ${num} nm</b><br>Laser ingesteld op λ = ${state.wavelengthNm.toFixed(1)} nm.`);
+            } else if (!isNaN(num) && num >= 0 && num <= 360) {
+                snapToVector(num, state.rhoCm, 'MANUAL_VECTOR', null);
+                injectAI(`<b>KINEMATISCHE ROTATIE: ${num}°</b><br>Ott Nr. 573 volgstift verplaatst naar azimut ${num.toFixed(2)}°.`);
+            } else {
+                injectAI(`<b>OPTISCH & PLANIMETER RAPPORT:</b> θ=${state.azDeg.toFixed(2)}°, ρ=${state.rhoCm.toFixed(2)} cm, λ=${state.wavelengthNm.toFixed(1)} nm (${state.laserMode}), Trefpunt=#${state.lastHitHex}.`);
+            }
+        }
+    }
+
+    // --- 7. AUTO-SWEEP, OMTREK OPNAME & EXPORT ---
+    function toggleAutoSweep() {
+        const btn = document.getElementById('btn-sweep');
+        const keyR = document.getElementById('key-r');
+        if (state.autoSweepTimer) {
+            clearInterval(state.autoSweepTimer);
+            state.autoSweepTimer = null;
+            btn.textContent = "🔄 START SWEEP [R]";
+            keyR.classList.remove('run-active');
+            updateStatusBadges();
+        } else {
+            state.armStopped = false;
+            state.mouseFollow = false;
+            btn.textContent = "⏹️ STOP SWEEP [R]";
+            keyR.classList.add('run-active');
+            state.autoSweepTimer = setInterval(() => {
+                let nextAz = (state.azDeg + 0.75) % 360;
+                const rad = (nextAz - 90) * Math.PI / 180;
+                const tx = Math.cos(rad) * (state.rhoCm * PX_PER_CM);
+                const ty = Math.sin(rad) * (state.rhoCm * PX_PER_CM);
+                updatePlanimeter(tx, ty, true);
+            }, 30);
+            updateStatusBadges();
+        }
+    }
+
+    function toggleOmtrekRecording() {
+        state.recordingOmtrek = !state.recordingOmtrek;
+        const btn = document.getElementById('btn-rec');
+        if (state.recordingOmtrek) {
+            state.omtrekPoints = [{ x_px: state.txPx, y_px: state.tyPx, x_cm: state.txPx / PX_PER_CM, y_cm: -state.tyPx / PX_PER_CM }];
+            btn.textContent = "⏺️ OPNAME ACTIEF [O]";
+            btn.classList.add('btn-stop');
+        } else {
+            btn.textContent = "✏️ OMTREK [O]";
+            btn.classList.remove('btn-stop');
+            calcOmtrekArea();
+        }
+    }
+
+    function renderOmtrekPath() {
+        if (state.omtrekPoints.length < 2) {
+            omtrekGroup.innerHTML = '';
+            return;
+        }
+        const col = wavelengthToHex(state.wavelengthNm);
+        let d = state.omtrekPoints.map((pt, i) => `${i === 0 ? 'M' : 'L'} ${pt.x_px.toFixed(1)} ${pt.y_px.toFixed(1)}`).join(' ');
+        omtrekGroup.innerHTML = `<path d="${d} Z" fill="rgba(255, 204, 51, 0.16)" stroke="${col}" stroke-width="2.2" stroke-dasharray="4,2"/>`;
+        document.getElementById('lbl-omtrek-area').textContent = `Bezig... (${state.omtrekPoints.length} pt)`;
+    }
+
+    function clearOmtrek() {
+        state.recordingOmtrek = false;
+        state.omtrekPoints = [];
+        document.getElementById('btn-rec').textContent = "✏️ OMTREK [O]";
+        document.getElementById('btn-rec').classList.remove('btn-stop');
+        omtrekGroup.innerHTML = '';
+        document.getElementById('lbl-omtrek-area').textContent = "0.00 cm² (0 punten)";
+    }
+
+    function calcOmtrekArea() {
+        state.recordingOmtrek = false;
+        document.getElementById('btn-rec').textContent = "✏️ OMTREK [O]";
+        document.getElementById('btn-rec').classList.remove('btn-stop');
+        const pts = state.omtrekPoints;
+        if (pts.length < 3) return;
+        let area = 0;
+        for (let i = 0; i < pts.length; i++) {
+            const j = (i + 1) % pts.length;
+            area += pts[i].x_cm * pts[j].y_cm - pts[j].x_cm * pts[i].y_cm;
+        }
+        area = Math.abs(area) / 2.0;
+        const vakjes = Math.round(area / 0.25);
+        document.getElementById('lbl-omtrek-area').textContent = `${area.toFixed(2)} cm² (${vakjes} vakjes)`;
+        injectAI(`<b>📐 OTT NR. 573 INTEGRATIE VOLTOOID:</b> Gemeten vlak = <b>${area.toFixed(2)} cm²</b> (${vakjes} vakjes).`);
+    }
+
+    function setMirror(mode) {
+        state.mirrorMode = mode;
+        svgEl.classList.remove('mirrored-h', 'mirrored-v');
+        if (mode === 'h') svgEl.classList.add('mirrored-h');
+        if (mode === 'v') svgEl.classList.add('mirrored-v');
+    }
+
+    function exportCADReport() {
+        const txt = [
+            "=== VORTEX COCKPIT v154.2 // OTT NR. 573 & LASER SPECTRALE TELEMETRIE ===",
+            `Tijdstip: ${new Date().toISOString()}`,
+            `Status Arm: ${state.armStopped ? 'STILGEZET (STOP)' : 'ACTIEF'}`,
+            `Azimut / Straal: ${document.getElementById('hud-angle').textContent}`,
+            `Cumulatieve Nonius (f=0.1): ${document.getElementById('hud-nonius').textContent}`,
+            `Shao Yong Hexagram (Volgstift): ${document.getElementById('hud-sy-idx').textContent}`,
+            `Jiazi Stamboom-Tak: ${document.getElementById('hud-jiazi').textContent}`,
+            `Nucleaire Kern: ${document.getElementById('hud-core').textContent}`,
+            "--- OPTISCHE LASER & SPECTRALE DATA ---",
+            `Laser Modus: ${state.laserMode.toUpperCase()} (${state.laserEnabled ? 'AAN' : 'UIT'})`,
+            `Golflengte (Lambda): ${document.getElementById('spec-lambda').textContent}`,
+            `Frequentie (f): ${document.getElementById('spec-freq').textContent}`,
+            `Foton-energie (E): ${document.getElementById('spec-ev').textContent}`,
+            `BK7 Brekingsindex: ${document.getElementById('spec-refr').textContent}`,
+            `Laser Rand-Intersectie: ${document.getElementById('spec-hit').textContent}`,
+            `Omtrek Meting: ${document.getElementById('lbl-omtrek-area').textContent}`
+        ].join('\n');
+
+        const blob = new Blob([txt], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `vortex_ott573_laser_spectrum.txt`;
+        a.click();
+    }
+
+    // Muis-interactie op de SVG Viewport
+    svgEl.addEventListener('mousemove', (e) => {
+        if (state.armStopped || !state.mouseFollow) return;
+        const pt = svgEl.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const cursor = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+        updatePlanimeter(cursor.x, cursor.y, true);
+    });
+
+    svgEl.addEventListener('click', (e) => {
+        if (state.armStopped) return;
+        const pt = svgEl.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const cursor = pt.matrixTransform(svgEl.getScreenCTM().inverse());
+        updatePlanimeter(cursor.x, cursor.y, true);
+    });
+
+    // Laag-checkboxes
+    document.getElementById('chk-laser').addEventListener('change', e => {
+        state.laserEnabled = e.target.checked;
+        document.getElementById('key-l').classList.toggle('run-active', state.laserEnabled);
+        updatePlanimeter(state.txPx, state.tyPx, false);
+    });
+    document.getElementById('chk-planimeter').addEventListener('change', e => {
+        planimeterGroup.style.display = e.target.checked ? 'block' : 'none';
+    });
+    document.getElementById('chk-spinor').addEventListener('change', e => {
+        spinorGroup.style.display = e.target.checked ? 'block' : 'none';
+    });
+    document.getElementById('chk-jiazi').addEventListener('change', e => {
+        document.getElementById('jiazi-group').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    // Klok & Initialisatie
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString('nl-NL');
+    }, 1000);
+
+    buildTechnicalDrawing();
+    const initAng = (162 - 90) * Math.PI / 180;
+    updatePlanimeter(Math.cos(initAng) * R_KOMPAS_PX, Math.sin(initAng) * R_KOMPAS_PX, true);
+</script>
+
+</body>
+</html>

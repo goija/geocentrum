@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<!-- saved from url=(0049)file:///home/ontwerp/Downloads/penrose/links.html -->
+<html lang="nl"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baldwijzers - MathGeo</title>
+    <style>
+        :root {
+            --primary: #6d4aff;
+            --primary-light: #9c7cff;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #37352f;
+            --text-muted: #787774;
+            --border: rgba(55, 53, 47, 0.09);
+            --highlight-yellow: #fff4b0;
+            --highlight-purple: #eadbff;
+            --highlight-blue: #d7edfc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        nav {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            overflow-x: auto;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav button {
+            background: transparent;
+            border: 2px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        nav button:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        nav button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+
+        .card.highlight-yellow {
+            background: var(--highlight-yellow);
+        }
+
+        .card.highlight-purple {
+            background: var(--highlight-purple);
+        }
+
+        .card.highlight-blue {
+            background: var(--highlight-blue);
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .card a {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .card a:hover {
+            background: var(--primary-light);
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            background: rgba(55, 53, 47, 0.08);
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+
+        .repo-link {
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            border-radius: 12px;
+        }
+
+        .repo-link a {
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📐 Baldwijzers - MathGeo</h1>
+        <p>Overzicht van MathGeo projecten en bronnen</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><button class="" data-section="overview">Overzicht</button></li>
+            <li><button data-section="apps" class="">Web Apps</button></li>
+            <li><button data-section="voronoi" class="">Voronoi</button></li>
+            <li><button data-section="tools" class="">Rekentools</button></li>
+            <li><button data-section="social" class="active">Social Media</button></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Overzicht Sectie -->
+        <section id="overview" class="section">
+            <div class="grid">
+                <div class="card">
+                    <h3>Main Website</h3>
+                    <p>Hoofdpagina van MathGeo</p>
+                    <a href="https://mathgeo-seven.vercel.app/" target="_blank" style="">Bezoek website</a>
+                </div>
+                <div class="card highlight-yellow">
+                    <h3>GitHub Repository</h3>
+                    <p>Broncode op GitHub</p>
+                    <a href="https://github.com/goija/mathgeo" target="_blank">Naar repository</a>
+                </div>
+                <div class="card highlight-purple">
+                    <h3>Alle Links</h3>
+                    <p>Compleet linkoverzicht</p>
+                    <a href="https://mathgeo-seven.vercel.app/links.html" target="_blank" style="">Bekijk links</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Web Apps Sectie -->
+        <section id="apps" class="section">
+            <div class="section-header">
+                <h2>🌐 Web Applicaties</h2>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <h3>Geocomand Mobiel</h3>
+                    <p>Mobiele versie van GeoCommand</p>
+                    <a href="https://mathgeo-seven.vercel.app/geocomandmobiel.html" target="_blank">Open app</a>
+                </div>
+                <div class="card highlight-blue">
+                    <h3>Geocomand</h3>
+                    <p>Geo commando interface</p>
+                    <a href="https://mathgeo-seven.vercel.app/geocommand.html" target="_blank">Open app</a>
+                </div>
+                <div class="card highlight-yellow">
+                    <h3>Map Plotter</h3>
+                    <p>Sleep de cartografische lens over de kaart. Je fysieke camera-feed wordt direct doorgestuurd naar Viewport 2.</p>
+                    <span class="tag">OCR</span><span class="tag">WebRTC</span><span class="tag">Bakens</span>
+                    <a href="https://mathgeo-seven.vercel.app/mapplotter.html" target="_blank">Start plotter</a>
+                </div>
+                <div class="card">
+                    <h3>Schaduwwaaier</h3>
+                    <p>Schaduw berekening tool</p>
+                    <a href="https://mathgeo-seven.vercel.app/schaduwwaaier.html" target="_blank">Open tool</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Voronoi Sectie -->
+        <section id="voronoi" class="section">
+            <div class="section-header">
+                <h2>🔷 Voronoi Projecten</h2>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <h3>Voronoi Basis</h3>
+                    <p>Nieuwe bladwijzer Voronoi</p>
+                    <a href="https://mathgeo-seven.vercel.app/voronoi.html" target="_blank">Bekijk Voronoi</a>
+                </div>
+                <div class="card highlight-purple">
+                    <h3>Integrale Synthese</h3>
+                    <p>Voronoi grid integratie</p>
+                    <a href="https://mathgeo-seven.vercel.app/de_integrale_synthese_voronoi_grid.html" target="_blank">Ontdek synthese</a>
+                </div>
+                <div class="card">
+                    <h3>Picasso Sloterplas</h3>
+                    <p>Voronoi visualisatie met Picasso</p>
+                    <a href="https://mathgeo-seven.vercel.app/voronoi_picasso_sloterplas.html" target="_blank">Zien resultaat</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reken Tools Sectie -->
+        <section id="tools" class="section">
+            <div class="section-header">
+                <h2>🧮 Rekeninstrumenten</h2>
+            </div>
+            <div class="grid">
+                <div class="card">
+                    <h3>Planimetrische Rekenmatrix</h3>
+                    <p>Rekentool voor planimetrie</p>
+                    <a href="https://mathgeo-seven.vercel.app/planimetrische_rekenmatrix.html" target="_blank">Start rekenmatrix</a>
+                </div>
+                <div class="card">
+                    <h3>Atan2 Geodetische Azimut</h3>
+                    <p>Azimut berekening tool</p>
+                    <a href="https://mathgeo-seven.vercel.app/atan2_geodetische_azimut_rekentool.html" target="_blank">Bereken azimut</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Media Sectie -->
+        <section id="social" class="section active">
+            <div class="section-header">
+                <h2>📱 Social Media</h2>
+            </div>
+            <div class="grid">
+                <div class="card highlight-blue">
+                    <h3>PixelFed</h3>
+                    <p>@vanvrijberghe</p>
+                    <a href="https://pixelfed.social/vanvrijberghe" target="_blank">Volgen</a>
+                </div>
+                <div class="card">
+                    <h3>Gram.Social</h3>
+                    <p>Janna</p>
+                    <a href="https://gram.social/Janna" target="_blank">Bekijk profiel</a>
+                </div>
+                <div class="card">
+                    <h3>NWB.Social</h3>
+                    <p>@jannavanvrijberge</p>
+                    <a href="https://nwb.social/@jannavanvrijberge" target="_blank">Profiel bekijken</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Repository Link -->
+        <div class="repo-link">
+            <a href="https://app.notion.com/p/3f2dfcf9ea33806fa726d2ffb2082d3a?pvs=21" target="_blank">
+                MathGeo Seven Repository
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <p>Gemaakt op basis van Notion export • MathGeo Baldwijzers</p>
+    </footer>
+
+    <script>
+        // Tab navigatie systeem
+        const buttons = document.querySelectorAll('nav button');
+        const sections = document.querySelectorAll('.section');
+
+        buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Verwijder active class van alle buttons en sections
+                buttons.forEach(btn => btn.classList.remove('active'));
+                sections.forEach(sec => sec.classList.remove('active'));
+
+                // Voeg active class toe aan geselecteerde button en section
+                button.classList.add('active');
+                const sectionId = button.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // Toon aantal items per sectie in console
+        const sectionInfo = {
+            overview: 3,
+            apps: 4,
+            voronoi: 3,
+            tools: 2,
+            social: 3
+        };
+
+        console.log('MathGeo Baldwijzers geladen');
+        console.log('Totaal:', Object.values(sectionInfo).reduce((a, b) => a + b, 0), 'links');
+    </script>
+
+</body></html>
