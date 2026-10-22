@@ -4,34 +4,28 @@
 # ==============================================================================
 
 set -euo pipefail
-ROOT_DIR="$(pwd)"
 TIMESTAMP="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
 
 echo "=============================================================================="
-echo " [1/3] GEOCENTRUM PIPELINE: Uitvoeren Asset & Manifest Generator..."
+echo " 🚀 VORTEX OS: Synchroniseren met GitHub & Vercel"
 echo "=============================================================================="
-if [[ -f "${ROOT_DIR}/build_geocentrum_assets.sh" ]]; then
-  bash "${ROOT_DIR}/build_geocentrum_assets.sh"
-fi
 
-echo "=============================================================================="
-echo " [2/3] GITHUB: Vastleggen van wijzigingen (Git Commit)..."
-echo "=============================================================================="
+# 1. Voeg alle bestanden toe aan Git (inclusief de nieuwe HTML)
 git add -A
 
+# 2. Leg de wijzigingen vast
 if git diff --cached --quiet; then
   echo "ℹ️ Geen nieuwe wijzigingen gedetecteerd om te committeren."
 else
-  git commit -m "VORTEX OS Auto-sync & Master Cockpit Update: ${TIMESTAMP}"
+  git commit -m "VORTEX OS Update: Clean Viewports v158 (Geodesie & Spectraal) - ${TIMESTAMP}"
   echo "✅ Wijzigingen succesvol vastgelegd in Git."
 fi
 
-echo "=============================================================================="
-echo " [3/3] GITHUB: Pushen naar remote origin (main)..."
-echo "=============================================================================="
+# 3. Push naar GitHub (Triggert automatisch Vercel)
+echo "☁️ Pushen naar GitHub (main)..."
 CURRENT_BRANCH="$(git symbolic-ref --short HEAD 2>/dev/null || echo "main")"
-git push origin "${CURRENT_BRANCH}" --force
+git push origin "${CURRENT_BRANCH}"
 
 echo "=============================================================================="
-echo " 🎉 DEPLOY PIPELINE VOLTOOID! Vercel bouwt direct op https://geocentrum.vercel.app"
+echo " 🎉 DEPLOY VOLTOOID! Vercel bouwt direct op https://geocentrum.vercel.app"
 echo "=============================================================================="
