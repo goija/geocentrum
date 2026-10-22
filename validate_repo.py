@@ -15,7 +15,7 @@ MANDATORY_PATHS = [
     "rekencentrum/",
     "auto_sync.sh",
     "start_services.py",
-    "realtime_pipeline.sh"
+    "server_met_markdown.py"
 ]
 
 def validate_repository():

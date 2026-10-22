@@ -20,7 +20,6 @@ cd "$BASE_DIR" || exit 1
 
     echo "✅ Validatie geslaagd!"
 
-    # Controleer of er wijzigingen zijn
     if [[ -n $(git status --porcelain) ]]; then
         echo "🔄 Wijzigingen gedetecteerd. Bezig met synchroniseren..."
         git add .
