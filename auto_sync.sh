@@ -20,10 +20,15 @@ cd "$BASE_DIR" || exit 1
 
     echo "✅ Validatie geslaagd!"
 
+    echo "📂 Stap 2: Synchroniseren van documentatie naar beheercentrum voor Vercel..."
+    mkdir -p beheercentrum/docs/beheer/blue_team beheercentrum/docs/beheer/red_team
+    cp -r docs/beheer/* beheercentrum/docs/beheer/ 2>/dev/null
+
+    # Controleer of er wijzigingen zijn
     if [[ -n $(git status --porcelain) ]]; then
-        echo "🔄 Wijzigingen gedetecteerd. Bezig met synchroniseren..."
+        echo "🔄 Wijzigingen gedetecteerd. Bezig met synchroniseren naar GitHub en Vercel..."
         git add .
-        git commit -m "Auto-sync & Validate: $(date '+%Y-%m-%d %H:%M:%S')"
+        git commit -m "Auto-sync, Docs Copy & Validate: $(date '+%Y-%m-%d %H:%M:%S')"
         git push origin main
         echo "🚀 Synchronisatie succesvol voltooid!"
     else
