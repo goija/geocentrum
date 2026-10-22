@@ -1,57 +1,52 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <title>VORTEX OS | Beheercentrum (Desktop & Mobile-Ready)</title>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="theme-color" content="#0a0a0a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>VORTEX OS | Centraal Beheercentrum</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230a0a0a%22/><polygon points=%2250,12 88,85 12,85%22 fill=%22none%22 stroke=%22%2300ffcc%22 stroke-width=%228%22/><circle cx=%2250%22 cy=%2260%22 r=%2210%22 fill=%22%2300ffcc%22/></svg>">
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --surface-color: #141414;
-            --surface-hover: #1f1f1f;
-            --text-color: #e0e0e0;
-            --muted-color: #888888;
-            --accent-color: #00ffcc;
-            --blue-team: #00b0ff;
-            --red-team: #ff4444;
-            --success-color: #00c853;
-            --warning-color: #ffab00;
-            --font-mono: "Courier New", Courier, monospace;
-            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-alt: #1c1c1c;
+            --border: #2a2a2a;
+            --text: #e4e4e4;
+            --muted: #888888;
+            --accent: #00ffcc;
+            --blue: #00b0ff;
+            --red: #ff4444;
+            --green: #00c853;
+            --amber: #ffab00;
+            --mono: "Courier New", Courier, monospace;
+            --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: var(--font-sans);
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: var(--sans);
+            background-color: var(--bg);
+            color: var(--text);
             line-height: 1.55;
-            padding: 20px;
-            padding-bottom: 80px;
-            max-width: 1400px;
+            padding: 20px 20px 85px 20px;
+            max-width: 1440px;
             margin: 0 auto;
-            transition: all 0.2s ease;
         }
-        /* Force Mobile Simulation Mode wanneer geselecteerd op Desktop */
         body.force-mobile {
             max-width: 430px;
-            border-left: 2px solid #222;
-            border-right: 2px solid #222;
+            border-left: 2px solid var(--border);
+            border-right: 2px solid var(--border);
             min-height: 100vh;
-            padding: 12px;
-            padding-bottom: 90px;
+            padding: 12px 12px 90px 12px;
         }
-        body.force-mobile .grid {
-            grid-template-columns: 1fr !important;
-        }
+        body.force-mobile .grid { grid-template-columns: 1fr !important; }
         header {
-            border-bottom: 2px solid var(--accent-color);
+            border-bottom: 2px solid var(--accent);
             padding-bottom: 14px;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -59,151 +54,147 @@
             gap: 12px;
         }
         h1 {
-            font-family: var(--font-mono);
-            color: var(--accent-color);
-            font-size: clamp(1.3rem, 3.5vw, 2.1rem);
-            text-transform: uppercase;
+            font-family: var(--mono);
+            color: var(--accent);
+            font-size: clamp(1.25rem, 3vw, 1.9rem);
             letter-spacing: 1.5px;
+            text-transform: uppercase;
         }
         h2 {
-            font-family: var(--font-mono);
-            font-size: 1.05rem;
-            color: var(--accent-color);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid #282828;
+            font-family: var(--mono);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 12px;
             padding-bottom: 8px;
-        }
-        h3 { font-family: var(--font-mono); font-size: 0.95rem; color: var(--blue-team); margin: 14px 0 8px 0; }
-        .sys-info { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted-color); }
-        
-        /* Mode Switcher (Desktop vs Mobile Build View) */
-        .mode-bar {
+            border-bottom: 1px solid var(--border);
             display: flex;
-            gap: 8px;
+            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
         }
+        h3 { font-family: var(--mono); font-size: 0.9rem; color: var(--blue); margin: 14px 0 6px 0; }
+        .sys-sub { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+        .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .btn {
-            background: var(--surface-color);
-            color: var(--text-color);
-            border: 1px solid #383838;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid #3a3a3a;
+            padding: 7px 13px;
+            border-radius: 5px;
+            font-family: var(--mono);
+            font-size: 0.78rem;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            min-height: 40px;
+            min-height: 36px;
             transition: all 0.15s ease;
         }
         .btn:hover, .btn.active {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
+            border-color: var(--accent);
+            color: var(--accent);
             background: rgba(0, 255, 204, 0.08);
         }
-        .btn-blue { border-color: var(--blue-team); color: var(--blue-team); }
+        .btn-blue { border-color: var(--blue); color: var(--blue); }
         .btn-blue:hover { background: rgba(0, 176, 255, 0.12); }
-
-        /* Responsive Grid: Desktop Multi-Column -> Mobile Single-Column */
+        
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
             gap: 18px;
         }
         .card {
-            background-color: var(--surface-color);
-            border: 1px solid #2c2c2c;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.55);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        .card.blue-border { border-top: 3px solid var(--blue-team); }
-        .card.accent-border { border-top: 3px solid var(--accent-color); }
-        .card.red-border { border-top: 3px solid var(--red-team); }
+        .card.pijler-1 { border-top: 3px solid var(--green); }
+        .card.pijler-2 { border-top: 3px solid var(--accent); }
+        .card.pijler-3 { border-top: 3px solid var(--blue); }
+        .card.pijler-4 { border-top: 3px solid var(--red); }
+        .card.pijler-5 { border-top: 3px solid var(--amber); }
 
         ul { list-style: none; }
         li {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #222;
+            padding: 9px 0;
+            border-bottom: 1px solid #202020;
         }
-        li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        a.nav-item {
-            color: var(--text-color);
+        li:last-child { border-bottom: none; padding-bottom: 0; }
+        a.row-link {
+            color: var(--text);
             text-decoration: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 4px;
+            padding: 4px 6px;
             border-radius: 4px;
         }
-        a.nav-item:hover { color: var(--accent-color); background: var(--surface-hover); }
-        .path { font-family: var(--font-mono); font-size: 0.72rem; color: #777; display: block; margin-top: 2px; }
-
-        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-        .dot.online { background-color: var(--success-color); box-shadow: 0 0 6px var(--success-color); }
-        .dot.secured { background-color: var(--accent-color); box-shadow: 0 0 6px var(--accent-color); }
-        .dot.blue { background-color: var(--blue-team); box-shadow: 0 0 6px var(--blue-team); }
-
-        /* Tabellen met mobiele horizontale scroll */
-        .table-wrap { width: 100%; overflow-x: auto; margin: 10px 0; }
-        table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.82rem; }
-        th, td { border: 1px solid #2e2e2e; padding: 8px 10px; text-align: left; }
-        th { background: #101010; color: var(--accent-color); }
-
-        code { background: #0d0d0d; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--accent-color); font-size: 0.82rem; word-break: break-all; }
-        pre { background: #0d0d0d; padding: 12px; border-radius: 6px; overflow-x: auto; font-family: var(--font-mono); border: 1px solid #2a2a2a; font-size: 0.8rem; margin: 8px 0; }
-
-        /* Interactieve inputs & consoles */
-        .console-box {
-            background: #080808;
+        a.row-link:hover { color: var(--accent); background: var(--surface-alt); }
+        .path { font-family: var(--mono); font-size: 0.72rem; color: #777; display: block; margin-top: 2px; }
+        .badge {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: #111;
             border: 1px solid #333;
-            border-radius: 6px;
-            padding: 10px;
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            height: 150px;
+            color: var(--accent);
+        }
+        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .dot.secured { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+        .dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+
+        .table-wrap { width: 100%; overflow-x: auto; margin: 8px 0; }
+        table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.8rem; }
+        th, td { border: 1px solid var(--border); padding: 7px 9px; text-align: left; }
+        th { background: #0f0f0f; color: var(--accent); }
+        code { background: #0d0d0d; padding: 2px 5px; border-radius: 3px; font-family: var(--mono); color: var(--accent); font-size: 0.8rem; }
+        pre { background: #0d0d0d; padding: 10px; border-radius: 5px; overflow-x: auto; font-family: var(--mono); border: 1px solid #262626; font-size: 0.78rem; margin: 8px 0; }
+
+        .console-box {
+            background: #070707;
+            border: 1px solid #2e2e2e;
+            border-radius: 5px;
+            padding: 9px;
+            font-family: var(--mono);
+            font-size: 0.76rem;
+            height: 125px;
             overflow-y: auto;
-            color: #00ffcc;
-            margin: 10px 0;
+            color: var(--accent);
+            margin: 8px 0;
         }
         .input-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         input[type="text"], input[type="number"] {
             flex: 1;
-            min-width: 140px;
+            min-width: 130px;
             background: #0d0d0d;
-            border: 1px solid #3a3a3a;
-            color: var(--text-color);
-            padding: 8px 10px;
+            border: 1px solid #383838;
+            color: var(--text);
+            padding: 7px 10px;
             border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-family: var(--mono);
+            font-size: 0.82rem;
         }
-
-        /* Mobile Bottom Bar voor snelle bediening op telefoons */
         .mobile-dock {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(15, 15, 15, 0.96);
-            border-top: 1px solid var(--accent-color);
+            bottom: 0; left: 0; right: 0;
+            background: rgba(12, 12, 12, 0.96);
+            border-top: 1px solid var(--accent);
             display: flex;
             justify-content: space-around;
             padding: 8px 10px;
-            backdrop-filter: blur(8px);
-            z-index: 999;
+            z-index: 1000;
+            backdrop-filter: blur(6px);
         }
         @media (max-width: 768px) {
-            body { padding: 12px; padding-bottom: 85px; }
+            body { padding: 12px 12px 85px 12px; }
             .grid { grid-template-columns: 1fr; }
-            .btn { flex: 1; justify-content: center; }
         }
     </style>
     <script>
@@ -215,203 +206,272 @@
                 document.body.classList.remove('force-mobile');
                 localStorage.setItem('vortex_view_mode', 'desktop');
             }
-            updateModeButtons();
+            syncModeBtns();
         }
-        function updateModeButtons() {
-            const mode = localStorage.getItem('vortex_view_mode') || 'desktop';
-            const btnD = document.getElementById('btn-desktop');
-            const btnM = document.getElementById('btn-mobile');
-            if (btnD && btnM) {
-                btnD.classList.toggle('active', mode === 'desktop');
-                btnM.classList.toggle('active', mode === 'mobile');
+        function syncModeBtns() {
+            const m = localStorage.getItem('vortex_view_mode') || 'desktop';
+            const dBtn = document.getElementById('btn-desktop');
+            const mBtn = document.getElementById('btn-mobile');
+            if (dBtn && mBtn) {
+                dBtn.classList.toggle('active', m === 'desktop');
+                mBtn.classList.toggle('active', m === 'mobile');
             }
         }
         window.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('vortex_view_mode');
-            if (saved === 'mobile') document.body.classList.add('force-mobile');
-            updateModeButtons();
+            if (localStorage.getItem('vortex_view_mode') === 'mobile') {
+                document.body.classList.add('force-mobile');
+            }
+            syncModeBtns();
         });
     </script>
-
 </head>
 <body>
     <header>
         <div>
-            <h1>VORTEX OS — BEHEERCENTRUM</h1>
-            <div class="sys-info">Host: localhost (Debian Bookworm) | Status: SOVEREIGN | Desktop & Mobile-Ready</div>
+            <h1>VORTEX OS — CENTRAAL BEHEERCENTRUM</h1>
+            <div class="sys-sub">
+                Host: ontwerp-GA (Debian Bookworm) | Web: :8080 | API: :8000 | Rust RSS: :8081 | Status: <span id="hdr-api-state" style="color:var(--accent);">SOVEREIGN LIVE</span>
+            </div>
         </div>
-        <div class="mode-bar">
+        <div class="toolbar">
             <button id="btn-desktop" class="btn active" onclick="setBuildMode('desktop')">🖥️ Desktop Grid</button>
             <button id="btn-mobile" class="btn" onclick="setBuildMode('mobile')">📱 Mobile Touch</button>
+            <a class="btn btn-blue" href="../rekencentrum/tijdscapsule/index.html?v=1792677375">⏳ Open Rekencentrum</a>
         </div>
     </header>
 
     <main class="grid">
-        <!-- 1. Tijdscapsule, Rekencentrum & BTFM Field Beheer -->
-        <div class="card accent-border">
-            <h2>⏳ Tijdscapsule, Rekencentrum & BTFM</h2>
-            <ul>
-                <li>
-                    <a class="nav-item" href="../rekencentrum/tijdscapsule/index.html">
-                        <div>
-                            <strong>🚀 Open Tijdscapsule & Rekencentrum (v159.1)</strong>
-                            <span class="path">Poolanker P (52.25°N, 5.22°E) | A. Ott Nr. 573 | BTFM Field Beheer</span>
+        <!-- PIJLER 1: Live Netwerk & Services (Afgestemd op ./start_vortex.sh) -->
+        <div class="card pijler-1">
+            <div>
+                <h2><span>1. Infrastructuur & Services</span><span id="api-badge" class="badge">LIVE :8080</span></h2>
+                <ul>
+                    <li>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span><span class="dot online"></span><strong>Statische Webserver (Dashboard)</strong></span>
+                            <code>Poort 8080</code>
                         </div>
-                        <span style="color:var(--accent-color);">➔</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-item" href="../rekencentrum/tijdscapsule/tijdscapsule_metadata.json" target="_blank">
-                        <div>
-                            <strong>📄 Ruwe Tijdscapsule Telemetrie (JSON)</strong>
-                            <span class="path">Maan Astrometrie (RA 191.20°, Az 303.23°) & Attractor #21</span>
+                        <span class="path">Actieve sessie via ./start_vortex.sh (http://0.0.0.0:8080)</span>
+                    </li>
+                    <li>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span><span id="dot-api" class="dot online"></span><strong>Python API Backend (/api/status)</strong></span>
+                            <code>Poort 8000</code>
                         </div>
-                        <span>↗</span>
-                    </a>
-                </li>
-                <li>
-                    <span class="dot secured"></span><strong>FinalCrypt OTP: Actief (chmod 600 verified)</strong>
-                    <span class="path">One-Time Pad versleuteling gekoppeld aan tijdscapsule_backup.sh</span>
-                </li>
-            </ul>
-        </div>
-
-        <!-- 2. Interactieve WebRTC DataChannel (DTLS) Module -->
-        <div class="card blue-border">
-            <h2>📡 Beveiligde WebRTC DataChannel (DTLS)</h2>
-            <p class="path">Verzend en ontvang direct versleutelde P2P-pakketten (Browser DTLS Loopback & Python aiortc):</p>
-            <div id="webrtc-log" class="console-box">
-                [DTLS READY] Kanaal 'vortex_secure_channel' gereed voor transmissie...
+                        <span id="api-telemetry" class="path">Live heartbeat gekoppeld aan http://localhost:8000/api/status</span>
+                    </li>
+                    <li>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span><span class="dot online"></span><strong>Rust Podcast RSS Server</strong></span>
+                            <code>Poort 8081</code>
+                        </div>
+                        <span class="path">Running target/debug/podcast-rss-server (http://0.0.0.0:8081)</span>
+                    </li>
+                    <li>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span><span class="dot secured"></span><strong>BIND9 DNS & Matrix Conduit</strong></span>
+                            <code>UDP 53 / 8448</code>
+                        </div>
+                        <span class="path">Soevereine naamresolutie & gedecentraliseerde communicatie</span>
+                    </li>
+                </ul>
             </div>
             <div class="input-row">
-                <input type="text" id="webrtc-msg" value="Sovereign Payload: Anker P Lock OK" placeholder="Typ versleuteld bericht...">
-                <button class="btn btn-blue" onclick="sendWebRTCMessage()">Verzend P2P</button>
+                <button class="btn" onclick="checkApiStatus()">🔄 Ping /api/status Nu</button>
+                <a class="btn" href="https://geocentrum.vercel.app/" target="_blank">🌐 Cloud Mirror (Vercel) ↗</a>
             </div>
-            <span class="path" style="margin-top:6px;">CLI runner: <code>./webrtc_test_runner.sh</code> (Python venv + aiortc)</span>
         </div>
 
-        <!-- 3. Blue Team Field Manual (BTFM) -->
-        <div class="card blue-border">
-            <h2>🛡️ Blue Team Field Manual (BTFM)</h2>
-            <ul>
-                <li>
-                    <a class="nav-item" href="../docs/beheer/blue_team/ir_playbook.html">
+        <!-- PIJLER 2: Rekencentrum, Geodetische Tijdscapsule & FinalCrypt OTP -->
+        <div class="card pijler-2">
+            <div>
+                <h2><span>2. Rekencentrum & Tijdscapsule</span><span class="badge">v159.2 LOCK</span></h2>
+                <ul>
+                    <li>
+                        <a class="row-link" href="../rekencentrum/tijdscapsule/index.html?v=1792677375">
+                            <div>
+                                <strong>📐 Open Rekencentrum & Tijdscapsule</strong>
+                                <span class="path">Poolanker P (52.25°N, 5.22°E) | A. Ott Planimeter Nr. 573 (A0 = 2363.08 cm²)</span>
+                            </div>
+                            <span style="color:var(--accent);">➔</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="row-link" href="../rekencentrum/tijdscapsule/tijdscapsule_metadata.json?v=1792677375" target="_blank">
+                            <div>
+                                <strong>🌙 Astrometrische Telemetrie (JSON)</strong>
+                                <span class="path">Maan Lock (Az 303.23°, El -7.45°) | Attractor 010101 (Hex #21)</span>
+                            </div>
+                            <span>↗</span>
+                        </a>
+                    </li>
+                    <li>
                         <div>
-                            <strong>Incident Response Playbook</strong>
-                            <span class="path">/docs/beheer/blue_team/ir_playbook.html</span>
+                            <span class="dot secured"></span><strong>FinalCrypt One-Time Pad (OTP): Actief</strong>
+                            <span class="path">Wiskundig onkraakbare at-rest encryptie (chmod 600 geverifieerd)</span>
                         </div>
-                        <span>➔</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-item" href="../docs/beheer/blue_team/tactical_ops.html">
-                        <div>
-                            <strong>Tactische Commando's & BTFM Syntaxis</strong>
-                            <span class="path">/docs/beheer/blue_team/tactical_ops.html</span>
-                        </div>
-                        <span>➔</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-item" href="../docs/beheer/blue_team/system_hardening.html">
-                        <div>
-                            <strong>Systeem Hardening & OTP Beheer</strong>
-                            <span class="path">/docs/beheer/blue_team/system_hardening.html</span>
-                        </div>
-                        <span>➔</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-item" href="../docs/beheer/blue_team/network_defense.html">
-                        <div>
-                            <strong>Netwerk, DNS & DataChannel Defensie</strong>
-                            <span class="path">/docs/beheer/blue_team/network_defense.html</span>
-                        </div>
-                        <span>➔</span>
-                    </a>
-                </li>
-            </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="input-row">
+                <a class="btn btn-blue" href="../rekencentrum/tijdscapsule/index.html?v=1792677375">🧮 Start Ott Nr. 573 Integrator</a>
+            </div>
         </div>
 
-        <!-- 4. Red Team Field Manual (RTFM) & Netwerk Status -->
-        <div class="card red-border">
-            <h2>🔴 Red Team (RTFM) & Services</h2>
-            <ul>
-                <li>
-                    <a class="nav-item" href="../docs/beheer/red_team/rtfm_manual.html">
+        <!-- PIJLER 3: Blue Team Field Manual (BTFM) -->
+        <div class="card pijler-3">
+            <div>
+                <h2><span>3. Blue Team Field Manual (BTFM)</span><span class="badge">DEFENSE</span></h2>
+                <ul>
+                    <li>
+                        <a class="row-link" href="../docs/beheer/blue_team/ir_playbook.html?v=1792677375">
+                            <div>
+                                <strong>🚨 Incident Response Playbook</strong>
+                                <span class="path">Triage, proces-isolatie en forensische snapshots</span>
+                            </div>
+                            <span>➔</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="row-link" href="../docs/beheer/blue_team/tactical_ops.html?v=1792677375">
+                            <div>
+                                <strong>💻 Tactische Commando's & BTFM Syntaxis</strong>
+                                <span class="path">Officiële BTFM notatietabel (#, hyphens vs dashes, spaties)</span>
+                            </div>
+                            <span>➔</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="row-link" href="../docs/beheer/blue_team/system_hardening.html?v=1792677375">
+                            <div>
+                                <strong>🔒 Systeem Hardening & OTP Sleutelbeheer</strong>
+                                <span class="path">Debian Bookworm baseline, chmod 600/700 & PEP 668 venv</span>
+                            </div>
+                            <span>➔</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="row-link" href="../docs/beheer/blue_team/network_defense.html?v=1792677375">
+                            <div>
+                                <strong>🌐 Netwerk, DNS & DataChannel Defensie</strong>
+                                <span class="path">DTLS-beveiliging, BIND9 isolatie en log-hygiëne</span>
+                            </div>
+                            <span>➔</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PIJLER 4: Red Team Field Manual (RTFM) -->
+        <div class="card pijler-4">
+            <div>
+                <h2><span>4. Red Team Field Manual (RTFM)</span><span class="badge">AUDIT</span></h2>
+                <ul>
+                    <li>
+                        <a class="row-link" href="../docs/beheer/red_team/rtfm_manual.html?v=1792677375">
+                            <div>
+                                <strong>🔴 Offensieve Netwerk & Systeem Audits</strong>
+                                <span class="path">Lokale Nmap SYN scans, header-inspectie en SUID-checks</span>
+                            </div>
+                            <span>➔</span>
+                        </a>
+                    </li>
+                    <li>
                         <div>
-                            <strong>🔴 Open Red Team Field Manual (RTFM)</strong>
-                            <span class="path">/docs/beheer/red_team/rtfm_manual.html</span>
+                            <strong>Standaard Lokale Audit Commando's:</strong>
+                            <pre>nmap -sV -p 53,8000,8080,8081,8448 127.0.0.1
+python3 validate_repo.py</pre>
                         </div>
-                        <span>➔</span>
-                    </a>
-                </li>
-                <li><span class="dot online"></span>Python API & Markdown Server (Poort 8000 / 8082)</li>
-                <li><span class="dot online"></span>Rust Podcast RSS Server (Poort 8081)</li>
-                <li><span class="dot secured"></span>BIND9 Local DNS (UDP 53) & Matrix Conduit (8448)</li>
-                <li>
-                    <a class="nav-item" href="https://geocentrum.vercel.app/" target="_blank">
-                        <div>
-                            <strong>🌐 Live Cloud Mirror (Vercel)</strong>
-                            <span class="path">https://geocentrum.vercel.app/</span>
-                        </div>
-                        <span>↗</span>
-                    </a>
-                </li>
-            </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- PIJLER 5: Beveiligde WebRTC DataChannels (P2P DTLS) -->
+        <div class="card pijler-5">
+            <div>
+                <h2><span>5. WebRTC DataChannel (DTLS P2P)</span><span class="badge">ENCRYPTED</span></h2>
+                <p class="path">Beveiligd verzenden en ontvangen over SCTP/DTLS (Browser Loopback & Python aiortc):</p>
+                <div id="webrtc-console" class="console-box">
+                    [DTLS READY] Kanaal 'vortex_secure_channel' stand-by...
+                </div>
+            </div>
+            <div>
+                <div class="input-row">
+                    <input type="text" id="rtc-input" value="Sovereign Payload: Anker P (52.25N, 5.22E) Verified" placeholder="Bericht...">
+                    <button class="btn btn-blue" onclick="verzendDataChannel()">⚡ Verzend P2P</button>
+                </div>
+                <span class="path" style="margin-top:6px;">Terminal test: <code>./webrtc_test_runner.sh</code></span>
+            </div>
         </div>
     </main>
 
     <nav class="mobile-dock">
-        <a class="btn active" href="#">🏠 Dashboard</a>
-        <a class="btn" href="../rekencentrum/tijdscapsule/index.html">⏳ Tijdscapsule</a>
-        <a class="btn" href="../docs/beheer/blue_team/tactical_ops.html">🛡️ BTFM</a>
-        <a class="btn" href="../docs/beheer/red_team/rtfm_manual.html">🔴 RTFM</a>
+        <a class="btn active" href="index.html?v=1792677375">🏠 Beheercentrum</a>
+        <a class="btn" href="../rekencentrum/tijdscapsule/index.html?v=1792677375">⏳ Rekencentrum</a>
+        <a class="btn" href="../docs/beheer/blue_team/tactical_ops.html?v=1792677375">🛡️ BTFM</a>
+        <a class="btn" href="../docs/beheer/red_team/rtfm_manual.html?v=1792677375">🔴 RTFM</a>
     </nav>
 
     <script>
-        async function sendWebRTCMessage() {
-            const logBox = document.getElementById('webrtc-log');
-            const msgInput = document.getElementById('webrtc-msg');
-            const payload = msgInput.value || "Sovereign Ping";
-            const appendLog = (txt) => {
-                const time = new Date().toLocaleTimeString();
-                logBox.innerHTML += `<div>[${time}] ${txt}</div>`;
-                logBox.scrollTop = logBox.scrollHeight;
+        async function checkApiStatus() {
+            const el = document.getElementById('api-telemetry');
+            const badge = document.getElementById('api-badge');
+            try {
+                const r = await fetch('/api/status', { cache: 'no-store' });
+                if (r.ok) {
+                    const t = new Date().toLocaleTimeString();
+                    el.innerHTML = `<span style="color:var(--accent);">✔ /api/status HTTP 200 OK (Laatste check: ${t})</span>`;
+                    badge.textContent = "API 200 OK";
+                } else {
+                    el.textContent = `Status: HTTP ${r.status} (Statische modus actief)`;
+                }
+            } catch (e) {
+                el.textContent = "Modus: Statische/Cloud weergave (Geen lokale :8000 daemon op dit pad)";
+            }
+        }
+
+        async function verzendDataChannel() {
+            const box = document.getElementById('webrtc-console');
+            const val = document.getElementById('rtc-input').value || "Sovereign Ping";
+            const log = (t) => {
+                const ts = new Date().toLocaleTimeString();
+                box.innerHTML += `<div>[${ts}] ${t}</div>`;
+                box.scrollTop = box.scrollHeight;
             };
+            log("🔒 DTLS Handshake tussen Offer & Answer node...");
+            const pc1 = new RTCPeerConnection(), pc2 = new RTCPeerConnection();
+            pc1.onicecandidate = e => e.candidate && pc2.addIceCandidate(e.candidate);
+            pc2.onicecandidate = e => e.candidate && pc1.addIceCandidate(e.candidate);
 
-            appendLog("🔒 Starten van DTLS Handshake tussen Offer & Answer peers...");
-            const pcOffer = new RTCPeerConnection();
-            const pcAnswer = new RTCPeerConnection();
-
-            pcOffer.onicecandidate = e => e.candidate && pcAnswer.addIceCandidate(e.candidate);
-            pcAnswer.onicecandidate = e => e.candidate && pcOffer.addIceCandidate(e.candidate);
-
-            const dcOffer = pcOffer.createDataChannel("vortex_secure_channel");
-            dcOffer.onopen = () => {
-                appendLog(`🟢 DataChannel OPEN -> Verzenden: "${payload}"`);
-                dcOffer.send(payload);
+            const dc = pc1.createDataChannel("vortex_secure_channel");
+            dc.onopen = () => {
+                log(`🟢 Verzonden (DTLS): "${val}"`);
+                dc.send(val);
             };
-            dcOffer.onmessage = (e) => {
-                appendLog(`📥 Bevestiging op Offer-node: "${e.data}"`);
-                setTimeout(() => { pcOffer.close(); pcAnswer.close(); }, 400);
+            dc.onmessage = (e) => {
+                log(`📥 Terugkoppeling: "${e.data}"`);
+                setTimeout(() => { pc1.close(); pc2.close(); }, 300);
             };
-
-            pcAnswer.ondatachannel = (e) => {
-                const ch = e.channel;
-                ch.onmessage = (ev) => {
-                    appendLog(`📥 Ontvangen op Answer-node: "${ev.data}"`);
-                    ch.send("ACK: Pakket DTLS-geverifieerd ontvangen door VORTEX_OS");
+            pc2.ondatachannel = (ev) => {
+                ev.channel.onmessage = (m) => {
+                    log(`📥 Ontvangen op Peer: "${m.data}"`);
+                    ev.channel.send("ACK: Payload integer ontvangen door VORTEX_OS");
                 };
             };
-
-            const offer = await pcOffer.createOffer();
-            await pcOffer.setLocalDescription(offer);
-            await pcAnswer.setRemoteDescription(offer);
-            const answer = await pcAnswer.createAnswer();
-            await pcAnswer.setLocalDescription(answer);
-            await pcOffer.setRemoteDescription(answer);
+            const offer = await pc1.createOffer();
+            await pc1.setLocalDescription(offer);
+            await pc2.setRemoteDescription(offer);
+            const answer = await pc2.createAnswer();
+            await pc2.setLocalDescription(answer);
+            await pc1.setRemoteDescription(answer);
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkApiStatus();
+            setInterval(checkApiStatus, 10000);
+        });
     </script>
 </body>
 </html>

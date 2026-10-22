@@ -1,10 +1,10 @@
 # 🔒 Systeem Hardening & FinalCrypt OTP
-**OS:** Debian Bookworm | **Encryptie:** FinalCrypt One-Time Pad (OTP)
+**OS:** Debian Bookworm | **At-Rest Beveiliging:** FinalCrypt One-Time Pad (OTP)
 
-## 1. One-Time Pad (OTP) Sleutelbeheer
-- Sleutelbestanden (`.otp`) zijn even groot als de bronbestanden en wiskundig onkraakbaar bij eenmalig gebruik.
-- Pas altijd strikte bestandsrechten toe: `chmod 600 rekencentrum/beveiligde_sleutels/*.otp`
-- Scherm de sleutelmap volledig af: `chmod 700 rekencentrum/beveiligde_sleutels`
+## 1. Strikte One-Time Pad (OTP) Regels
+- Elke `.otp` sleutel is wiskundig uniek, exact zo groot als de payload, en wordt eenmalig gebruikt.
+- Sleutelrechten afdwingen: `chmod 600 rekencentrum/beveiligde_sleutels/*.otp`
+- Sleutelmap isoleren: `chmod 700 rekencentrum/beveiligde_sleutels`
 
-## 2. Python PEP 668 Isolatie
-- Alle externe netwerkbibliotheken (`aiortc`) draaien strikt geïsoleerd binnen `./venv` om het Debian-basissysteem schoon te houden.
+## 2. PEP 668 Virtuele Omgeving Isolatie
+- Python netwerkpakketten zoals `aiortc` draaien uitsluitend binnen `./venv` om de Debian systeembibliotheken onaangetast te laten.

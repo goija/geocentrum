@@ -1,57 +1,52 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <title>VORTEX OS | Tijdscapsule, Rekencentrum & BTFM Beheer</title>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="theme-color" content="#0a0a0a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>VORTEX OS | Rekencentrum & Tijdscapsule</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230a0a0a%22/><polygon points=%2250,12 88,85 12,85%22 fill=%22none%22 stroke=%22%2300ffcc%22 stroke-width=%228%22/><circle cx=%2250%22 cy=%2260%22 r=%2210%22 fill=%22%2300ffcc%22/></svg>">
     <style>
         :root {
-            --bg-color: #0a0a0a;
-            --surface-color: #141414;
-            --surface-hover: #1f1f1f;
-            --text-color: #e0e0e0;
-            --muted-color: #888888;
-            --accent-color: #00ffcc;
-            --blue-team: #00b0ff;
-            --red-team: #ff4444;
-            --success-color: #00c853;
-            --warning-color: #ffab00;
-            --font-mono: "Courier New", Courier, monospace;
-            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-alt: #1c1c1c;
+            --border: #2a2a2a;
+            --text: #e4e4e4;
+            --muted: #888888;
+            --accent: #00ffcc;
+            --blue: #00b0ff;
+            --red: #ff4444;
+            --green: #00c853;
+            --amber: #ffab00;
+            --mono: "Courier New", Courier, monospace;
+            --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: var(--font-sans);
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: var(--sans);
+            background-color: var(--bg);
+            color: var(--text);
             line-height: 1.55;
-            padding: 20px;
-            padding-bottom: 80px;
-            max-width: 1400px;
+            padding: 20px 20px 85px 20px;
+            max-width: 1440px;
             margin: 0 auto;
-            transition: all 0.2s ease;
         }
-        /* Force Mobile Simulation Mode wanneer geselecteerd op Desktop */
         body.force-mobile {
             max-width: 430px;
-            border-left: 2px solid #222;
-            border-right: 2px solid #222;
+            border-left: 2px solid var(--border);
+            border-right: 2px solid var(--border);
             min-height: 100vh;
-            padding: 12px;
-            padding-bottom: 90px;
+            padding: 12px 12px 90px 12px;
         }
-        body.force-mobile .grid {
-            grid-template-columns: 1fr !important;
-        }
+        body.force-mobile .grid { grid-template-columns: 1fr !important; }
         header {
-            border-bottom: 2px solid var(--accent-color);
+            border-bottom: 2px solid var(--accent);
             padding-bottom: 14px;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -59,151 +54,147 @@
             gap: 12px;
         }
         h1 {
-            font-family: var(--font-mono);
-            color: var(--accent-color);
-            font-size: clamp(1.3rem, 3.5vw, 2.1rem);
-            text-transform: uppercase;
+            font-family: var(--mono);
+            color: var(--accent);
+            font-size: clamp(1.25rem, 3vw, 1.9rem);
             letter-spacing: 1.5px;
+            text-transform: uppercase;
         }
         h2 {
-            font-family: var(--font-mono);
-            font-size: 1.05rem;
-            color: var(--accent-color);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border-bottom: 1px solid #282828;
+            font-family: var(--mono);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 12px;
             padding-bottom: 8px;
-        }
-        h3 { font-family: var(--font-mono); font-size: 0.95rem; color: var(--blue-team); margin: 14px 0 8px 0; }
-        .sys-info { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted-color); }
-        
-        /* Mode Switcher (Desktop vs Mobile Build View) */
-        .mode-bar {
+            border-bottom: 1px solid var(--border);
             display: flex;
-            gap: 8px;
+            justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
         }
+        h3 { font-family: var(--mono); font-size: 0.9rem; color: var(--blue); margin: 14px 0 6px 0; }
+        .sys-sub { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+        .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .btn {
-            background: var(--surface-color);
-            color: var(--text-color);
-            border: 1px solid #383838;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid #3a3a3a;
+            padding: 7px 13px;
+            border-radius: 5px;
+            font-family: var(--mono);
+            font-size: 0.78rem;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            min-height: 40px;
+            min-height: 36px;
             transition: all 0.15s ease;
         }
         .btn:hover, .btn.active {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
+            border-color: var(--accent);
+            color: var(--accent);
             background: rgba(0, 255, 204, 0.08);
         }
-        .btn-blue { border-color: var(--blue-team); color: var(--blue-team); }
+        .btn-blue { border-color: var(--blue); color: var(--blue); }
         .btn-blue:hover { background: rgba(0, 176, 255, 0.12); }
-
-        /* Responsive Grid: Desktop Multi-Column -> Mobile Single-Column */
+        
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
             gap: 18px;
         }
         .card {
-            background-color: var(--surface-color);
-            border: 1px solid #2c2c2c;
+            background: var(--surface);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.55);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        .card.blue-border { border-top: 3px solid var(--blue-team); }
-        .card.accent-border { border-top: 3px solid var(--accent-color); }
-        .card.red-border { border-top: 3px solid var(--red-team); }
+        .card.pijler-1 { border-top: 3px solid var(--green); }
+        .card.pijler-2 { border-top: 3px solid var(--accent); }
+        .card.pijler-3 { border-top: 3px solid var(--blue); }
+        .card.pijler-4 { border-top: 3px solid var(--red); }
+        .card.pijler-5 { border-top: 3px solid var(--amber); }
 
         ul { list-style: none; }
         li {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #222;
+            padding: 9px 0;
+            border-bottom: 1px solid #202020;
         }
-        li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        a.nav-item {
-            color: var(--text-color);
+        li:last-child { border-bottom: none; padding-bottom: 0; }
+        a.row-link {
+            color: var(--text);
             text-decoration: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 4px;
+            padding: 4px 6px;
             border-radius: 4px;
         }
-        a.nav-item:hover { color: var(--accent-color); background: var(--surface-hover); }
-        .path { font-family: var(--font-mono); font-size: 0.72rem; color: #777; display: block; margin-top: 2px; }
-
-        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-        .dot.online { background-color: var(--success-color); box-shadow: 0 0 6px var(--success-color); }
-        .dot.secured { background-color: var(--accent-color); box-shadow: 0 0 6px var(--accent-color); }
-        .dot.blue { background-color: var(--blue-team); box-shadow: 0 0 6px var(--blue-team); }
-
-        /* Tabellen met mobiele horizontale scroll */
-        .table-wrap { width: 100%; overflow-x: auto; margin: 10px 0; }
-        table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.82rem; }
-        th, td { border: 1px solid #2e2e2e; padding: 8px 10px; text-align: left; }
-        th { background: #101010; color: var(--accent-color); }
-
-        code { background: #0d0d0d; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--accent-color); font-size: 0.82rem; word-break: break-all; }
-        pre { background: #0d0d0d; padding: 12px; border-radius: 6px; overflow-x: auto; font-family: var(--font-mono); border: 1px solid #2a2a2a; font-size: 0.8rem; margin: 8px 0; }
-
-        /* Interactieve inputs & consoles */
-        .console-box {
-            background: #080808;
+        a.row-link:hover { color: var(--accent); background: var(--surface-alt); }
+        .path { font-family: var(--mono); font-size: 0.72rem; color: #777; display: block; margin-top: 2px; }
+        .badge {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: #111;
             border: 1px solid #333;
-            border-radius: 6px;
-            padding: 10px;
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            height: 150px;
+            color: var(--accent);
+        }
+        .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .dot.secured { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+        .dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+
+        .table-wrap { width: 100%; overflow-x: auto; margin: 8px 0; }
+        table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.8rem; }
+        th, td { border: 1px solid var(--border); padding: 7px 9px; text-align: left; }
+        th { background: #0f0f0f; color: var(--accent); }
+        code { background: #0d0d0d; padding: 2px 5px; border-radius: 3px; font-family: var(--mono); color: var(--accent); font-size: 0.8rem; }
+        pre { background: #0d0d0d; padding: 10px; border-radius: 5px; overflow-x: auto; font-family: var(--mono); border: 1px solid #262626; font-size: 0.78rem; margin: 8px 0; }
+
+        .console-box {
+            background: #070707;
+            border: 1px solid #2e2e2e;
+            border-radius: 5px;
+            padding: 9px;
+            font-family: var(--mono);
+            font-size: 0.76rem;
+            height: 125px;
             overflow-y: auto;
-            color: #00ffcc;
-            margin: 10px 0;
+            color: var(--accent);
+            margin: 8px 0;
         }
         .input-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         input[type="text"], input[type="number"] {
             flex: 1;
-            min-width: 140px;
+            min-width: 130px;
             background: #0d0d0d;
-            border: 1px solid #3a3a3a;
-            color: var(--text-color);
-            padding: 8px 10px;
+            border: 1px solid #383838;
+            color: var(--text);
+            padding: 7px 10px;
             border-radius: 4px;
-            font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-family: var(--mono);
+            font-size: 0.82rem;
         }
-
-        /* Mobile Bottom Bar voor snelle bediening op telefoons */
         .mobile-dock {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(15, 15, 15, 0.96);
-            border-top: 1px solid var(--accent-color);
+            bottom: 0; left: 0; right: 0;
+            background: rgba(12, 12, 12, 0.96);
+            border-top: 1px solid var(--accent);
             display: flex;
             justify-content: space-around;
             padding: 8px 10px;
-            backdrop-filter: blur(8px);
-            z-index: 999;
+            z-index: 1000;
+            backdrop-filter: blur(6px);
         }
         @media (max-width: 768px) {
-            body { padding: 12px; padding-bottom: 85px; }
+            body { padding: 12px 12px 85px 12px; }
             .grid { grid-template-columns: 1fr; }
-            .btn { flex: 1; justify-content: center; }
         }
     </style>
     <script>
@@ -215,170 +206,155 @@
                 document.body.classList.remove('force-mobile');
                 localStorage.setItem('vortex_view_mode', 'desktop');
             }
-            updateModeButtons();
+            syncModeBtns();
         }
-        function updateModeButtons() {
-            const mode = localStorage.getItem('vortex_view_mode') || 'desktop';
-            const btnD = document.getElementById('btn-desktop');
-            const btnM = document.getElementById('btn-mobile');
-            if (btnD && btnM) {
-                btnD.classList.toggle('active', mode === 'desktop');
-                btnM.classList.toggle('active', mode === 'mobile');
+        function syncModeBtns() {
+            const m = localStorage.getItem('vortex_view_mode') || 'desktop';
+            const dBtn = document.getElementById('btn-desktop');
+            const mBtn = document.getElementById('btn-mobile');
+            if (dBtn && mBtn) {
+                dBtn.classList.toggle('active', m === 'desktop');
+                mBtn.classList.toggle('active', m === 'mobile');
             }
         }
         window.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('vortex_view_mode');
-            if (saved === 'mobile') document.body.classList.add('force-mobile');
-            updateModeButtons();
+            if (localStorage.getItem('vortex_view_mode') === 'mobile') {
+                document.body.classList.add('force-mobile');
+            }
+            syncModeBtns();
         });
     </script>
-
 </head>
 <body>
     <header>
         <div>
-            <h1>⏳ TIJDSCAPSULE & REKENCENTRUM</h1>
-            <div class="sys-info">v159.1 Locked-Interface | Anker P (52.2500° N, 5.2200° E) | BTFM Field Beheer</div>
+            <h1>⏳ REKENCENTRUM & TIJDSCAPSULE</h1>
+            <div class="sys-sub">v159.2 Locked-Interface | Poolanker P (52.2500° N, 5.2200° E) | Attractor #21 (010101)</div>
         </div>
-        <div class="mode-bar">
+        <div class="toolbar">
             <button id="btn-desktop" class="btn active" onclick="setBuildMode('desktop')">🖥️ Desktop</button>
             <button id="btn-mobile" class="btn" onclick="setBuildMode('mobile')">📱 Mobiel</button>
-            <a class="btn btn-blue" href="../../beheercentrum/index.html">← Hoofddashboard</a>
+            <a class="btn btn-blue" href="../../beheercentrum/index.html?v=1792677375">← Terug naar Beheercentrum</a>
         </div>
     </header>
 
     <div class="grid">
-        <!-- Kavel 1: Rekencentrum A. Ott Nr. 573 & Geodesie -->
-        <div class="card accent-border">
-            <h2>📐 Rekencentrum: A. Ott Planimeter (Nr. 573)</h2>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>Parameter</th><th>Waarde</th></tr>
-                    <tr><td>Poolanker P</td><td><code>52.2500° N, 5.2200° E</code></td></tr>
-                    <tr><td>Attractor State</td><td><code>010101 (Hex #21)</code></td></tr>
-                    <tr><td>Poolarm (R) / Rijarm (L)</td><td>15.00 cm / 16.67 cm</td></tr>
-                    <tr><td>Basisoppervlakte (A0)</td><td><strong>2363.08 cm²</strong></td></tr>
-                    <tr><td>Fraunhofer D-lijn</td><td>589.0 nm</td></tr>
-                    <tr><td>Plani Ringen (Ø 29 cm, Az 108°)</td><td>R1: 202° (+22°) | R2: 22° (+22°) | R3: 22° (-22°)</td></tr>
-                </table>
+        <!-- 1. Mechanische Integratie: A. Ott Nr. 573 -->
+        <div class="card pijler-2">
+            <div>
+                <h2><span>📐 A. Ott Compensatie-Poolplanimeter</span><span class="badge">Nr. 573</span></h2>
+                <div class="table-wrap">
+                    <table>
+                        <tr><th>Parameter</th><th>Locked Kalibratie</th></tr>
+                        <tr><td>Oorsprong Anker</td><td><code>Poolanker P (52.2500° N, 5.2200° E)</code></td></tr>
+                        <tr><td>Poolarm (R) / Rijarm (L)</td><td>15.00 cm / 16.67 cm</td></tr>
+                        <tr><td>Basisoppervlakte (A0)</td><td><strong>2363.08 cm²</strong></td></tr>
+                        <tr><td>Fraunhofer D-lijn</td><td>589.0 nm (Natrium-doublet)</td></tr>
+                        <tr><td>Plani Ringen (Ø 29 cm, Az 108°)</td><td>R1: 202° (+22°) | R2: 22° (+22°) | R3: 22° (-22°)</td></tr>
+                    </table>
+                </div>
+                <h3>🧮 Interactieve Ott Nr. 573 Oppervlakte-Integrator</h3>
+                <div class="input-row">
+                    <input type="number" id="ott-dn" value="0.00" step="0.05" placeholder="Δn wiel-omwentelingen">
+                    <button class="btn" onclick="berekenOtt()">Integreer Oppervlakte</button>
+                </div>
             </div>
-            <h3>🧮 Interactieve Ott Nr. 573 Oppervlakte-Integrator</h3>
-            <p class="path">Bereken netto oppervlakte: Δn omwentelingen × planimeterconstante + A0 (2363.08 cm²)</p>
-            <div class="input-row">
-                <input type="number" id="ott-delta" value="1.00" step="0.05" placeholder="Δn aflezing">
-                <button class="btn" onclick="calcOtt()">Bereken Oppervlakte</button>
-            </div>
-            <div id="ott-result" style="margin-top:10px; font-family:var(--font-mono); color:var(--accent-color); font-size:0.88rem;">
-                Resultaat A = 2363.08 cm² (Baseline Lock)
-            </div>
-        </div>
-
-        <!-- Kavel 2: Astrometrische Telemetrie -->
-        <div class="card accent-border">
-            <h2>🌙 Astrometrie & Sferische Lock (Maan)</h2>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>Telemetrie Veld</th><th>Locked Waarde (2026-10-22 10:00:01)</th></tr>
-                    <tr><td>Rechte Klimming (RA)</td><td>191.20°</td></tr>
-                    <tr><td>Declinatie (Dec)</td><td>13.30°</td></tr>
-                    <tr><td>Lokale Sterrentijd (LST)</td><td>312.74°</td></tr>
-                    <tr><td>Uurhoek (HA)</td><td>121.54°</td></tr>
-                    <tr><td>Azimut / Elevatie</td><td><strong>303.23° / -7.45°</strong></td></tr>
-                    <tr><td>Constellatie</td><td>Capricornus / Steenbok (Zuidmuur)</td></tr>
-                    <tr><td>GeoJSON Matrix</td><td><code>vortex_processed_points.geojson (P1-P100)</code></td></tr>
-                </table>
-            </div>
-            <div class="input-row" style="margin-top:12px;">
-                <a class="btn" href="tijdscapsule_metadata.json" target="_blank">📄 Bekijk Ruwe JSON Metadata</a>
+            <div id="ott-out" style="margin-top:10px; font-family:var(--mono); color:var(--accent); font-size:0.84rem;">
+                Actuele Integratie: A = 2363.08 cm² (Δn = 0.00)
             </div>
         </div>
 
-        <!-- Kavel 3: Blue Team Field Beheer (BTFM) in de Tijdscapsule -->
-        <div class="card blue-border">
-            <h2>🛡️ Blue Team Field Beheer (BTFM) — Tijdscapsule</h2>
-            <p class="path">Actieve verdedigings-, integriteits- en syntaxisrichtlijnen voor het Rekencentrum:</p>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>BTFM Notatie</th><th>Operationele Betekenis & Beheer</th></tr>
-                    <tr><td><code>#</code> / <code>$</code></td><td>Linux root/sudo shell prompt voor poort- en rechtenbeheer</td></tr>
-                    <tr><td><code>-</code> vs <code>–</code> / <code>—</code></td><td><strong>Waarschuwing:</strong> Gebruik uitsluitend ASCII hyphen (<code>-</code>), geen en/em-dash bij copy/paste</td></tr>
-                    <tr><td><code>spaces</code></td><td>Verifieer exacte spatie-scheiding in CLI-parameters en paden</td></tr>
-                    <tr><td><code>chmod 600</code></td><td>Verplichte eigenaars-permissie op alle <code>.otp</code> One-Time Pad sleutels</td></tr>
-                    <tr><td><code>chmod 700</code></td><td>Strikte map-isolatie op <code>rekencentrum/beveiligde_sleutels/</code></td></tr>
-                </table>
-            </div>
-            <h3>🔐 Tijdscapsule Hardening & Commando's</h3>
-            <pre>python3 validate_repo.py
-./tijdscapsule_backup.sh
-sudo ss -tupn | grep -E '8000|8081|8082|8448'</pre>
-        </div>
-
-        <!-- Kavel 4: WebRTC DTLS DataChannel Telemetrie Bridge -->
-        <div class="card blue-border">
-            <h2>📡 WebRTC DataChannel (DTLS) — Rekencentrum Bridge</h2>
-            <p class="path">Verzend de Tijdscapsule-ankerstatus versleuteld over een lokale WebRTC Loopback DataChannel:</p>
-            <div id="rtc-cap-log" class="console-box">
-                [SYSTEM] WebRTC DTLS DataChannel gereed voor Tijdscapsule-transmissie...
+        <!-- 2. Astrometrie & Sferische Lock -->
+        <div class="card pijler-2">
+            <div>
+                <h2><span>🌙 Astrometrie & Maan-telemetrie</span><span class="badge">LOCKED</span></h2>
+                <div class="table-wrap">
+                    <table>
+                        <tr><th>Astrometrische Parameter</th><th>Waarde (2026-10-22 10:00:01 CEST)</th></tr>
+                        <tr><td>Rechte Klimming (RA) / Declinatie</td><td>191.20° / 13.30°</td></tr>
+                        <tr><td>Lokale Sterrentijd (LST)</td><td>312.74°</td></tr>
+                        <tr><td>Uurhoek (HA)</td><td>121.54°</td></tr>
+                        <tr><td>Azimut / Elevatie</td><td><strong>303.23° / -7.45°</strong></td></tr>
+                        <tr><td>Constellatie</td><td>Capricornus / Steenbok (Zuidmuur)</td></tr>
+                        <tr><td>Dataset Matrix</td><td><code>vortex_processed_points.geojson (P1-P100)</code></td></tr>
+                    </table>
+                </div>
             </div>
             <div class="input-row">
-                <button class="btn btn-blue" onclick="sendCapsuleTelemetry()">⚡ Zend Anker P & Attractor #21 via DataChannel</button>
+                <a class="btn" href="tijdscapsule_metadata.json?v=1792677375" target="_blank">📄 Ruwe JSON Metadata Openen</a>
+            </div>
+        </div>
+
+        <!-- 3. Blue Team Field Beheer (BTFM) in Rekencentrum -->
+        <div class="card pijler-3">
+            <div>
+                <h2><span>🛡️ Blue Team Field Beheer (BTFM)</span><span class="badge">DEFENSE</span></h2>
+                <div class="table-wrap">
+                    <table>
+                        <tr><th>Notatie</th><th>BTFM Operationele Richtlijn</th></tr>
+                        <tr><td><code>#</code> / <code>$</code></td><td>Linux root/sudo shell prompt voor systeem- en poortbeheer</td></tr>
+                        <tr><td><code>-</code> vs <code>–</code></td><td><strong>Let op bij copy/paste:</strong> gebruik ASCII hyphen (<code>-</code>), geen en/em-dash</td></tr>
+                        <tr><td><code>spaces</code></td><td>Verifieer exacte spaties in commando's en pad-argumenten</td></tr>
+                        <tr><td><code>chmod 600</code></td><td>Verplichte permissie voor FinalCrypt <code>.otp</code> sleutelbestanden</td></tr>
+                        <tr><td><code>chmod 700</code></td><td>Map-isolatie op <code>rekencentrum/beveiligde_sleutels/</code></td></tr>
+                    </table>
+                </div>
+            </div>
+            <pre>python3 validate_repo.py && ./tijdscapsule_backup.sh</pre>
+        </div>
+
+        <!-- 4. WebRTC DTLS Rekencentrum Telemetrie Kanaal -->
+        <div class="card pijler-5">
+            <div>
+                <h2><span>📡 WebRTC DataChannel Bridge</span><span class="badge">DTLS/SCTP</span></h2>
+                <p class="path">Verstuur Tijdscapsule-vectoren P1-P100 en Anker P over een DTLS-beveiligde P2P DataChannel:</p>
+                <div id="cap-rtc-log" class="console-box">
+                    [REKENCENTRUM] WebRTC DTLS kanaal stand-by...
+                </div>
+            </div>
+            <div class="input-row">
+                <button class="btn btn-blue" onclick="zendTijdscapsulePakket()">⚡ Verzend Tijdscapsule Lock via DataChannel</button>
             </div>
         </div>
     </div>
 
     <nav class="mobile-dock">
-        <a class="btn" href="../../beheercentrum/index.html">🏠 Dashboard</a>
-        <a class="btn active" href="index.html">⏳ Tijdscapsule</a>
-        <a class="btn" href="../../docs/beheer/blue_team/tactical_ops.html">🛡️ BTFM</a>
-        <a class="btn" href="../../docs/beheer/red_team/rtfm_manual.html">🔴 RTFM</a>
+        <a class="btn" href="../../beheercentrum/index.html?v=1792677375">🏠 Beheercentrum</a>
+        <a class="btn active" href="index.html?v=1792677375">⏳ Rekencentrum</a>
+        <a class="btn" href="../../docs/beheer/blue_team/tactical_ops.html?v=1792677375">🛡️ BTFM</a>
+        <a class="btn" href="../../docs/beheer/red_team/rtfm_manual.html?v=1792677375">🔴 RTFM</a>
     </nav>
 
     <script>
-        function calcOtt() {
-            const delta = parseFloat(document.getElementById('ott-delta').value) || 0;
+        function berekenOtt() {
+            const dn = parseFloat(document.getElementById('ott-dn').value) || 0;
             const a0 = 2363.08;
-            const c = 100.0; // schaalconstante
-            const res = (a0 + (delta * c)).toFixed(2);
-            document.getElementById('ott-result').innerHTML = 
-                `Resultaat A = <strong>${res} cm²</strong> (A0: 2363.08 + Δn·C: ${(delta*c).toFixed(2)} cm²)`;
+            const c = 100.0;
+            const totaal = (a0 + dn * c).toFixed(2);
+            document.getElementById('ott-out').innerHTML =
+                `Actuele Integratie: <strong>A = ${totaal} cm²</strong> (A0: 2363.08 + Δn·C: ${(dn*c).toFixed(2)} cm²)`;
         }
-
-        async function sendCapsuleTelemetry() {
-            const logEl = document.getElementById('rtc-cap-log');
-            const log = (msg) => {
-                logEl.innerHTML += `<div>> ${msg}</div>`;
-                logEl.scrollTop = logEl.scrollHeight;
+        async function zendTijdscapsulePakket() {
+            const box = document.getElementById('cap-rtc-log');
+            const log = (m) => { box.innerHTML += `<div>> ${m}</div>`; box.scrollTop = box.scrollHeight; };
+            log("DTLS Handshake starten...");
+            const p1 = new RTCPeerConnection(), p2 = new RTCPeerConnection();
+            p1.onicecandidate = e => e.candidate && p2.addIceCandidate(e.candidate);
+            p2.onicecandidate = e => e.candidate && p1.addIceCandidate(e.candidate);
+            const ch = p1.createDataChannel("rekencentrum_dtls");
+            ch.onopen = () => {
+                const data = JSON.stringify({anker:"P(52.25N,5.22E)", ott_a0:2363.08, attractor:"#21"});
+                log("🟢 Verzonden: " + data);
+                ch.send(data);
             };
-            log("Opzetten van RTCPeerConnection (DTLS/SCTP)...");
-            const pc1 = new RTCPeerConnection();
-            const pc2 = new RTCPeerConnection();
-            pc1.onicecandidate = e => e.candidate && pc2.addIceCandidate(e.candidate);
-            pc2.onicecandidate = e => e.candidate && pc1.addIceCandidate(e.candidate);
-
-            const dc = pc1.createDataChannel("vortex_tijdscapsule_dtls");
-            dc.onopen = () => {
-                const payload = JSON.stringify({
-                    anker: "P (52.25N, 5.22E)",
-                    attractor: "010101 (#21)",
-                    ott_a0: 2363.08,
-                    maan_az: 303.23
-                });
-                log(`🟢 Kanaal open! Verzenden: ${payload}`);
-                dc.send(payload);
-            };
-            pc2.ondatachannel = (event) => {
-                event.channel.onmessage = (e) => {
-                    log(`📥 Ontvangen op Rekencentrum Node: ${e.data}`);
-                    log(`✅ DTLS Integriteit & Tijdscapsule Lock geverifieerd.`);
-                    setTimeout(() => { pc1.close(); pc2.close(); }, 500);
+            p2.ondatachannel = ev => {
+                ev.channel.onmessage = msg => {
+                    log("📥 Bevestigd door Peer: " + msg.data);
+                    setTimeout(() => { p1.close(); p2.close(); }, 300);
                 };
             };
-            const offer = await pc1.createOffer();
-            await pc1.setLocalDescription(offer);
-            await pc2.setRemoteDescription(offer);
-            const answer = await pc2.createAnswer();
-            await pc2.setLocalDescription(answer);
-            await pc1.setRemoteDescription(answer);
+            const o = await p1.createOffer(); await p1.setLocalDescription(o); await p2.setRemoteDescription(o);
+            const a = await p2.createAnswer(); await p2.setLocalDescription(a); await p1.setRemoteDescription(a);
         }
     </script>
 </body>

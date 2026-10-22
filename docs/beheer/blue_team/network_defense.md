@@ -1,10 +1,9 @@
 # 🌐 Netwerk, DNS & WebRTC DataChannel Defensie
-**Architectuur:** BIND9 (UDP 53) | Matrix/Conduit (8448) | WebRTC P2P DataChannels
+**Architectuur:** BIND9 (`UDP 53`) | Python API (`8000`) | Rust RSS (`8081`) | Web (`8080`)
 
-## 1. Beveiligd Verzenden & Ontvangen met DataChannels
-- Alle WebRTC DataChannels gebruiken verplichte **DTLS** (Datagram Transport Layer Security) encryptie over SCTP.
-- Berichten gaan peer-to-peer zonder tussenkomst van externe cloud-opslag.
+## 1. WebRTC DataChannels (DTLS over SCTP)
+- Verkeer over WebRTC DataChannels is standaard end-to-end versleuteld via **DTLS**.
+- Geen centrale tussenopslag; verificatie verloopt via zowel de browser-loopback als `./webrtc_test_runner.sh`.
 
-## 2. DNS & Poortbeheer
-- BIND9 verzorgt lokale DNS-resolutie.
-- Onderdruk valse 404-ruis (zoals `/favicon.ico`) via `204 No Content` en inline SVG-headers.
+## 2. Log-Hygiëne
+- Valse 404-meldingen (zoals `/favicon.ico`) zijn geëlimineerd met inline SVG-data-URI's zodat verkeerslogs zuiver blijven.

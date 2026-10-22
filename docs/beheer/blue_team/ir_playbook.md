@@ -1,11 +1,11 @@
 # 🚨 Incident Response (IR) Playbook
-**Doelwit:** VORTEX OS (Debian Bookworm / Raspberry Pi) | **Status:** SOVEREIGN LOCALHOST
+**Systeem:** VORTEX OS (Debian Bookworm) | **Poorten:** Web `8080`, API `8000`, Podcast `8081`, Matrix `8448`
 
-## 1. Directe Triage & Netwerk Isolatie
-- Inspecteer actieve TCP/UDP sockets op onbekende processen: `sudo ss -tupn`
-- Bevries verdachte PID's voor forensische analyse: `sudo kill -STOP <PID>`
-- Controleer op ongeautoriseerde aanpassingen in `/etc/passwd`, `/etc/shadow` en `~/.ssh/authorized_keys`.
+## 1. Directe Triage & Procescontrole
+- Controleer actieve luisterende poorten in de VORTEX-stack: `sudo ss -tupnl | grep -E '8000|8080|8081|8448'`
+- Bevries een verdacht proces zonder geheugenverlies: `sudo kill -STOP <PID>`
+- Controleer integriteit van systeemgebruikers: `grep -E ':0:' /etc/passwd`
 
-## 2. Cryptografische & Rekencentrum Verificatie
-- Voer direct een integriteitscheck uit op de monorepo en `.otp`-sleutels: `python3 validate_repo.py`
-- Stel een bevroren snapshot veilig in de Tijdscapsule: `./tijdscapsule_backup.sh`
+## 2. Cryptografische & Archief Isolatie
+- Valideer direct de monorepo en FinalCrypt `.otp` permissies: `python3 validate_repo.py`
+- Genereer een nood-snapshot in de Tijdscapsule: `./tijdscapsule_backup.sh`

@@ -1,42 +1,32 @@
 {
-  "system": {
-    "name": "VORTEX_OS",
-    "environment": "SOVEREIGN_LOCALHOST",
-    "os": "Debian Bookworm",
-    "hardware": "Raspberry Pi / Bare-metal"
-  },
+  "system": "VORTEX_OS",
+  "mode": "SOVEREIGN_LOCALHOST",
+  "version": "v159.2-LOGICAL",
   "services": {
-    "python_api": {
+    "STATIC_WEB": {
+      "port": 8080,
+      "url": "http://localhost:8080",
+      "status": "active"
+    },
+    "PYTHON_API": {
       "port": 8000,
-      "status": "active",
-      "path": "./api/"
+      "url": "http://localhost:8000/api/status",
+      "status": "active"
     },
-    "rust_podcast": {
+    "RUST_PODCAST": {
       "port": 8081,
-      "status": "active",
-      "path": "./podcast-rss-server/"
+      "url": "http://localhost:8081",
+      "status": "active"
     },
-    "beheercentrum": {
-      "port": 8082,
-      "path": "./beheercentrum/"
-    },
-    "dns_bind9": {
+    "DNS_BIND9": {
       "port": 53,
-      "protocol": "udp",
-      "trusted_acl": ["127.0.0.0/8", "192.168.1.0/24"]
+      "protocol": "UDP/TCP",
+      "status": "secured"
     },
-    "matrix_conduit": {
-      "federation_port": 8448,
+    "MATRIX_CONDUIT": {
+      "port": 8448,
+      "protocol": "DTLS/WebRTC",
       "status": "secured"
     }
-  },
-  "security": {
-    "finalcrypt_otp": true,
-    "firewall": "UFW Deny-All",
-    "ssh_auth": "Ed25519 keys only (PasswordAuthentication no)"
-  },
-  "storage": {
-    "tijdscapsule": "./rekencentrum/tijdscapsule/",
-    "blue_team_docs": "./docs/beheer/blue_team/"
   }
 }
