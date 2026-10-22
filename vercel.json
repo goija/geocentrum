@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/", "destination": "/beheercentrum/index.html" },
-    { "source": "/rekencentrum/(.*)", "destination": "/rekencentrum/$1" },
-    { "source": "/docs/(.*)", "destination": "/docs/$1" }
-  ]
+  "cleanUrls": true,
+  "trailingSlash": false
 }

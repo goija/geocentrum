@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS | Documentatie</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230a0a0a%22/><polygon points=%2250,15 85,85 15,85%22 fill=%22none%22 stroke=%22%2300ffcc%22 stroke-width=%228%22/></svg>">
+    
+<style>
+    :root {
+        --bg-color: #0a0a0a;
+        --surface-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --accent-color: #00ffcc;
+        --success-color: #00c853;
+        --font-mono: "Courier New", Courier, monospace;
+        --font-sans: system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: var(--font-sans);
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        line-height: 1.6;
+        padding: 30px 20px;
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+    header {
+        border-bottom: 2px solid var(--accent-color);
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    h1 { font-family: var(--font-mono); color: var(--accent-color); text-transform: uppercase; letter-spacing: 2px; }
+    h2, h3 { font-family: var(--font-mono); color: var(--accent-color); margin: 20px 0 10px 0; }
+    .sys-info { font-family: var(--font-mono); font-size: 0.85rem; color: #888; }
+    .back-btn {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        background: var(--surface-color);
+        border: 1px solid var(--accent-color);
+        color: var(--accent-color);
+        font-family: var(--font-mono);
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    .back-btn:hover { background: var(--accent-color); color: #000; }
+    .card {
+        background-color: var(--surface-color);
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+    }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; font-family: var(--font-mono); font-size: 0.9rem; }
+    th, td { border: 1px solid #333; padding: 10px; text-align: left; }
+    th { background: #111; color: var(--accent-color); }
+    code { background: #111; padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--accent-color); }
+    pre { background: #111; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: var(--font-mono); border: 1px solid #333; margin: 10px 0; }
+    ul { list-style: none; }
+    li { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #2a2a2a; }
+    li:last-child { border-bottom: none; }
+    a { color: var(--text-color); text-decoration: none; }
+    a:hover { color: var(--accent-color); }
+    .path { font-family: var(--font-mono); font-size: 0.75rem; color: #777; display: block; margin-top: 3px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .dot.online { background-color: var(--success-color); box-shadow: 0 0 5px var(--success-color); }
+    .dot.secured { background-color: var(--accent-color); box-shadow: 0 0 5px var(--accent-color); }
+</style>
+
+</head>
+<body>
+    <a class="back-btn" href="/beheercentrum/index.html">← Terug naar Beheercentrum</a>
+    <div class="card">
+        <h1>🌐 Netwerk, DNS & WebRTC Defensie</h1>
+<p><strong>Componenten:</strong> BIND9 (UDP 53), Matrix/Conduit (8448), WebRTC Data Channels</p>
+<h2>1. WebRTC DTLS Beveiliging</h2>
+<p>• P2P Data Channels zijn standaard versleuteld via <strong>DTLS</strong> bovenop SCTP.</p>
+<p>• Lokale loopback- en integratietests draaien geïsoleerd in <code>./venv/bin/python3 test_webrtc_channel.py</code>.</p>
+<h2>2. DNS Soevereiniteit (BIND9)</h2>
+<p>• Lokale naamresolutie voorkomt DNS-lekkage naar externe resolvers.</p>
+    </div>
+</body>
+</html>
