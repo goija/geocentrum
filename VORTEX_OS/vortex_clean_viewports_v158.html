@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="nl" data-theme="donker">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VORTEX OS v158.0 - Clean Viewports</title>
+    
+    <!-- MapLibre GL JS -->
+    <link href="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@3.3.1/dist/maplibre-gl.js"></script>
+
+    <style>
+        /* CSS Variabelen voor de 4 Lichtmodi */
+        :root[data-theme="donker"] {
+            --bg-color: #060a12;
+            --panel-bg: #0f172a;
+            --text-color: #38bdf8;
+            --border-color: #1e293b;
+            --accent: #00e5ff;
+        }
+        :root[data-theme="helder"] {
+            --bg-color: #ffffff;
+            --panel-bg: #f1f5f9;
+            --text-color: #0f172a;
+            --border-color: #cbd5e1;
+            --accent: #0284c7;
+        }
+        :root[data-theme="daglicht"] {
+            --bg-color: #f8fafc;
+            --panel-bg: #e2e8f0;
+            --text-color: #1e293b;
+            --border-color: #94a3b8;
+            --accent: #ea580c;
+        }
+        :root[data-theme="nachtlicht"] {
+            --bg-color: #1a0000;
+            --panel-bg: #330000;
+            --text-color: #ff4d4d;
+            --border-color: #660000;
+            --accent: #ff0000;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: monospace;
+            padding: 20px;
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        button {
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover, button.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .viewport {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        h1, h2 { color: var(--accent); margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="header-controls">
+        <button onclick="setTheme('helder')" id="btn-helder">☀️ Helder</button>
+        <button onclick="setTheme('daglicht')" id="btn-daglicht">🌤️ Daglicht</button>
+        <button onclick="setTheme('donker')" id="btn-donker" class="active">🌙 Donker</button>
+        <button onclick="setTheme('nachtlicht')" id="btn-nachtlicht">🔴 Nachtlicht</button>
+    </div>
+
+    <h1>VORTEX OS v158.0 - Master Cockpit</h1>
+    
+    <div class="viewport">
+        <h2>VP-1: Planimeter / Cellarius Raster</h2>
+        <p>A. Ott Nr. 573 configuratie geladen. Systeem gereed voor integratie.</p>
+    </div>
+    
+    <div class="viewport">
+        <h2>VP-2: Spectrale / Laser Node (FFT Analyzer)</h2>
+        <p>Fraunhofer D (589nm) / 432 Hz harmonische audio module standby.</p>
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            // Pas het data-theme attribuut aan op de root (html tag)
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Update actieve knop styling
+            document.querySelectorAll('.header-controls button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + theme).classList.add('active');
+            
+            console.log("VORTEX OS Lichtmodus geschakeld naar:", theme);
+        }
+    </script>
+</body>
+</html>
