@@ -1,7 +1,15 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/VORTEX_OS/(.*)", "destination": "/$1" },
+    { "source": "/VORTEX_OS/(.*)", "destination": "/VORTEX_OS/$1" },
     { "source": "/pdf/(.*)", "destination": "/pdf/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
   ]
 }
